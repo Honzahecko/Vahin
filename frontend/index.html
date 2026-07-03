@@ -1,0 +1,2910 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1F3864" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>VAHIN Pilot – INT2025002</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="manifest" href="/frontend/manifest.json" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { navy: { 900:'#1F3864', 800:'#2a4a82', 700:'#3559a0' } } } }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    [x-cloak]{display:none!important}
+    .vas-slider{-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:#dbeafe;outline:none;width:100%}
+    .vas-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#1F3864;cursor:pointer;border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:#f1f5f9}
+    .card{background:white;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+    .btn-primary{background:#1F3864;color:white;border-radius:8px;padding:.55rem 1.2rem;font-weight:600;transition:opacity .15s;display:inline-block;cursor:pointer}
+    .btn-primary:hover{opacity:.88}
+    .btn-secondary{background:#e0e7ef;color:#1F3864;border-radius:8px;padding:.55rem 1.2rem;font-weight:600;cursor:pointer}
+    .btn-green{background:#16a34a;color:white;border-radius:8px;padding:.55rem 1.2rem;font-weight:600;cursor:pointer}
+    input,select,textarea{border:1.5px solid #d1d5db;border-radius:8px;padding:.45rem .75rem;width:100%;outline:none;transition:border-color .15s;background:white}
+    input:focus,select:focus,textarea:focus{border-color:#1F3864;box-shadow:0 0 0 3px rgba(31,56,100,.1)}
+    /* Sidebar nav item */
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;cursor:pointer;color:#94a3b8;font-weight:500;transition:all .15s;text-decoration:none}
+    .nav-item:hover{background:rgba(255,255,255,.08);color:white}
+    .nav-item.active{background:rgba(255,255,255,.15);color:white}
+    /* Mobile bottom nav */
+    .mob-nav-btn{display:flex;flex-direction:column;align-items:center;padding:6px 0;font-size:11px;color:#64748b;gap:2px;flex:1;cursor:pointer}
+    .mob-nav-btn.active{color:#1F3864;font-weight:700}
+    /* Step dots for study guide */
+    .step-dot{width:10px;height:10px;border-radius:50%;background:#d1d5db;flex-shrink:0;margin-top:4px}
+    .step-dot.done{background:#16a34a}
+    .step-dot.current{background:#1F3864}
+    /* Stat card */
+    .stat-card{background:white;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07);text-align:center}
+    /* Table */
+    table{width:100%;border-collapse:collapse}
+    th{text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#94a3b8;padding:8px 12px;border-bottom:2px solid #e2e8f0}
+    td{padding:10px 12px;border-bottom:1px solid #f1f5f9;font-size:14px;vertical-align:middle}
+    tr:hover td{background:#f8fafc}
+    /* Badge */
+    .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+    /* Scrollbar */
+    ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:#f1f5f9} ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+    /* Detail drawer */
+    .drawer{position:fixed;top:0;right:0;height:100vh;width:480px;max-width:100vw;background:white;box-shadow:-4px 0 24px rgba(0,0,0,.12);z-index:100;transform:translateX(100%);transition:transform .25s ease;overflow-y:auto}
+    .drawer.open{transform:translateX(0)}
+    .drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:99;opacity:0;pointer-events:none;transition:opacity .25s}
+    .drawer-overlay.open{opacity:1;pointer-events:auto}
+    /* Phase pill */
+    .phase-pill{display:inline-flex;align-items:center;gap:6px;background:#e0e7ef;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;color:#1F3864}
+    /* Lucide icons in nav */
+    .nav-item svg,.mob-nav-btn svg{width:18px;height:18px;flex-shrink:0;stroke-width:1.75}
+    /* Initials avatar */
+    .initials-avatar{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:white;flex-shrink:0}
+  </style>
+</head>
+<body x-data="app()" x-cloak>
+
+<!-- ══════════════════════ DETAIL DRAWER ══════════════════════ -->
+<div class="drawer-overlay" :class="detailPanel?'open':''" @click="detailPanel=false"></div>
+<div class="drawer" :class="detailPanel?'open':''">
+  <template x-if="selectedP">
+    <div class="p-6">
+      <!-- Header -->
+      <div class="flex items-start justify-between mb-5">
+        <div>
+          <div class="text-xs text-gray-400 font-semibold uppercase tracking-wide" x-text="selectedP.participant_code"></div>
+          <div class="text-xl font-bold text-navy-900 mt-0.5" x-text="selectedP.full_name"></div>
+          <div class="text-sm text-gray-400 mt-0.5" x-text="selectedP.email"></div>
+        </div>
+        <button @click="detailPanel=false" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+      </div>
+
+      <!-- Info grid -->
+      <div class="grid grid-cols-2 gap-2 mb-5">
+        <div class="bg-gray-50 rounded-lg p-3">
+          <div class="text-xs text-gray-400">Profese</div>
+          <div class="font-semibold text-sm" x-text="selectedP.profession==='doctor'?'Lékař':'Sestra'"></div>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-3">
+          <div class="text-xs text-gray-400">Skupina</div>
+          <div class="font-semibold text-sm" x-text="selectedP.group||'—'"></div>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-3">
+          <div class="text-xs text-gray-400">Souhlas</div>
+          <div class="font-semibold text-sm" :class="selectedP.consent_signed?'text-green-600':'text-orange-500'" x-text="selectedP.consent_signed?'✓ Podepsán':'⚠ Chybí'"></div>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-3">
+          <div class="text-xs text-gray-400">Stav</div>
+          <div class="font-semibold text-sm" :class="selectedP.is_active?'text-green-600':'text-red-500'" x-text="selectedP.is_active?'Aktivní':'Neaktivní'"></div>
+        </div>
+      </div>
+
+      <!-- Phase manager -->
+      <div class="card p-4 mb-5">
+        <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Fáze studie</div>
+        <div class="flex items-center gap-3 mb-3">
+          <button @click="prevPhase(selectedP)"
+            class="w-9 h-9 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-400 hover:border-navy-900 hover:text-navy-900 font-bold text-lg transition-colors"
+            :disabled="phaseIndex(selectedP.phase)===0"
+            :class="phaseIndex(selectedP.phase)===0?'opacity-30 cursor-not-allowed':''">‹</button>
+          <div class="flex-1 text-center">
+            <div class="phase-pill mx-auto" x-text="phaseLabel(selectedP.phase)"></div>
+          </div>
+          <button @click="nextPhaseDrawer(selectedP)"
+            class="w-9 h-9 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-400 hover:border-navy-900 hover:text-navy-900 font-bold text-lg transition-colors"
+            :disabled="phaseIndex(selectedP.phase)===4"
+            :class="phaseIndex(selectedP.phase)===4?'opacity-30 cursor-not-allowed':''">›</button>
+        </div>
+        <!-- Phase progress bar -->
+        <div class="flex gap-1">
+          <template x-for="i in 5" :key="i">
+            <div class="flex-1 h-1.5 rounded-full" :class="(i-1)<=phaseIndex(selectedP.phase)?'bg-navy-900':'bg-gray-200'"></div>
+          </template>
+        </div>
+        <div x-show="drawerMsg" class="mt-2 text-sm text-center" :class="drawerOk?'text-green-600':'text-red-500'" x-text="drawerMsg"></div>
+      </div>
+
+      <!-- Consent button -->
+      <div x-show="!selectedP.consent_signed" class="mb-4">
+        <button @click="markConsentDrawer()" class="btn-green w-full text-center">✓ Potvrdit podpis souhlasu</button>
+      </div>
+
+      <!-- Study start date + doporučená fáze -->
+      <div class="mb-4 bg-gray-50 rounded-xl p-3">
+        <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Zahájení studie (den 1)</div>
+        <div class="flex gap-2 items-center">
+          <input type="date" class="flex-1 text-sm border border-gray-200 rounded-lg px-2 py-1.5"
+                 :value="selectedP.study_start_date||''"
+                 @change="setStudyStartDate(selectedP, $event.target.value)" />
+          <div x-show="selectedP.study_start_date" class="text-xs text-gray-500 font-semibold whitespace-nowrap"
+               x-text="selectedP.study_day ? 'Den ' + selectedP.study_day + ' / 21' : ''"></div>
+        </div>
+        <!-- Doporučení fáze -->
+        <div x-show="selectedP.recommended_phase && selectedP.recommended_phase !== selectedP.phase"
+             class="mt-2 flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span class="text-xs text-amber-700 font-semibold">Doporučená fáze: <span x-text="phaseLabel(selectedP.recommended_phase)"></span></span>
+          <button @click="applyRecommendedPhase(selectedP)"
+                  class="ml-auto text-xs bg-amber-600 text-white px-2 py-0.5 rounded-lg font-semibold hover:bg-amber-700">Přepnout</button>
+        </div>
+        <div x-show="selectedP.recommended_phase && selectedP.recommended_phase === selectedP.phase"
+             class="mt-2 text-xs text-green-600 font-semibold">✓ Fáze odpovídá harmonogramu</div>
+      </div>
+
+      <!-- Recent responses -->
+      <div class="mb-4">
+        <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Poslední dotazníky</div>
+        <template x-if="selectedPResponses.length===0">
+          <div class="text-sm text-gray-400 text-center py-3">Zatím žádné záznamy</div>
+        </template>
+        <template x-for="r in selectedPResponses.slice(0,6)" :key="r.id">
+          <div class="flex justify-between items-start py-2 border-b border-gray-50 last:border-0">
+            <div>
+              <div class="text-sm font-semibold" x-text="qTypeLabel(r.q_type)"></div>
+              <div class="text-xs text-gray-400" x-text="formatDateTime(r.filled_at)"></div>
+            </div>
+            <div class="text-xs text-right">
+              <template x-if="r.answers.vas_fatigue!==undefined">
+                <span class="badge bg-blue-100 text-blue-800" x-text="'Únava: '+r.answers.vas_fatigue"></span>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Recent shifts -->
+      <div class="mb-5">
+        <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Poslední směny</div>
+        <template x-if="selectedPShifts.length===0">
+          <div class="text-sm text-gray-400 text-center py-3">Zatím žádné záznamy</div>
+        </template>
+        <template x-for="s in selectedPShifts.slice(0,5)" :key="s.id">
+          <div class="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
+            <div class="text-sm" x-text="formatDate(s.shift_date)"></div>
+            <span class="text-xs font-semibold" :class="s.nurosym_used?'text-green-600':'text-gray-400'"
+                  x-text="s.nurosym_used?'✓ tVNS '+(s.nurosym_minutes||'?')+'min':'—'"></span>
+          </div>
+        </template>
+      </div>
+
+      <!-- Kortizol záznamy -->
+      <div class="mb-4" x-data="{clogs:[], loading:false}"
+           x-init="loading=true; $nextTick(async()=>{ const r=await apiFetch('/api/cortisol/participant/'+selectedP.id); if(r) clogs=r; loading=false; })">
+        <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Kortizol odběry</div>
+        <template x-if="!loading && clogs.length===0">
+          <div class="text-sm text-gray-400 text-center py-2">Zatím žádné odběry</div>
+        </template>
+        <template x-if="loading">
+          <div class="text-sm text-gray-400 text-center py-2">Načítám…</div>
+        </template>
+        <template x-for="g in Object.entries(clogs.reduce((a,l)=>{const k=l.sample_type;(a[k]=a[k]||[]).push(l);return a},{})).sort()" :key="g[0]">
+          <div class="mb-2">
+            <div class="text-xs font-semibold text-purple-700 mb-0.5" x-text="{day1:'Den 1',day7:'Den 7',day15:'Den 15',day21:'Den 21'}[g[0]]||g[0]"></div>
+            <div class="flex gap-2">
+              <template x-for="tp in ['t0','t15','t30']" :key="tp">
+                <span :class="g[1].some(l=>l.timepoint===tp) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'"
+                      class="text-xs px-2 py-0.5 rounded font-semibold"
+                      x-text="{t0:'T0',t15:'T+15',t30:'T+30'}[tp]+(g[1].find(l=>l.timepoint===tp) ? ' ✓' : ' –')"></span>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Notifikace – admin schedule editor -->
+      <div class="border-t border-gray-100 pt-4 mb-4">
+        <div class="flex items-center justify-between mb-3">
+          <div class="text-xs font-bold text-gray-400 uppercase tracking-wide">Notifikace</div>
+          <button @click="sendTestPush(selectedP.id)"
+            class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Test
+          </button>
+        </div>
+        <div class="space-y-2">
+          <template x-for="(s, i) in drawerSchedules" :key="s.notif_type">
+            <div class="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
+              <input type="checkbox" x-model="s.enabled" class="w-4 h-4 rounded accent-indigo-600" style="width:16px;flex-shrink:0" />
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-semibold text-gray-700" x-text="{'pre_shift':'Před směnou','post_shift':'Po směně','weekly':'Týdenní pohoda','reminder':'Připomínka'}[s.notif_type]"></div>
+              </div>
+              <input type="time" x-model="s.time"
+                class="text-xs border border-gray-200 rounded px-1.5 py-1 w-20 text-center"
+                style="width:72px;padding:4px 6px;font-size:12px;border-radius:6px;border:1.5px solid #e5e7eb" />
+            </div>
+          </template>
+        </div>
+        <div class="flex items-center justify-between mt-3">
+          <div class="text-xs text-gray-400">Čas odeslání push notifikace</div>
+          <button @click="saveDrawerSchedules(selectedP.id)" :disabled="drawerSchedSaving"
+            class="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 font-semibold">
+            <span x-show="!drawerSchedSaving">Uložit</span>
+            <span x-show="drawerSchedSaving">…</span>
+          </button>
+        </div>
+        <div x-show="drawerSchedMsg" class="mt-1 text-xs text-center text-green-600 font-semibold" x-text="drawerSchedMsg"></div>
+      </div>
+
+      <!-- Danger zone -->
+      <div class="border-t border-red-100 pt-4">
+        <div class="text-xs font-bold text-red-400 uppercase tracking-wide mb-2">Danger zone</div>
+        <button @click="deleteParticipant(selectedP)"
+          class="w-full text-sm font-semibold text-red-600 border border-red-200 rounded-lg py-2 hover:bg-red-50 transition-colors flex items-center justify-center gap-2">
+          <i data-lucide="trash-2" style="width:15px;height:15px;stroke-width:2"></i>
+          Smazat účastníka a veškerá jeho data
+        </button>
+      </div>
+    </div>
+  </template>
+</div>
+
+<!-- ══════════════════════ LOGIN ══════════════════════ -->
+<div x-show="!token" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-navy-900 to-navy-800">
+  <div class="card w-full max-w-sm p-8">
+    <!-- Loga partnerů -->
+    <div class="flex items-center justify-center gap-6 mb-6">
+      <img src="/app/img/garmin.png" alt="Garmin" style="height:22px;object-fit:contain;opacity:.85" />
+      <div class="w-px h-6 bg-gray-200"></div>
+      <img src="/app/img/nurosym.png" alt="Nurosym" style="height:42px;object-fit:contain;opacity:.85" />
+    </div>
+    <div class="text-center mb-7">
+      <div class="font-bold text-navy-900 text-xl tracking-tight">VAHIN Pilot</div>
+      <div class="text-xs text-gray-400 mt-1">Nemocnice AGEL Třinec-Podlesí · INT2025002</div>
+    </div>
+    <form @submit.prevent="login">
+      <div class="mb-4">
+        <label class="text-sm font-semibold text-gray-600 block mb-1">Email</label>
+        <input type="email" x-model="loginForm.email" placeholder="vas@email.cz" required />
+      </div>
+      <div class="mb-6">
+        <label class="text-sm font-semibold text-gray-600 block mb-1">Heslo</label>
+        <input type="password" x-model="loginForm.password" placeholder="••••••••" required />
+      </div>
+      <button type="submit" class="btn-primary w-full text-center" :disabled="loading">
+        <span x-show="!loading">Přihlásit se</span>
+        <span x-show="loading">Přihlašuji…</span>
+      </button>
+      <div x-show="loginError" class="mt-3 text-sm text-red-600 text-center" x-text="loginError"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════ APP ══════════════════════ -->
+<div x-show="token" class="flex min-h-screen">
+
+  <!-- ── SIDEBAR (desktop only) ── -->
+  <aside class="hidden md:flex flex-col bg-navy-900 text-white w-56 min-h-screen fixed top-0 left-0 z-40 py-5 px-3">
+    <!-- Logo + partner loga -->
+    <div class="px-3 mb-5">
+      <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:white;line-height:1.1;letter-spacing:-.3px">VAHIN Pilot</div>
+      <div style="font-size:11px;letter-spacing:2px;color:#93c5fd;margin-top:4px;margin-bottom:14px;font-weight:500;text-transform:uppercase">INT2025002</div>
+      <div class="flex flex-col gap-3">
+        <img src="/app/img/garmin.png" alt="Garmin" style="width:100%;height:30px;object-fit:contain;object-position:left;filter:invert(1);mix-blend-mode:screen;opacity:.9" />
+        <img src="/app/img/nurosym.png" alt="Nurosym" style="width:100%;height:52px;object-fit:contain;object-position:left;filter:invert(1);mix-blend-mode:screen;opacity:.9" />
+      </div>
+    </div>
+
+    <!-- User card s iniciálami -->
+    <div class="bg-white/10 rounded-lg p-3 mb-5 mx-1 flex items-center gap-2.5">
+      <div class="initials-avatar" x-text="currentUser?.full_name?.split(' ').filter(w=>!w.includes('.')).map(w=>w[0]).slice(0,2).join('')"></div>
+      <div class="min-w-0 flex-1">
+        <div class="text-xs text-blue-300 font-semibold uppercase tracking-wide leading-none mb-0.5">Přihlášen</div>
+        <div class="flex flex-wrap gap-1 mt-1">
+          <span class="badge bg-blue-800 text-blue-200" x-text="roleLabel(currentUser?.role)"></span>
+          <span class="badge bg-white/20 text-white text-xs" x-text="phaseLabel(currentUser?.phase)"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav items -->
+    <nav class="flex flex-col gap-0.5 flex-1">
+      <!-- Researcher nav -->
+      <template x-if="isResearcher()">
+        <div class="flex flex-col gap-0.5" x-init="$nextTick(()=>lucide&&lucide.createIcons())">
+          <a @click="activeTab='home'" class="nav-item" :class="activeTab==='home' ? 'active' : ''">
+            <i data-lucide="bar-chart-2"></i><span>Přehled studie</span>
+          </a>
+          <a @click="activeTab='participants'" class="nav-item" :class="activeTab==='participants' ? 'active' : ''">
+            <i data-lucide="users"></i><span>Účastníci</span>
+          </a>
+          <a @click="activeTab='data'" class="nav-item" :class="activeTab==='data' ? 'active' : ''">
+            <i data-lucide="database"></i><span>Data & Export</span>
+          </a>
+          <a @click="activeTab='schedule'" class="nav-item" :class="activeTab==='schedule' ? 'active' : ''">
+            <i data-lucide="calendar"></i><span>Harmonogram</span>
+          </a>
+          <div class="my-1 border-t border-white/10"></div>
+          <a @click="activeTab='project'; loadProjectData()" class="nav-item" :class="activeTab==='project' ? 'active' : ''">
+            <i data-lucide="layout-dashboard"></i><span>Řízení projektu</span>
+          </a>
+        </div>
+      </template>
+      <!-- Participant nav -->
+      <template x-if="!isResearcher()">
+        <div class="flex flex-col gap-0.5" x-init="$nextTick(()=>lucide&&lucide.createIcons())">
+          <a @click="activeTab='home'" class="nav-item" :class="activeTab==='home' ? 'active' : ''">
+            <i data-lucide="home"></i><span>Přehled</span>
+          </a>
+          <a @click="activeTab='questionnaires'" class="nav-item" :class="activeTab==='questionnaires' ? 'active' : ''">
+            <i data-lucide="clipboard-list"></i><span>Dotazníky</span>
+          </a>
+
+          <a @click="activeTab='guide'" class="nav-item" :class="activeTab==='guide' ? 'active' : ''">
+            <i data-lucide="book-open"></i><span>Průvodce studií</span>
+          </a>
+        </div>
+      </template>
+    </nav>
+
+    <button @click="logout" class="nav-item mt-3 text-red-300 hover:text-red-200 hover:bg-red-900/30">
+      <i data-lucide="log-out"></i><span>Odhlásit se</span>
+    </button>
+  </aside>
+
+  <!-- ── MAIN CONTENT ── -->
+  <div class="flex-1 md:ml-56 flex flex-col min-h-screen">
+
+    <!-- Mobile header -->
+    <header class="md:hidden bg-navy-900 text-white px-4 py-3 flex justify-between items-center sticky top-0 z-30">
+      <div>
+        <div class="font-bold text-sm">VAHIN Pilot</div>
+        <div class="text-xs text-blue-300" x-text="currentUser?.participant_code || currentUser?.full_name?.split(' ').slice(-1)[0]"></div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="badge bg-blue-800 text-blue-200 text-xs" x-text="phaseLabel(currentUser?.phase)"></span>
+        <button @click="logout" class="text-blue-300 text-xs">Odhlásit</button>
+      </div>
+    </header>
+
+    <!-- Desktop topbar -->
+    <div class="hidden md:flex items-center justify-between px-8 py-4 bg-white border-b border-gray-100 sticky top-0 z-30">
+      <div>
+        <h1 class="text-lg font-bold text-navy-900" x-text="pageTitle()"></h1>
+        <p class="text-xs text-gray-400" x-text="todayStr()"></p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-sm text-gray-500" x-text="currentUser?.participant_code ? currentUser.participant_code + ' · ' + currentUser.full_name : currentUser?.full_name"></span>
+      </div>
+    </div>
+
+    <!-- ═══ PAGE CONTENT ═══ -->
+    <main class="flex-1 p-4 md:p-8 pb-24 md:pb-8">
+
+      <!-- ━━━ RESEARCHER HOME ━━━ -->
+      <div x-show="isResearcher() && activeTab==='home'">
+        <!-- Stat row -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div class="stat-card">
+            <div class="text-3xl font-bold text-navy-900" x-text="stats.total"></div>
+            <div class="text-xs text-gray-400 mt-1">Účastníků celkem</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-3xl font-bold text-green-600" x-text="stats.active"></div>
+            <div class="text-xs text-gray-400 mt-1">Aktivních</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-3xl font-bold text-blue-600" x-text="stats.consent"></div>
+            <div class="text-xs text-gray-400 mt-1">Souhlasy podepsány</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-3xl font-bold text-purple-600" x-text="stats.groupA + ' / ' + stats.groupB"></div>
+            <div class="text-xs text-gray-400 mt-1">Skupina A / B</div>
+          </div>
+        </div>
+
+        <!-- Quick access cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div class="card p-5 cursor-pointer hover:shadow-md transition-shadow" @click="activeTab='participants'">
+            <div class="text-2xl mb-2">👥</div>
+            <div class="font-semibold text-navy-900">Správa účastníků</div>
+            <div class="text-sm text-gray-500 mt-1">Přidat, upravit, posunout fázi</div>
+          </div>
+          <div class="card p-5 cursor-pointer hover:shadow-md transition-shadow" @click="activeTab='data'">
+            <div class="text-2xl mb-2">📤</div>
+            <div class="font-semibold text-navy-900">Export dat</div>
+            <div class="text-sm text-gray-500 mt-1">Dotazníky, Garmin, směny → Excel</div>
+          </div>
+          <div class="card p-5 cursor-pointer hover:shadow-md transition-shadow" @click="activeTab='schedule'">
+            <div class="text-2xl mb-2">📅</div>
+            <div class="font-semibold text-navy-900">Harmonogram studie</div>
+            <div class="text-sm text-gray-500 mt-1">Fáze, termíny, cross-over</div>
+          </div>
+        </div>
+
+        <!-- Participant table -->
+        <div class="card p-0 overflow-hidden">
+          <div class="flex items-center justify-between p-5 border-b border-gray-100">
+            <div class="font-semibold text-navy-900">Přehled účastníků</div>
+            <button @click="activeTab='participants'" class="btn-primary text-sm">+ Přidat účastníka</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Kód</th><th>Jméno</th><th>Profese</th><th>Skupina</th><th>Fáze</th><th>Souhlas</th><th>Stav</th><th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-if="participants.length === 0">
+                  <tr><td colspan="8" class="text-center text-gray-400 py-8">Žádní účastníci — přidejte prvního</td></tr>
+                </template>
+                <template x-for="p in participants" :key="p.id">
+                  <tr class="cursor-pointer" @click="openParticipant(p)">
+                    <td><span class="font-mono font-semibold text-navy-900" x-text="p.participant_code"></span></td>
+                    <td x-text="p.full_name"></td>
+                    <td x-text="p.profession === 'doctor' ? 'Lékař' : 'Sestra'"></td>
+                    <td><span class="badge" :class="p.group === 'A' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'" x-text="'Sk. ' + (p.group || '—')"></span></td>
+                    <td x-text="phaseLabel(p.phase)"></td>
+                    <td>
+                      <span :class="p.consent_signed ? 'text-green-600' : 'text-orange-500'" x-text="p.consent_signed ? '✓ Ano' : '⚠ Ne'"></span>
+                    </td>
+                    <td><span class="badge" :class="p.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'" x-text="p.is_active ? 'Aktivní' : 'Neaktivní'"></span></td>
+                    <td class="text-right"><button @click.stop="openParticipant(p)" class="text-blue-600 text-xs font-semibold hover:underline">Detail →</button></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ━━━ PARTICIPANTS TAB ━━━ -->
+      <div x-show="isResearcher() && activeTab==='participants'">
+        <div class="card p-6 mb-4">
+          <div class="flex items-center justify-between mb-4">
+            <div class="font-bold text-navy-900 text-lg">Účastníci studie</div>
+            <button @click="showAddP=!showAddP" class="btn-primary">+ Nový účastník</button>
+          </div>
+
+          <!-- Add form -->
+          <div x-show="showAddP" class="bg-blue-50 rounded-xl p-5 mb-5 border border-blue-100">
+            <div class="font-semibold text-navy-900 mb-3">Nový účastník</div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+              <div><label class="text-xs font-semibold text-gray-600 block mb-1">Celé jméno</label><input x-model="newP.full_name" placeholder="MUDr. Jan Novák" /></div>
+              <div><label class="text-xs font-semibold text-gray-600 block mb-1">Email</label><input x-model="newP.email" type="email" placeholder="email@agel.cz" /></div>
+              <div><label class="text-xs font-semibold text-gray-600 block mb-1">Heslo</label><input x-model="newP.password" type="password" /></div>
+              <div><label class="text-xs font-semibold text-gray-600 block mb-1">Profese</label>
+                <select x-model="newP.profession"><option value="">Vyberte...</option><option value="doctor">Lékař</option><option value="nurse">Sestra</option></select></div>
+              <div><label class="text-xs font-semibold text-gray-600 block mb-1">Skupina</label>
+                <select x-model="newP.group"><option value="">Vyberte...</option><option value="A">A (tVNS → Placebo)</option><option value="B">B (Placebo → tVNS)</option></select></div>
+            </div>
+            <div class="flex gap-2">
+              <button @click="addParticipant()" class="btn-green">Vytvořit účet</button>
+              <button @click="showAddP=false" class="btn-secondary">Zrušit</button>
+            </div>
+            <div x-show="addMsg" class="mt-2 text-sm" :class="addOk?'text-green-700':'text-red-600'" x-text="addMsg"></div>
+          </div>
+
+          <!-- Table -->
+          <div class="overflow-x-auto">
+            <table>
+              <thead><tr><th>Kód</th><th>Jméno</th><th>Profese</th><th>Skupina</th><th>Fáze</th><th>Souhlas</th><th>Stav</th><th>Akce</th></tr></thead>
+              <tbody>
+                <template x-if="participants.length===0">
+                  <tr><td colspan="8" class="text-center text-gray-400 py-6">Zatím žádní účastníci</td></tr>
+                </template>
+                <template x-for="p in participants" :key="p.id">
+                  <tr>
+                    <td><span class="font-mono font-semibold text-navy-900" x-text="p.participant_code"></span></td>
+                    <td x-text="p.full_name"></td>
+                    <td x-text="p.profession === 'doctor' ? 'Lékař' : 'Sestra'"></td>
+                    <td><span class="badge" :class="p.group==='A'?'bg-blue-100 text-blue-800':'bg-orange-100 text-orange-800'" x-text="p.group||'—'"></span></td>
+                    <td x-text="phaseLabel(p.phase)"></td>
+                    <td>
+                      <button x-show="!p.consent_signed" @click="markConsent(p)" class="text-xs bg-green-600 text-white px-2 py-1 rounded-lg font-semibold">Potvrdit souhlas</button>
+                      <span x-show="p.consent_signed" class="text-green-600 text-sm font-semibold">✓ Podepsán</span>
+                    </td>
+                    <td><span class="badge" :class="p.is_active?'bg-green-100 text-green-700':'bg-red-100 text-red-600'" x-text="p.is_active?'Aktivní':'Neaktivní'"></span></td>
+                    <td>
+                      <button @click="openParticipant(p)" class="text-xs text-blue-600 font-semibold hover:underline mr-2">Detail →</button>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+          <div x-show="actionMsg" class="mt-3 text-sm" :class="actionOk?'text-green-700':'text-red-600'" x-text="actionMsg"></div>
+        </div>
+      </div>
+
+      <!-- ━━━ DATA & EXPORT ━━━ -->
+      <div x-show="isResearcher() && activeTab==='data'">
+
+        <!-- Sub-tabs -->
+        <div class="flex flex-wrap gap-2 mb-5">
+          <button @click="dataTab='live'; loadLiveData()" class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors" :class="dataTab==='live'?'bg-navy-900 text-white':'bg-white text-gray-500 hover:bg-gray-100'">📋 Dotazníky</button>
+          <button @click="dataTab='shifts'; loadLiveData()" class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors" :class="dataTab==='shifts'?'bg-navy-900 text-white':'bg-white text-gray-500 hover:bg-gray-100'">🌙 Směny</button>
+          <button @click="dataTab='garmin'; loadLiveData()" class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors" :class="dataTab==='garmin'?'bg-navy-900 text-white':'bg-white text-gray-500 hover:bg-gray-100'">⌚ Hodinky</button>
+          <button @click="dataTab='export'" class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors" :class="dataTab==='export'?'bg-navy-900 text-white':'bg-white text-gray-500 hover:bg-gray-100'">📤 Export</button>
+          <button @click="loadLiveData()" class="ml-auto px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-white border border-gray-200">↻ Obnovit</button>
+        </div>
+
+        <!-- Edit modal -->
+        <div x-show="editModal" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" @click.self="editModal=false">
+          <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6" @click.stop>
+            <div class="flex justify-between items-center mb-4">
+              <div class="font-bold text-navy-900">Upravit dotazník #<span x-text="editTarget?.id"></span></div>
+              <button @click="editModal=false" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+            </div>
+            <div class="space-y-3 max-h-80 overflow-y-auto pr-1">
+              <template x-if="editTarget">
+                <div>
+                  <template x-for="key in Object.keys(editTarget.answers)" :key="key">
+                    <div class="flex items-center gap-3 py-1">
+                      <label class="text-xs text-gray-500 w-36 flex-shrink-0" x-text="key"></label>
+                      <input class="text-sm" x-model="editTarget.answers[key]" />
+                    </div>
+                  </template>
+                </div>
+              </template>
+            </div>
+            <div class="flex gap-3 mt-5">
+              <button @click="saveEditedResponse()" class="btn-primary flex-1 text-center">Uložit</button>
+              <button @click="editModal=false" class="btn-secondary">Zrušit</button>
+            </div>
+            <div x-show="editMsg" class="mt-2 text-sm text-center" :class="editOk?'text-green-600':'text-red-500'" x-text="editMsg"></div>
+          </div>
+        </div>
+
+        <!-- DOTAZNÍKY -->
+        <div x-show="dataTab==='live'" class="card overflow-hidden">
+          <div class="flex items-center justify-between p-4 border-b border-gray-100">
+            <div class="font-bold text-navy-900">Odeslané dotazníky</div>
+            <div class="text-xs text-gray-400" x-text="liveResponses.length+' záznamů'"></div>
+          </div>
+          <div x-show="liveResponses.length===0" class="text-center text-gray-400 py-10">Zatím žádné záznamy</div>
+          <div class="divide-y divide-gray-50">
+            <template x-for="r in liveResponses" :key="r.id">
+              <div class="px-4 py-3 hover:bg-slate-50 transition-colors">
+                <!-- Main row -->
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 cursor-pointer" @click="expandedRow=(expandedRow===r.id?null:r.id)">
+                  <span class="font-mono text-xs font-bold text-navy-900 w-24 flex-shrink-0" x-text="participantCode(r.user_id)"></span>
+                  <span class="badge bg-blue-100 text-blue-800 text-xs" x-text="qTypeLabel(r.q_type)"></span>
+                  <span class="text-xs text-gray-400" x-text="phaseLabel(r.phase)"></span>
+                  <span class="text-xs text-gray-400" x-text="formatDateTime(r.filled_at)"></span>
+                  <span x-show="r.answers.vas_fatigue!=null" class="font-bold text-sm ml-auto"
+                        :class="r.answers.vas_fatigue>70?'text-red-600':r.answers.vas_fatigue>40?'text-orange-500':'text-green-600'"
+                        x-text="'Únava: '+r.answers.vas_fatigue"></span>
+                  <span x-show="r.answers.vas_alertness!=null" class="font-bold text-sm text-blue-700"
+                        x-text="'Bdělost: '+r.answers.vas_alertness"></span>
+                  <div class="flex gap-2 ml-auto flex-shrink-0">
+                    <button @click.stop="expandedRow=(expandedRow===r.id?null:r.id)" class="text-xs text-gray-400 hover:text-navy-900" x-text="expandedRow===r.id?'▲':'▼ Detail'"></button>
+                    <button @click.stop="openEditModal(r)" class="text-xs text-blue-600 hover:underline">Upravit</button>
+                    <button @click.stop="deleteResponse(r)" class="text-xs text-red-500 hover:underline">Smazat</button>
+                  </div>
+                </div>
+                <!-- Expanded answers -->
+                <div x-show="expandedRow===r.id" x-transition class="mt-2 pt-2 border-t border-slate-100">
+                  <div class="flex flex-wrap gap-1.5">
+                    <template x-for="key in Object.keys(r.answers)" :key="key">
+                      <span class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs">
+                        <span class="text-gray-400" x-text="key+': '"></span>
+                        <span class="font-semibold text-navy-900" x-text="r.answers[key]"></span>
+                      </span>
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- SMĚNY -->
+        <div x-show="dataTab==='shifts'" class="card overflow-hidden">
+          <div class="flex items-center justify-between p-4 border-b border-gray-100">
+            <div class="font-bold text-navy-900">Záznamy směn</div>
+            <div class="text-xs text-gray-400" x-text="liveShifts.length+' záznamů'"></div>
+          </div>
+          <div class="overflow-x-auto">
+            <table>
+              <thead><tr><th>Účastník</th><th>Datum</th><th>Začátek</th><th>Konec</th><th>Nurosym</th><th>Délka (min)</th><th>Poznámka</th></tr></thead>
+              <tbody>
+                <template x-if="liveShifts.length===0">
+                  <tr><td colspan="7" class="text-center text-gray-400 py-8">Zatím žádné záznamy</td></tr>
+                </template>
+                <template x-for="s in liveShifts" :key="s.id">
+                  <tr>
+                    <td><span class="font-mono text-xs font-semibold text-navy-900" x-text="participantCode(s.user_id)"></span></td>
+                    <td x-text="formatDate(s.shift_date)"></td>
+                    <td class="text-xs" x-text="s.start_time?formatTime(s.start_time):'—'"></td>
+                    <td class="text-xs" x-text="s.end_time?formatTime(s.end_time):'—'"></td>
+                    <td><span :class="s.nurosym_used?'text-green-600 font-bold':'text-gray-400'" x-text="s.nurosym_used?'✓ Ano':'Ne'"></span></td>
+                    <td x-text="s.nurosym_minutes||'—'"></td>
+                    <td class="text-xs text-gray-400 max-w-xs truncate" x-text="s.notes||'—'"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- HODINKY GARMIN -->
+        <div x-show="dataTab==='garmin'" class="card overflow-hidden">
+          <div class="flex items-center justify-between p-4 border-b border-gray-100">
+            <div class="font-bold text-navy-900">Data z hodinek Garmin</div>
+            <div class="text-xs text-gray-400" x-text="liveGarmin.length+' záznamů'"></div>
+          </div>
+          <template x-if="liveGarmin.length===0">
+            <div class="text-center text-gray-400 py-10">
+              <div class="text-4xl mb-2">⌚</div>
+              <div>Žádná data — účastníci ještě nenahrali CSV z Garmin Connect</div>
+            </div>
+          </template>
+          <div class="overflow-x-auto" x-show="liveGarmin.length>0">
+            <table>
+              <thead><tr>
+                <th>Účastník</th><th>Datum</th>
+                <th>HRV</th><th>Spánek (h)</th><th>Spánek sk.</th>
+                <th>Stres</th><th>Kroky</th>
+                <th>Klid. TF</th><th>Max TF</th>
+                <th>SpO₂ %</th><th>Dech/min</th>
+                <th>Bat. min</th><th>Bat. max</th>
+                <th>Akt. min</th>
+              </tr></thead>
+              <tbody>
+                <template x-for="g in liveGarmin" :key="g.id">
+                  <tr>
+                    <td><span class="font-mono text-xs font-semibold text-navy-900" x-text="participantCode(g.user_id)"></span></td>
+                    <td class="text-xs" x-text="g.date"></td>
+                    <td class="font-semibold" :class="g.hrv_rmssd&&g.hrv_rmssd<30?'text-red-500':g.hrv_rmssd&&g.hrv_rmssd>50?'text-green-600':''" x-text="g.hrv_rmssd??'—'"></td>
+                    <td x-text="g.sleep_hours??'—'"></td>
+                    <td><span x-show="g.sleep_score" class="badge" :class="g.sleep_score>=80?'bg-green-100 text-green-700':g.sleep_score>=60?'bg-yellow-100 text-yellow-700':'bg-red-100 text-red-600'" x-text="g.sleep_score"></span><span x-show="!g.sleep_score" class="text-gray-300 text-xs">—</span></td>
+                    <td x-text="g.stress_avg??'—'"></td>
+                    <td x-text="g.steps?g.steps.toLocaleString('cs-CZ'):'—'"></td>
+                    <td x-text="g.resting_hr??'—'"></td>
+                    <td x-text="g.max_hr??'—'"></td>
+                    <td :class="g.spo2_avg&&g.spo2_avg<94?'text-red-600 font-semibold':''" x-text="g.spo2_avg??'—'"></td>
+                    <td x-text="g.respiration_avg??'—'"></td>
+                    <td x-text="g.body_battery_low??'—'"></td>
+                    <td x-text="g.body_battery_high??'—'"></td>
+                    <td x-text="g.active_minutes??'—'"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- EXPORT -->
+        <div x-show="dataTab==='export'" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="card p-6">
+            <div class="font-bold text-navy-900 mb-4">📤 Export do Excelu</div>
+            <div class="space-y-3">
+              <a :href="apiBase+'/api/export/questionnaires.xlsx'" class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors group">
+                <span class="text-2xl">📋</span>
+                <div><div class="font-semibold text-sm text-navy-900">Dotazníky</div><div class="text-xs text-gray-500">VAS únava, PSQI spánek, pohoda</div></div>
+                <span class="ml-auto text-blue-600 text-xs font-semibold">Stáhnout →</span>
+              </a>
+              <a :href="apiBase+'/api/export/garmin.xlsx'" class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors group">
+                <span class="text-2xl">⌚</span>
+                <div><div class="font-semibold text-sm text-navy-900">Garmin data</div><div class="text-xs text-gray-500">HRV, spánek, stres, kroky</div></div>
+                <span class="ml-auto text-blue-600 text-xs font-semibold">Stáhnout →</span>
+              </a>
+              <a :href="apiBase+'/api/export/shifts.xlsx'" class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors group">
+                <span class="text-2xl">🌙</span>
+                <div><div class="font-semibold text-sm text-navy-900">Noční směny</div><div class="text-xs text-gray-500">Záznamy směn, Nurosym usage</div></div>
+                <span class="ml-auto text-blue-600 text-xs font-semibold">Stáhnout →</span>
+              </a>
+            </div>
+          </div>
+          <div class="card p-6">
+            <div class="font-bold text-navy-900 mb-4">📊 API dokumentace</div>
+            <p class="text-sm text-gray-500 mb-3">Interaktivní dokumentace všech endpoints pro napojení R, Python, SPSS.</p>
+            <a :href="apiBase+'/docs'" target="_blank" class="btn-primary text-sm">Otevřít Swagger docs →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ━━━ HARMONOGRAM ━━━ -->
+      <div x-show="isResearcher() && activeTab==='schedule'">
+        <div class="card p-6">
+          <div class="font-bold text-navy-900 text-lg mb-5">Harmonogram studie VAHIN – Pilot</div>
+          <div class="relative">
+            <div class="absolute left-5 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+            <template x-for="(step, i) in studySteps" :key="i">
+              <div class="flex gap-5 mb-6 relative">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 z-10"
+                     :class="step.done ? 'bg-green-500 text-white' : step.current ? 'bg-navy-900 text-white' : 'bg-gray-100 text-gray-400'">
+                  <span x-text="step.done ? '✓' : (i+1)"></span>
+                </div>
+                <div class="flex-1 pb-2">
+                  <div class="font-semibold" :class="step.current ? 'text-navy-900' : 'text-gray-500'" x-text="step.label"></div>
+                  <div class="text-sm text-gray-400 mt-0.5" x-text="step.desc"></div>
+                  <div class="text-xs text-blue-600 font-semibold mt-1" x-text="step.duration"></div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <!-- ━━━ ŘÍZENÍ PROJEKTU ━━━ -->
+      <div x-show="isResearcher() && activeTab==='project'" class="flex flex-col gap-5">
+
+        <!-- ── KPI pás ── -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div class="stat-card border-l-4 border-navy-900">
+            <div class="text-2xl font-bold text-navy-900" x-text="stats.total+'/20'"></div>
+            <div class="text-xs text-gray-400 mt-1">Enrolled</div>
+            <div class="mt-2 bg-gray-100 rounded-full h-1"><div class="bg-navy-900 h-1 rounded-full" :style="'width:'+Math.min(100,stats.total/20*100)+'%'"></div></div>
+          </div>
+          <div class="stat-card border-l-4 border-green-500">
+            <div class="text-2xl font-bold text-green-600" x-text="stats.consent"></div>
+            <div class="text-xs text-gray-400 mt-1">Souhlasy</div>
+          </div>
+          <div class="stat-card border-l-4 border-blue-500">
+            <div class="text-2xl font-bold text-blue-600" x-text="liveResponses.length"></div>
+            <div class="text-xs text-gray-400 mt-1">Dotazníků</div>
+          </div>
+          <div class="stat-card border-l-4 border-purple-500">
+            <div class="text-2xl font-bold text-purple-600" x-text="liveShifts.filter(s=>s.nurosym_used).length+'/'+liveShifts.length"></div>
+            <div class="text-xs text-gray-400 mt-1">Nurosym / směny</div>
+          </div>
+          <div class="stat-card border-l-4 border-orange-400">
+            <div class="text-2xl font-bold text-orange-500" x-text="(vasStats.avgPre??'—')"></div>
+            <div class="text-xs text-gray-400 mt-1">Průměrná únava VAS</div>
+          </div>
+        </div>
+
+        <!-- ── Alerts ── -->
+        <div x-show="pmAlerts.length>0" class="card p-0 overflow-hidden border border-orange-200">
+          <div class="px-4 py-2 bg-orange-50 border-b border-orange-100 flex items-center gap-2">
+            <span class="text-orange-500 font-bold text-sm">⚠ Upozornění</span>
+            <span class="text-xs text-orange-400" x-text="pmAlerts.length+' položek vyžaduje pozornost'"></span>
+          </div>
+          <div class="divide-y divide-orange-50">
+            <template x-for="a in pmAlerts" :key="a.key">
+              <div class="flex items-center gap-3 px-4 py-2.5 hover:bg-orange-50 cursor-pointer" @click="openPmPanel(a.participant)">
+                <span class="text-lg" x-text="a.icon"></span>
+                <div class="flex-1">
+                  <span class="font-semibold text-sm text-navy-900" x-text="a.code+' – '"></span>
+                  <span class="text-sm text-gray-600" x-text="a.msg"></span>
+                </div>
+                <span class="text-xs text-blue-600 hover:underline">Otevřít →</span>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- ── Hlavní plocha: Kanban + panel ── -->
+        <div class="flex gap-5 min-h-0">
+
+          <!-- Kanban board -->
+          <div class="flex-1 min-w-0">
+            <!-- Fáze výběr (scrollovatelné záložky) -->
+            <div class="flex gap-1 mb-3 overflow-x-auto pb-1">
+              <template x-for="(ph, i) in PHASES" :key="ph">
+                <button @click="kanbanPhase=ph"
+                  class="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1"
+                  :class="kanbanPhase===ph?'bg-navy-900 text-white':'bg-white text-gray-500 hover:bg-gray-100 border border-gray-200'">
+                  <span x-text="phaseLabel(ph)"></span>
+                  <span class="rounded-full px-1.5 py-0.5 text-xs"
+                        :class="kanbanPhase===ph?'bg-white/20':'bg-gray-100'"
+                        x-text="participants.filter(p=>p.phase===ph).length"></span>
+                </button>
+              </template>
+            </div>
+
+            <!-- Participant cards pro vybranou fázi -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+              <template x-if="participants.filter(p=>p.phase===kanbanPhase).length===0">
+                <div class="col-span-3 text-center text-gray-400 py-12 bg-white rounded-xl border border-dashed border-gray-200">
+                  <div class="text-3xl mb-2">👤</div>
+                  <div>Žádní účastníci ve fázi <strong x-text="phaseLabel(kanbanPhase)"></strong></div>
+                </div>
+              </template>
+              <template x-for="p in participants.filter(pp=>pp.phase===kanbanPhase)" :key="p.id">
+                <div class="bg-white rounded-xl border border-gray-200 p-4 cursor-pointer hover:shadow-md hover:border-navy-900/30 transition-all"
+                     :class="pmPanel?.id===p.id?'border-navy-900 shadow-md ring-1 ring-navy-900/20':''"
+                     @click="openPmPanel(p)">
+                  <!-- Header -->
+                  <div class="flex justify-between items-start mb-3">
+                    <div>
+                      <div class="font-mono text-xs font-bold text-navy-900" x-text="p.participant_code"></div>
+                      <div class="text-sm font-semibold text-gray-800 mt-0.5" x-text="p.full_name"></div>
+                    </div>
+                    <div class="flex flex-col items-end gap-1">
+                      <span class="badge text-xs" :class="p.group==='A'?'bg-blue-100 text-blue-800':'bg-orange-100 text-orange-700'" x-text="'Sk. '+p.group"></span>
+                      <span x-show="!p.consent_signed" class="badge bg-red-100 text-red-600 text-xs">⚠ Souhlas</span>
+                    </div>
+                  </div>
+                  <!-- Compliance mini-bar -->
+                  <div class="flex gap-1 mb-3">
+                    <template x-for="qt in ['pre_shift_fatigue','post_shift_fatigue','sleep_quality','weekly_wellbeing']" :key="qt">
+                      <div class="flex-1 h-1.5 rounded-full"
+                           :class="complianceColor(p.id, qt)"></div>
+                    </template>
+                    <div class="flex-1 h-1.5 rounded-full" :class="shiftColor(p.id)"></div>
+                  </div>
+                  <!-- Info řádek -->
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs text-gray-400" x-text="(p.profession==='doctor'?'Lékař':'Sestra')"></span>
+                    <div class="flex gap-2">
+                      <button @click.stop="quickPhaseForward(p)" x-show="phaseIndex(p.phase)<4"
+                        class="text-xs text-blue-600 hover:underline font-semibold">Další fáze →</button>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- PM Panel (detail vybraného účastníka) -->
+          <div x-show="pmPanel" x-transition class="w-80 flex-shrink-0 bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden flex flex-col" style="max-height:calc(100vh - 140px); position:sticky; top:80px">
+            <template x-if="pmPanel">
+              <div class="flex flex-col h-full">
+                <!-- Panel header -->
+                <div class="p-4 bg-navy-900 text-white flex-shrink-0">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <div class="font-mono text-xs text-blue-300" x-text="pmPanel.participant_code"></div>
+                      <div class="font-bold text-base mt-0.5" x-text="pmPanel.full_name"></div>
+                      <div class="text-xs text-blue-200 mt-1" x-text="pmPanel.email"></div>
+                    </div>
+                    <button @click="pmPanel=null" class="text-blue-300 hover:text-white text-xl leading-none">×</button>
+                  </div>
+                  <!-- Phase control -->
+                  <div class="flex items-center gap-2 mt-3">
+                    <button @click="pmPrevPhase(pmPanel)"
+                      class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white font-bold disabled:opacity-30"
+                      :disabled="phaseIndex(pmPanel.phase)===0">‹</button>
+                    <div class="flex-1 text-center">
+                      <div class="text-xs text-blue-300 mb-0.5">Fáze</div>
+                      <div class="font-bold text-sm" x-text="phaseLabel(pmPanel.phase)"></div>
+                    </div>
+                    <button @click="pmNextPhase(pmPanel)"
+                      class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white font-bold disabled:opacity-30"
+                      :disabled="phaseIndex(pmPanel.phase)===4">›</button>
+                  </div>
+                  <div class="flex gap-0.5 mt-2">
+                    <template x-for="i in 5" :key="i">
+                      <div class="flex-1 h-1 rounded-full" :class="(i-1)<=phaseIndex(pmPanel.phase)?'bg-white':'bg-white/20'"></div>
+                    </template>
+                  </div>
+                </div>
+
+                <!-- Panel body (scrollovatelné) -->
+                <div class="flex-1 overflow-y-auto">
+
+                  <!-- Consent + quick actions -->
+                  <div class="p-4 border-b border-gray-100">
+                    <div class="flex gap-2 flex-wrap">
+                      <span x-show="pmPanel.consent_signed" class="badge bg-green-100 text-green-700">✓ Souhlas podepsán</span>
+                      <button x-show="!pmPanel.consent_signed" @click="pmMarkConsent()"
+                        class="badge bg-red-100 text-red-600 cursor-pointer hover:bg-red-200">⚠ Potvrdit souhlas</button>
+                      <span class="badge" :class="pmPanel.is_active?'bg-green-100 text-green-700':'bg-gray-100 text-gray-500'" x-text="pmPanel.is_active?'Aktivní':'Neaktivní'"></span>
+                      <span class="badge" :class="pmPanel.group==='A'?'bg-blue-100 text-blue-700':'bg-orange-100 text-orange-700'" x-text="'Skupina '+pmPanel.group"></span>
+                    </div>
+                  </div>
+
+                  <!-- Compliance -->
+                  <div class="p-4 border-b border-gray-100">
+                    <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Compliance (posl. 14 dní)</div>
+                    <div class="space-y-1.5">
+                      <template x-for="item in [{qt:'pre_shift_fatigue',label:'Před směnou'},{qt:'post_shift_fatigue',label:'Po směně'},{qt:'sleep_quality',label:'Spánek PSQI'},{qt:'weekly_wellbeing',label:'Týdenní pohoda'}]" :key="item.qt">
+                        <div class="flex items-center justify-between text-xs">
+                          <span class="text-gray-600" x-text="item.label"></span>
+                          <span x-html="complianceBadge(pmPanel.id, item.qt)"></span>
+                        </div>
+                      </template>
+                      <div class="flex items-center justify-between text-xs">
+                        <span class="text-gray-600">Noční směna</span>
+                        <span x-html="shiftBadge(pmPanel.id)"></span>
+                      </div>
+                      <div class="flex items-center justify-between text-xs">
+                        <span class="text-gray-600">Garmin data</span>
+                        <span x-html="garminBadge(pmPanel.id)"></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Posledni aktivity -->
+                  <div class="p-4 border-b border-gray-100">
+                    <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Poslední záznamy</div>
+                    <div class="space-y-1">
+                      <template x-for="r in liveResponses.filter(r=>r.user_id===pmPanel.id).slice(0,3)" :key="r.id">
+                        <div class="flex justify-between text-xs py-1 border-b border-gray-50 last:border-0">
+                          <span class="text-gray-600" x-text="qTypeLabel(r.q_type)"></span>
+                          <span class="text-gray-400" x-text="formatDateTime(r.filled_at)"></span>
+                        </div>
+                      </template>
+                      <template x-for="s in liveShifts.filter(s=>s.user_id===pmPanel.id).slice(0,2)" :key="s.id">
+                        <div class="flex justify-between text-xs py-1 border-b border-gray-50 last:border-0">
+                          <span class="text-gray-600" x-text="'Směna '+(s.nurosym_used?'+ Nurosym':'bez Nurosym')"></span>
+                          <span class="text-gray-400" x-text="formatDate(s.shift_date)"></span>
+                        </div>
+                      </template>
+                      <div x-show="liveResponses.filter(r=>r.user_id===pmPanel.id).length===0 && liveShifts.filter(s=>s.user_id===pmPanel.id).length===0"
+                           class="text-gray-400 text-center py-2">Žádné záznamy</div>
+                    </div>
+                  </div>
+
+                  <!-- Admin poznámky -->
+                  <div class="p-4">
+                    <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2 flex items-center justify-between">
+                      <span>Admin poznámky</span>
+                      <span class="text-gray-300 font-normal" x-text="pmNotes.length+' záznamů'"></span>
+                    </div>
+                    <!-- Přidat poznámku -->
+                    <div class="mb-3">
+                      <select x-model="newPmNote.type" class="text-xs w-full mb-1.5 py-1.5">
+                        <option value="note">📝 Poznámka</option>
+                        <option value="deviation">⚠️ Odchylka od protokolu</option>
+                        <option value="ae">🔴 Nežádoucí účinek</option>
+                        <option value="decision">✅ Rozhodnutí</option>
+                        <option value="reminder">🔔 Připomínka</option>
+                      </select>
+                      <div class="flex gap-1">
+                        <textarea x-model="newPmNote.text" placeholder="Text poznámky…" rows="2"
+                          class="text-xs flex-1 py-1.5 px-2 resize-none"
+                          @keydown.ctrl.enter="addPmNote()"></textarea>
+                        <button @click="addPmNote()" class="btn-primary text-xs px-2 self-end">+</button>
+                      </div>
+                      <div class="text-xs text-gray-300 mt-0.5">Ctrl+Enter pro uložení</div>
+                    </div>
+                    <!-- Seznam poznámek -->
+                    <div class="space-y-2">
+                      <template x-if="pmNotes.length===0">
+                        <div class="text-xs text-gray-400 text-center py-3">Zatím žádné poznámky</div>
+                      </template>
+                      <template x-for="n in pmNotes" :key="n.id">
+                        <div class="bg-gray-50 rounded-lg p-2.5 relative group">
+                          <div class="flex items-start gap-2">
+                            <span class="text-sm flex-shrink-0" x-text="{'note':'📝','deviation':'⚠️','ae':'🔴','decision':'✅','reminder':'🔔'}[n.note_type]"></span>
+                            <div class="flex-1 min-w-0">
+                              <div class="text-xs" :class="n.resolved?'line-through text-gray-400':'text-gray-800'" x-text="n.text"></div>
+                              <div class="text-xs text-gray-400 mt-0.5" x-text="n.author_name+' · '+formatDateTime(n.created_at)"></div>
+                            </div>
+                          </div>
+                          <div class="flex gap-2 mt-1.5">
+                            <button @click="toggleResolveNote(n)" class="text-xs text-gray-400 hover:text-green-600" x-text="n.resolved?'↩ Znovu otevřít':'✓ Vyřešit'"></button>
+                            <button @click="deletePmNote(n)" class="text-xs text-red-400 hover:text-red-600">Smazat</button>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- ── Spodní část: Milníky + Projektové poznámky + VAS ── -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+          <!-- Milníky -->
+          <div class="card p-0 overflow-hidden">
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+              <div class="font-bold text-navy-900 text-sm">Milníky studie</div>
+              <button @click="addMilestone()" class="text-xs text-blue-600 hover:underline font-semibold">+ Přidat</button>
+            </div>
+            <div class="divide-y divide-gray-50 max-h-72 overflow-y-auto">
+              <template x-for="(m, i) in milestones" :key="i">
+                <div class="flex items-center gap-2 px-3 py-2.5">
+                  <button @click="cycleMilestoneStatus(i)" class="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-xs border-2 transition-colors"
+                          :class="{'border-green-500 bg-green-500 text-white':m.status==='done','border-blue-500 bg-blue-50 text-blue-600':m.status==='active','border-orange-400 bg-orange-50 text-orange-500':m.status==='delayed','border-gray-300 bg-white text-gray-300':m.status==='planned'}"
+                          x-text="{'done':'✓','active':'▶','delayed':'!','planned':'○'}[m.status]"></button>
+                  <div class="flex-1 min-w-0">
+                    <input class="text-xs font-semibold w-full bg-transparent p-0 outline-none focus:bg-blue-50 focus:px-1 rounded"
+                           x-model="m.label" @change="saveMilestones()" style="border:none" />
+                    <input class="text-xs text-gray-400 bg-transparent p-0 outline-none w-full"
+                           x-model="m.date" type="date" @change="saveMilestones()" style="border:none;font-size:10px" />
+                  </div>
+                  <button @click="milestones.splice(i,1); saveMilestones()" class="text-gray-200 hover:text-red-400 text-sm flex-shrink-0">×</button>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- Projektové poznámky -->
+          <div class="card p-0 overflow-hidden">
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+              <div class="font-bold text-navy-900 text-sm">Projektový deník</div>
+              <span class="text-xs text-gray-400" x-text="projectNotes.length+' záznamů'"></span>
+            </div>
+            <div class="p-3">
+              <div class="flex gap-1 mb-2">
+                <select x-model="newNote.type" class="text-xs py-1 w-28 flex-shrink-0">
+                  <option value="note">📝 Poznámka</option>
+                  <option value="deviation">⚠️ Odchylka</option>
+                  <option value="ae">🔴 Nežád. účinek</option>
+                  <option value="decision">✅ Rozhodnutí</option>
+                </select>
+                <input x-model="newNote.text" placeholder="Text…" class="text-xs py-1 flex-1" @keydown.enter="addProjectNote()" />
+                <button @click="addProjectNote()" class="btn-primary py-1 px-2 text-xs flex-shrink-0">+</button>
+              </div>
+              <div class="space-y-1.5 max-h-52 overflow-y-auto">
+                <template x-if="projectNotes.length===0">
+                  <div class="text-xs text-gray-400 text-center py-4">Zatím prázdný deník</div>
+                </template>
+                <template x-for="n in projectNotes" :key="n.id">
+                  <div class="bg-gray-50 rounded-lg p-2 flex gap-2 items-start">
+                    <span class="text-sm flex-shrink-0" x-text="{'note':'📝','deviation':'⚠️','ae':'🔴','decision':'✅'}[n.note_type]"></span>
+                    <div class="flex-1 min-w-0">
+                      <div class="text-xs" x-text="n.text"></div>
+                      <div class="text-xs text-gray-400" x-text="n.author_name+' · '+formatDateTime(n.created_at)"></div>
+                    </div>
+                    <button @click="deleteProjectNote(n)" class="text-gray-300 hover:text-red-400 text-sm">×</button>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+
+          <!-- VAS souhrn -->
+          <div class="card p-4">
+            <div class="font-bold text-navy-900 text-sm mb-3">Průměry – všichni účastníci</div>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-500">Únava PŘED směnou</span>
+                <div class="flex items-center gap-2">
+                  <div class="w-20 bg-gray-100 rounded-full h-2"><div class="h-2 rounded-full bg-red-400" :style="'width:'+(vasStats.avgPre||0)+'%'"></div></div>
+                  <span class="text-sm font-bold text-navy-900 w-8 text-right" x-text="vasStats.avgPre??'—'"></span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-500">Únava PO směně</span>
+                <div class="flex items-center gap-2">
+                  <div class="w-20 bg-gray-100 rounded-full h-2"><div class="h-2 rounded-full bg-orange-400" :style="'width:'+(vasStats.avgPost||0)+'%'"></div></div>
+                  <span class="text-sm font-bold text-navy-900 w-8 text-right" x-text="vasStats.avgPost??'—'"></span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-500">Bdělost PŘED</span>
+                <div class="flex items-center gap-2">
+                  <div class="w-20 bg-gray-100 rounded-full h-2"><div class="h-2 rounded-full bg-blue-500" :style="'width:'+(vasStats.avgAlertPre||0)+'%'"></div></div>
+                  <span class="text-sm font-bold text-navy-900 w-8 text-right" x-text="vasStats.avgAlertPre??'—'"></span>
+                </div>
+              </div>
+              <div class="border-t border-gray-100 pt-3">
+                <div class="flex justify-between text-xs">
+                  <span class="text-gray-500">Nurosym compliance</span>
+                  <span class="font-bold text-green-600" x-text="vasStats.tVNSpct+'%'"></span>
+                </div>
+                <div class="flex justify-between text-xs mt-1">
+                  <span class="text-gray-500">Dotazníků / měření</span>
+                  <span class="font-bold" x-text="liveResponses.length"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ━━━ PARTICIPANT HOME ━━━ -->
+      <div x-show="!isResearcher() && activeTab==='home'">
+
+        <!-- ══ GREETING ══ -->
+        <div class="card p-4 mb-4 flex flex-col md:flex-row md:items-center gap-3">
+          <div class="flex-1">
+            <div class="text-lg font-bold text-navy-900" x-text="greetingText()"></div>
+            <div class="text-sm text-gray-500 mt-0.5" x-text="todayStr()"></div>
+            <!-- Upozornění na nevyplněné -->
+            <div x-show="dayTasks.filter(t=>!t.done&&t.required).length > 0"
+                 class="mt-2 inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-lg">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span x-text="dayTasks.filter(t=>!t.done&&t.required).length + ' úkolů čeká na vyplnění'"></span>
+            </div>
+            <div x-show="dayTasks.length > 0 && dayTasks.filter(t=>!t.done&&t.required).length===0"
+                 class="mt-2 inline-flex items-center gap-1.5 bg-green-50 border border-green-200 text-green-800 text-xs font-semibold px-2.5 py-1 rounded-lg">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Všechny dnešní úkoly splněny
+            </div>
+          </div>
+          <div class="flex items-center gap-3 flex-shrink-0">
+            <button @click="tutorialReset()" title="Spustit průvodce znovu"
+                    class="w-8 h-8 rounded-full bg-gray-100 hover:bg-blue-100 flex items-center justify-center transition-colors flex-shrink-0">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </button>
+            <div class="w-px h-7 bg-gray-200"></div>
+            <div class="text-center">
+              <div class="text-xs text-gray-400">Fáze</div>
+              <div class="font-bold text-navy-900 text-sm" x-text="phaseLabel(currentUser?.phase)"></div>
+            </div>
+            <template x-if="currentUser?.study_day">
+              <div class="w-px h-7 bg-gray-200"></div>
+            </template>
+            <template x-if="currentUser?.study_day">
+              <div class="text-center">
+                <div class="text-xs text-gray-400">Den studie</div>
+                <div class="font-bold text-navy-900 text-sm" x-text="currentUser.study_day + ' / 21'"></div>
+              </div>
+            </template>
+            <div class="w-px h-7 bg-gray-200"></div>
+            <div class="text-center">
+              <div class="text-xs text-gray-400">Kód</div>
+              <div class="font-bold text-sm font-mono" x-text="currentUser?.participant_code||'—'"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ PREPARATION GATE — fáze před randomizací ══ -->
+        <template x-if="currentUser?.phase === 'preparation'">
+          <div>
+            <!-- MEQ není vyplněn — blokující karta -->
+            <template x-if="!meqDone()">
+              <div class="card p-5 mb-4 border-2 border-amber-300 bg-amber-50">
+                <div class="flex items-start gap-4">
+                  <div class="w-12 h-12 rounded-2xl bg-amber-200 flex items-center justify-center flex-shrink-0 text-2xl">🕐</div>
+                  <div class="flex-1">
+                    <div class="font-bold text-amber-900 text-base mb-1">Než začneme — vyplňte chronotypový dotazník</div>
+                    <div class="text-sm text-amber-800 mb-4 leading-relaxed">MEQ zjišťuje, zda jste ranní nebo večerní typ. Vyplnění trvá asi 5 minut a je podmínkou pro zahájení studie.</div>
+                    <button @click="goQuestionnaire('meq')"
+                      class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 rounded-xl transition-colors text-sm">
+                      Vyplnit MEQ dotazník →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </template>
+            <!-- MEQ je vyplněn — čekáme na koordinátora -->
+            <template x-if="meqDone()">
+              <div class="card p-5 mb-4 text-center">
+                <div class="text-3xl mb-3">✅</div>
+                <div class="font-bold text-navy-900 text-base mb-1">Dotazník MEQ vyplněn</div>
+                <div class="text-sm text-gray-500 leading-relaxed">Skvěle! Nyní čekáme na přiřazení do skupiny koordinátorem studie. Po zahájení první fáze dostanete oznámení a studijní plán se otevře.</div>
+                <div class="mt-4 inline-flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-2 text-xs text-blue-700 font-semibold">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                  Čekáme na koordinátora studie
+                </div>
+              </div>
+            </template>
+          </div>
+        </template>
+
+        <!-- ══ VÝBĚR TYPU DNE (jen od phase1) ══ -->
+        <div x-show="currentUser?.phase !== 'preparation'" class="card mb-4 overflow-hidden">
+          <!-- Pokud nezvoleno -->
+          <div x-show="!todayShiftType" class="p-4">
+            <div class="font-semibold text-navy-900 text-sm mb-1">Jakou máte dnes službu?</div>
+            <div class="text-xs text-gray-400 mb-3">Podle typu dne přizpůsobíme váš plán dotazníků a stimulace.</div>
+            <div class="grid grid-cols-2 gap-2">
+              <button @click="setShiftType('nocni')"
+                class="flex items-center gap-2 border-2 border-gray-200 rounded-xl px-3 py-2.5 hover:border-indigo-400 hover:bg-indigo-50 transition-all text-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                <div>
+                  <div class="text-sm font-semibold text-gray-800">Noční směna</div>
+                  <div class="text-xs text-gray-400">Dnes v noci</div>
+                </div>
+              </button>
+              <button @click="setShiftType('odpoledni')"
+                class="flex items-center gap-2 border-2 border-gray-200 rounded-xl px-3 py-2.5 hover:border-amber-400 hover:bg-amber-50 transition-all text-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                <div>
+                  <div class="text-sm font-semibold text-gray-800">Odpolední směna</div>
+                  <div class="text-xs text-gray-400">Odpolední / večerní</div>
+                </div>
+              </button>
+              <button @click="setShiftType('denni')"
+                class="flex items-center gap-2 border-2 border-gray-200 rounded-xl px-3 py-2.5 hover:border-sky-400 hover:bg-sky-50 transition-all text-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                <div>
+                  <div class="text-sm font-semibold text-gray-800">Denní směna</div>
+                  <div class="text-xs text-gray-400">Ranní / dopolední</div>
+                </div>
+              </button>
+              <button @click="setShiftType('volno')"
+                class="flex items-center gap-2 border-2 border-gray-200 rounded-xl px-3 py-2.5 hover:border-green-400 hover:bg-green-50 transition-all text-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <div>
+                  <div class="text-sm font-semibold text-gray-800">Volno / den doma</div>
+                  <div class="text-xs text-gray-400">Bez nemocnice</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Pokud zvoleno — compact badge + plán -->
+          <div x-show="todayShiftType">
+            <!-- Header badge -->
+            <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-100"
+                 :style="shiftTypeStyle(todayShiftType).header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" :stroke="shiftTypeStyle(todayShiftType).stroke" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" x-html="shiftTypeStyle(todayShiftType).icon"></svg>
+              <span class="font-bold text-sm" :style="'color:'+shiftTypeStyle(todayShiftType).stroke" x-text="shiftTypeStyle(todayShiftType).label"></span>
+              <button @click="setShiftType(null)" class="ml-auto text-xs text-gray-400 hover:text-gray-600 underline">Změnit</button>
+            </div>
+
+            <!-- Denní plán jako dvousloupcová karta -->
+            <div class="p-3">
+              <!-- Urgentní banner pokud chybí kritické -->
+              <div x-show="dayTasks.filter(t=>t.urgent&&!t.done).length>0"
+                   class="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-3 text-xs text-red-700 font-semibold">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span x-text="'Nevyplněno: ' + dayTasks.filter(t=>t.urgent&&!t.done).map(t=>t.title).join(', ')"></span>
+              </div>
+
+              <div class="flex flex-col gap-2">
+                <template x-for="task in dayTasks" :key="task.id">
+                  <button
+                    @click="task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : (task.action==='shift' ? (activeTab='shift') : null)"
+                    class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all w-full"
+                    :class="task.done
+                      ? 'bg-green-50 opacity-70 cursor-default'
+                      : task.urgent
+                        ? 'bg-amber-50 border-2 border-amber-300 hover:bg-amber-100 cursor-pointer'
+                        : 'bg-white border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 shadow-sm cursor-pointer'">
+                    <!-- Ikona -->
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                         :class="task.done ? 'bg-green-100' : task.urgent ? 'bg-amber-100' : task.bgClass||'bg-gray-100'">
+                      <svg x-show="task.done" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      <svg x-show="!task.done" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                           :stroke="task.done?'#16a34a':task.urgent?'#92400e':task.stroke||'#6b7280'"
+                           stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" x-html="task.icon"></svg>
+                    </div>
+                    <!-- Text -->
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2">
+                        <span class="text-sm font-semibold text-gray-800" x-text="task.title"></span>
+                        <span x-show="!task.done && task.urgent"
+                              class="text-xs bg-amber-200 text-amber-800 font-bold px-1.5 py-0.5 rounded-md">!</span>
+                      </div>
+                      <div class="text-xs text-gray-400" x-text="task.when"></div>
+                    </div>
+                    <!-- Tag -->
+                    <span class="text-xs rounded-md px-2 py-0.5 font-medium flex-shrink-0"
+                          :class="task.done ? 'bg-green-100 text-green-700' : task.tagClass||'bg-gray-100 text-gray-500'"
+                          x-text="task.done ? 'Hotovo' : task.tag"></span>
+                  </button>
+                </template>
+              </div>
+
+              <!-- Týdenní připomínky -->
+              <div x-show="weeklyPending.length > 0" class="mt-3 pt-3 border-t border-gray-100">
+                <div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Nevyplněno tento týden</div>
+                <div class="flex flex-wrap gap-2">
+                  <template x-for="t in weeklyPending" :key="t.id">
+                    <button @click="goQuestionnaire(t.qtype)"
+                      class="flex items-center gap-1.5 bg-white border border-orange-200 hover:border-orange-400 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-orange-700 transition-all">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                      <span x-text="t.title"></span>
+                    </button>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ KORTIZOL KARTA (jen od phase1) ══ -->
+        <template x-if="cortisolData && cortisolData.is_cortisol_day && currentUser?.phase !== 'preparation'">
+          <div class="card p-4 mb-4 border-2 border-purple-200 bg-purple-50">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xl">🧪</span>
+              <div>
+                <div class="font-bold text-purple-900">Odběr kortizolu — den <span x-text="cortisolData.study_day"></span></div>
+                <div class="text-xs text-purple-600">3 vzorky slin: ihned po probuzení, +15 min, +30 min</div>
+              </div>
+            </div>
+
+            <!-- 3 timepoints -->
+            <div class="grid grid-cols-3 gap-2 mb-3">
+              <template x-for="tp in [{id:'t0',label:'T0',sub:'Po probuzení'},{id:'t15',label:'T+15',sub:'za 15 min'},{id:'t30',label:'T+30',sub:'za 30 min'}]" :key="tp.id">
+                <button @click="!cortisolDoneToday(tp.id) && logCortisol(tp.id)"
+                  :disabled="cortisolSaving===tp.id"
+                  :class="cortisolDoneToday(tp.id)
+                    ? 'bg-green-100 border-green-300 text-green-700 cursor-default'
+                    : 'bg-white border-purple-200 text-purple-700 hover:bg-purple-100 active:scale-95'"
+                  class="border-2 rounded-xl p-2.5 text-center transition-all">
+                  <div class="font-bold text-sm" x-text="cortisolDoneToday(tp.id) ? '✓' : tp.label"></div>
+                  <div class="text-xs mt-0.5" x-text="tp.sub"></div>
+                </button>
+              </template>
+            </div>
+
+            <!-- Dnešní záznamy -->
+            <template x-if="cortisolData.logs.filter(l=>l.sample_time.slice(0,10)===new Date().toISOString().slice(0,10)).length > 0">
+              <div class="border-t border-purple-200 pt-2">
+                <div class="text-xs text-purple-500 font-semibold mb-1">Dnešní záznamy</div>
+                <template x-for="log in cortisolData.logs.filter(l=>l.sample_time.slice(0,10)===new Date().toISOString().slice(0,10))" :key="log.id">
+                  <div class="flex justify-between items-center text-xs py-0.5">
+                    <span class="font-semibold text-purple-700" x-text="{t0:'T0 – po probuzení',t15:'T+15 min',t30:'T+30 min'}[log.timepoint]"></span>
+                    <span class="text-purple-400" x-text="log.sample_time.slice(11,16)"></span>
+                    <button @click="deleteCortisol(log.id)" class="text-red-400 hover:text-red-600 ml-2">✕</button>
+                  </div>
+                </template>
+              </div>
+            </template>
+
+            <!-- Stav dne -->
+            <div x-show="cortisolDoneToday('t0') && cortisolDoneToday('t15') && cortisolDoneToday('t30')"
+                 class="mt-2 text-xs text-green-700 font-semibold text-center bg-green-50 rounded-lg py-1.5">
+              ✓ Všechny vzorky dnes odebrány — děkujeme!
+            </div>
+          </div>
+        </template>
+
+        <!-- Push notifikace banner -->
+        <template x-if="pushSupported">
+          <div class="flex items-center justify-between bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 mb-2">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+              </div>
+              <div>
+                <div class="text-sm font-semibold text-indigo-900" x-text="pushSubscribed ? 'Notifikace zapnuty' : 'Zapnout notifikace'"></div>
+                <div class="text-xs text-indigo-600" x-text="pushSubscribed ? 'Dostáváte připomínky od výzkumného týmu' : 'Nikdy nezapomeňte na dotazník'"></div>
+              </div>
+            </div>
+            <button @click="togglePush()" :disabled="pushLoading"
+              class="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+              :class="pushSubscribed ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'">
+              <span x-show="!pushLoading" x-text="pushSubscribed ? 'Vypnout' : 'Zapnout'"></span>
+              <span x-show="pushLoading">…</span>
+            </button>
+          </div>
+        </template>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <!-- Study guide -->
+          <div class="card p-5">
+            <div class="font-bold text-navy-900 mb-4">📅 Průvodce studií</div>
+            <div class="space-y-3">
+              <template x-for="(step, i) in studySteps" :key="i">
+                <div class="flex items-start gap-3">
+                  <div class="step-dot mt-1" :class="stepClass(step.phase)"></div>
+                  <div>
+                    <div class="text-sm font-semibold" :class="step.phase===currentUser?.phase?'text-navy-900':'text-gray-400'" x-text="step.label"></div>
+                    <div class="text-xs text-gray-400" x-text="step.desc"></div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- Garmin + last shifts -->
+          <div class="flex flex-col gap-4">
+            <div class="card p-5">
+              <div class="flex items-center gap-2 mb-1">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F3864" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <div class="font-bold text-navy-900">Nahrát data z Garmin</div>
+              </div>
+              <!-- ZIP export -->
+              <div class="mb-3">
+                <div class="text-xs font-semibold text-gray-500 mb-1">ZIP export (doporučeno)</div>
+                <div class="text-xs text-gray-400 mb-2">Garmin Connect → Profil → Nastavení → Export dat → stáhnout ZIP</div>
+                <label class="flex items-center gap-2 cursor-pointer bg-indigo-50 hover:bg-indigo-100 transition-colors rounded-lg px-3 py-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span class="text-xs font-semibold text-indigo-700">Nahrát ZIP soubor</span>
+                  <input type="file" accept=".zip" class="hidden" @change="uploadGarminZip($event)" />
+                </label>
+              </div>
+              <!-- CSV / JSON manual -->
+              <div class="border-t border-gray-100 pt-3">
+                <div class="text-xs font-semibold text-gray-500 mb-1">Nebo jednotlivý soubor</div>
+                <div class="text-xs text-gray-400 mb-2">UDSFile*.json / sleepData*.json / CSV export</div>
+                <label class="flex items-center gap-2 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg px-3 py-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span class="text-xs font-semibold text-gray-600">Nahrát JSON / CSV</span>
+                  <input type="file" accept=".csv,.json" class="hidden" @change="uploadGarmin($event)" />
+                </label>
+              </div>
+              <div x-show="garminMsg" class="mt-2 text-sm font-semibold" :class="garminOk?'text-green-600':'text-red-600'" x-text="garminMsg"></div>
+            </div>
+            <div class="card p-5">
+              <div class="font-bold text-navy-900 mb-3">🌙 Poslední směny</div>
+              <template x-if="myShifts.length===0">
+                <div class="text-sm text-gray-400">Zatím žádné záznamy</div>
+              </template>
+              <template x-for="s in myShifts.slice(0,4)" :key="s.id">
+                <div class="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
+                  <div class="text-sm" x-text="formatDate(s.shift_date)"></div>
+                  <span class="text-xs font-semibold" :class="s.nurosym_used?'text-green-600':'text-gray-400'"
+                        x-text="s.nurosym_used ? '✓ tVNS '+(s.nurosym_minutes||'?')+' min' : '— bez tVNS'"></span>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ━━━ QUESTIONNAIRES LIST ━━━ -->
+      <div x-show="!isResearcher() && activeTab==='questionnaires'" x-init="$nextTick(()=>lucide&&lucide.createIcons())">
+        <div class="max-w-2xl mx-auto">
+
+          <template x-for="section in qSections" :key="section.label">
+            <div class="mb-6">
+              <div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3" x-text="section.label"></div>
+              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+                <template x-for="q in allQDefs.filter(d=>section.freqs.includes(d.frequency))" :key="q.key">
+                  <button @click="goQuestionnaire(q.key)"
+                    class="relative text-left rounded-2xl p-4 transition-all border-2"
+                    :style="qIsDone(q.key)
+                      ? 'background:#f0fdf4;border-color:#bbf7d0'
+                      : 'background:white;border-color:#fde68a;box-shadow:0 1px 4px rgba(0,0,0,.07)'">
+
+                    <!-- Stav badge -->
+                    <div class="absolute top-3 right-3">
+                      <!-- Hotovo -->
+                      <span x-show="qIsDone(q.key)"
+                        style="display:inline-flex;align-items:center;gap:3px;background:#dcfce7;color:#16a34a;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Hotovo
+                      </span>
+                      <!-- Nevyplněno -->
+                      <span x-show="!qIsDone(q.key)"
+                        style="display:inline-flex;align-items:center;gap:3px;background:#fef3c7;color:#b45309;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        Čeká
+                      </span>
+                    </div>
+
+                    <!-- Ikona -->
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center mb-3 flex-shrink-0"
+                         :style="'background:'+qColor(q.frequency).bg">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                           :stroke="qColor(q.frequency).stroke"
+                           stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"
+                           x-html="qIconPath(q.key)"></svg>
+                    </div>
+
+                    <!-- Název — jen krátký -->
+                    <div class="font-bold text-sm text-navy-900 leading-tight pr-14" x-text="qShortTitle(q.key)"></div>
+                    <!-- Frekvence -->
+                    <div class="text-xs text-gray-400 mt-1" x-text="qFreqLabel(q.frequency)"></div>
+                  </button>
+                </template>
+              </div>
+            </div>
+          </template>
+
+        </div>
+      </div>
+
+      <!-- ━━━ TUTORIAL OVERLAY ━━━ -->
+      <div x-show="tutorialActive" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+           style="position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.7);display:flex;align-items:flex-end;justify-content:center;padding:16px"
+           @click.self="tutorialDone()">
+        <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden" style="margin-bottom:env(safe-area-inset-bottom,0px)">
+
+          <!-- Progress bar -->
+          <div class="h-1 bg-gray-100">
+            <div class="h-1 bg-blue-500 transition-all duration-300" :style="'width:' + ((tutorialStep+1)/tutorialSteps.length*100) + '%'"></div>
+          </div>
+
+          <!-- Step content -->
+          <div class="p-6">
+            <div class="text-5xl mb-4 text-center" x-text="tutorialSteps[tutorialStep]?.icon"></div>
+            <div class="text-xl font-bold text-navy-900 mb-2 text-center" x-text="tutorialSteps[tutorialStep]?.title"></div>
+            <div class="text-sm text-gray-500 leading-relaxed text-center mb-6" x-text="tutorialSteps[tutorialStep]?.body"></div>
+
+            <!-- Notifikace tlačítko (jen na posledním kroku) -->
+            <div x-show="tutorialSteps[tutorialStep]?.hasNotif" class="mb-4">
+              <button @click="subscribePush()" x-show="!pushSubscribed"
+                      class="w-full flex items-center justify-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 font-semibold py-2.5 rounded-xl text-sm hover:bg-amber-100 transition-colors">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                Zapnout push připomínky
+              </button>
+              <div x-show="pushSubscribed" class="w-full flex items-center justify-center gap-2 bg-green-50 border border-green-200 text-green-700 font-semibold py-2.5 rounded-xl text-sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Notifikace jsou zapnuty
+              </div>
+            </div>
+
+            <!-- Navigace -->
+            <div class="flex gap-3">
+              <button x-show="tutorialStep > 0" @click="tutorialStep--"
+                      class="flex-none px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50">
+                ← Zpět
+              </button>
+              <button @click="tutorialStep < tutorialSteps.length-1 ? tutorialStep++ : tutorialDone()"
+                      class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-colors"
+                      :class="tutorialStep < tutorialSteps.length-1 ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700'"
+                      x-text="tutorialStep < tutorialSteps.length-1 ? 'Pokračovat →' : '✓ Rozumím, začínáme!'">
+              </button>
+            </div>
+
+            <!-- Přeskočit -->
+            <button x-show="tutorialStep < tutorialSteps.length-1" @click="tutorialDone()"
+                    class="w-full mt-3 text-xs text-gray-400 hover:text-gray-600 py-1">
+              Přeskočit tutorial
+            </button>
+
+            <!-- Dots -->
+            <div class="flex justify-center gap-1.5 mt-3">
+              <template x-for="(s,i) in tutorialSteps" :key="i">
+                <div class="rounded-full transition-all duration-200"
+                     :class="i===tutorialStep ? 'bg-blue-500 w-4 h-1.5' : 'bg-gray-200 w-1.5 h-1.5'"></div>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ━━━ QUESTIONNAIRE ━━━ -->
+      <!-- ━━━ PVT GAME ━━━ -->
+      <div x-show="!isResearcher() && activeTab==='pvt'" style="min-height:80vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px">
+        <div class="max-w-sm w-full">
+          <button @click="pvtAbort()" class="text-sm text-blue-600 mb-5 flex items-center gap-1 hover:underline">← Zpět</button>
+
+          <!-- INTRO -->
+          <div x-show="pvtPhase==='intro'" class="card p-6 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-cyan-100 flex items-center justify-center mx-auto mb-4">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </div>
+            <div class="text-xl font-bold text-navy-900 mb-2">PVT – Reakční test</div>
+            <div class="text-sm text-gray-500 mb-6 leading-relaxed">Na obrazovce se v náhodný okamžik rozsvítí zelené pole. <strong>Klepněte na něj co nejrychleji.</strong><br><br>Test trvá přibližně 3 minuty (10 pokusů). Neanticiputje – klepejte až po rozsvícení.</div>
+            <button @click="pvtStart()" class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-700 transition-colors text-sm">Spustit test</button>
+          </div>
+
+          <!-- WAITING / STIMULUS -->
+          <div x-show="pvtPhase==='running'" class="text-center">
+            <div class="text-sm text-gray-400 mb-4" x-text="'Pokus ' + (pvtTrials.length+1) + ' / 5'"></div>
+            <!-- Progress dots -->
+            <div class="flex justify-center gap-2 mb-8">
+              <template x-for="i in 5" :key="i">
+                <div class="w-2.5 h-2.5 rounded-full transition-all"
+                     :class="i<=pvtTrials.length ? 'bg-cyan-500' : i===pvtTrials.length+1 ? 'bg-gray-300' : 'bg-gray-200'"></div>
+              </template>
+            </div>
+
+            <!-- Reakční plocha -->
+            <div @click="pvtTap()"
+                 class="w-full rounded-3xl flex flex-col items-center justify-center transition-all duration-100 cursor-pointer select-none"
+                 style="height:260px"
+                 :style="pvtActive
+                   ? 'background:#10b981;box-shadow:0 0 40px rgba(16,185,129,.4)'
+                   : 'background:#1e293b'">
+
+              <!-- Čekání -->
+              <div x-show="!pvtActive" class="text-center">
+                <div class="text-4xl mb-3">⏳</div>
+                <div class="text-white/40 text-sm">Čekejte…</div>
+              </div>
+
+              <!-- Stimulus -->
+              <div x-show="pvtActive" class="text-center">
+                <div class="text-6xl mb-2">👆</div>
+                <div class="text-white font-bold text-lg">KLEPNĚTE!</div>
+              </div>
+
+              <!-- Rychlý feedback po klepnutí -->
+              <div x-show="pvtLastRt !== null && !pvtActive"
+                   class="absolute text-cyan-400 font-bold text-2xl"
+                   x-text="pvtLastRt + ' ms'"></div>
+            </div>
+
+            <!-- False start warning -->
+            <div x-show="pvtFalseStart" class="mt-4 text-red-500 text-sm font-semibold animate-pulse">
+              ⚠ Příliš brzy! Počkejte na zelené pole.
+            </div>
+          </div>
+
+          <!-- RESULTS -->
+          <div x-show="pvtPhase==='done'" class="card p-6 text-center">
+            <div class="text-3xl mb-3">🎯</div>
+            <div class="text-xl font-bold text-navy-900 mb-1">Hotovo!</div>
+            <div class="text-sm text-gray-400 mb-5">Výsledky PVT testu</div>
+            <div class="grid grid-cols-2 gap-3 mb-5">
+              <div class="bg-gray-50 rounded-xl p-3">
+                <div class="text-2xl font-bold text-navy-900" x-text="pvtResult.mean_rt + ' ms'"></div>
+                <div class="text-xs text-gray-400 mt-1">Průměrná reakce</div>
+              </div>
+              <div class="bg-gray-50 rounded-xl p-3">
+                <div class="text-2xl font-bold" :class="pvtResult.lapses>0?'text-red-600':'text-green-600'" x-text="pvtResult.lapses"></div>
+                <div class="text-xs text-gray-400 mt-1">Lapsy (&gt;500 ms)</div>
+              </div>
+              <div class="bg-gray-50 rounded-xl p-3">
+                <div class="text-2xl font-bold text-navy-900" x-text="pvtResult.min_rt + ' ms'"></div>
+                <div class="text-xs text-gray-400 mt-1">Nejrychlejší reakce</div>
+              </div>
+              <div class="bg-gray-50 rounded-xl p-3">
+                <div class="text-2xl font-bold text-orange-500" x-text="pvtResult.false_starts"></div>
+                <div class="text-xs text-gray-400 mt-1">Falešné starty</div>
+              </div>
+            </div>
+            <!-- Interpretace -->
+            <div class="rounded-xl px-4 py-3 text-sm font-semibold mb-5"
+                 :class="pvtResult.mean_rt < 250 ? 'bg-green-50 text-green-700' : pvtResult.mean_rt < 350 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700'"
+                 x-text="pvtResult.mean_rt < 250 ? '✓ Výborná bdělost' : pvtResult.mean_rt < 350 ? '▲ Mírná únava' : '⚠ Výrazná únava – pozor při práci'"></div>
+            <!-- Auto-save indikátor -->
+            <div x-show="pvtSaving" class="text-center text-sm text-gray-400 py-2">Ukládám výsledky…</div>
+            <div x-show="!pvtSaving" class="text-center text-sm text-green-600 font-semibold py-2">Výsledky uloženy</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ━━━ QUESTIONNAIRE ━━━ -->
+      <div x-show="!isResearcher() && activeTab==='questionnaire'">
+        <div class="max-w-2xl mx-auto">
+          <button @click="activeTab='home'" class="text-sm text-blue-600 mb-4 flex items-center gap-1 hover:underline">← Zpět</button>
+          <div class="card p-6" x-show="qDef">
+            <div class="font-bold text-navy-900 text-xl mb-1" x-text="qDef?.title"></div>
+            <div class="text-sm text-gray-400 mb-6" x-text="qDef?.description"></div>
+            <form @submit.prevent="submitQuestionnaire">
+              <template x-for="(q, qi) in qDef?.questions" :key="q.id">
+                <div class="mb-6 pb-6 border-b border-gray-50 last:border-0">
+                  <label class="text-sm font-semibold text-gray-800 block mb-2"
+                         x-text="(qi+1)+'. '+q.label+(q.optional?' (volitelné)':'')"></label>
+                  <!-- VAS -->
+                  <div x-show="q.type==='vas'" class="px-1">
+                    <input type="range" min="0" max="100" x-model="qAnswers[q.id]" class="vas-slider mb-2" />
+                    <div class="flex justify-between text-xs text-gray-400">
+                      <span x-text="q.min_label"></span>
+                      <span class="font-bold text-navy-900 text-base" x-text="qAnswers[q.id]||50"></span>
+                      <span x-text="q.max_label"></span>
+                    </div>
+                  </div>
+                  <!-- Scale -->
+                  <div x-show="q.type==='scale4'||q.type==='scale5'" class="flex flex-wrap gap-2">
+                    <template x-for="(opt,oi) in q.options" :key="oi">
+                      <label class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg border text-sm"
+                             :class="qAnswers[q.id]==oi?'bg-blue-100 border-blue-400 font-semibold':'border-gray-200 hover:border-gray-400'">
+                        <input type="radio" :name="q.id" :value="oi" x-model="qAnswers[q.id]" class="accent-blue-800" />
+                        <span x-text="opt"></span>
+                      </label>
+                    </template>
+                  </div>
+                  <!-- Bool -->
+                  <div x-show="q.type==='bool'" class="flex gap-3">
+                    <label class="flex items-center gap-2 cursor-pointer px-5 py-2.5 rounded-lg border font-semibold text-sm"
+                           :class="qAnswers[q.id]===true?'bg-green-100 border-green-500':'border-gray-200'">
+                      <input type="radio" :name="q.id" :value="true" x-model="qAnswers[q.id]" class="accent-green-700" /> Ano
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer px-5 py-2.5 rounded-lg border font-semibold text-sm"
+                           :class="qAnswers[q.id]===false?'bg-red-100 border-red-400':'border-gray-200'">
+                      <input type="radio" :name="q.id" :value="false" x-model="qAnswers[q.id]" class="accent-red-700" /> Ne
+                    </label>
+                  </div>
+                  <!-- Number -->
+                  <div x-show="q.type==='number'"><input type="number" :min="q.min" :max="q.max" x-model="qAnswers[q.id]" class="text-sm" :placeholder="'0–'+q.max" /></div>
+                  <!-- Time -->
+                  <div x-show="q.type==='time'"><input type="time" x-model="qAnswers[q.id]" class="text-sm" /></div>
+                  <!-- Text -->
+                  <div x-show="q.type==='text'"><textarea x-model="qAnswers[q.id]" rows="2" class="text-sm" placeholder="Vaše poznámky…"></textarea></div>
+                  <!-- Textarea -->
+                  <div x-show="q.type==='textarea'"><textarea x-model="qAnswers[q.id]" rows="3" class="text-sm" :placeholder="q.optional?'(volitelné)':'Vaše odpověď…'"></textarea></div>
+                  <!-- Date -->
+                  <div x-show="q.type==='date'"><input type="date" x-model="qAnswers[q.id]" class="text-sm" /></div>
+                  <!-- Choice (radio as styled buttons) -->
+                  <div x-show="q.type==='choice'" class="flex flex-col gap-2">
+                    <template x-for="(opt, oi) in q.options" :key="oi">
+                      <label class="flex items-center gap-3 cursor-pointer px-4 py-2.5 rounded-xl border text-sm transition-all"
+                             :class="String(qAnswers[q.id])===String(opt.value)?'bg-blue-600 border-blue-600 text-white font-semibold shadow-sm':'border-gray-200 hover:border-blue-300 hover:bg-blue-50'">
+                        <input type="radio" :name="q.id" :value="opt.value" x-model="qAnswers[q.id]" class="sr-only" />
+                        <span x-text="opt.label"></span>
+                      </label>
+                    </template>
+                  </div>
+                </div>
+              </template>
+              <button type="submit" class="btn-primary w-full md:w-auto px-8" :disabled="loading">
+                <span x-show="!loading">Odeslat dotazník</span>
+                <span x-show="loading">Ukládám…</span>
+              </button>
+              <div x-show="qMsg" class="mt-3 text-sm" :class="qOk?'text-green-600':'text-red-600'" x-text="qMsg"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ━━━ PRŮVODCE ━━━ -->
+      <div x-show="!isResearcher() && activeTab==='guide'">
+        <div class="max-w-2xl mx-auto space-y-4 pb-6">
+
+          <!-- Hlavička -->
+          <div class="card p-5">
+            <div class="font-bold text-navy-900 text-xl mb-1">Co mě čeká ve studii?</div>
+            <div class="text-sm text-gray-500">Studie trvá <strong>21 dní</strong>. Níže najdete přesně co, kdy a jak budete dělat.</div>
+            <!-- Legenda -->
+            <div class="flex flex-wrap gap-2 mt-3">
+              <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg bg-purple-50 text-purple-700">🧪 Kortizol</span>
+              <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg bg-blue-50 text-blue-700">📋 Dotazníky</span>
+              <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg bg-cyan-50 text-cyan-700">⚡ PVT test</span>
+              <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg bg-green-50 text-green-700">⌚ Hodinky</span>
+              <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg bg-amber-50 text-amber-700">🎯 Stimulace</span>
+            </div>
+          </div>
+
+          <!-- PŘED STUDIÍ -->
+          <div class="card p-5 border-l-4 border-gray-300">
+            <div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Před zahájením · jednorázově</div>
+            <div class="space-y-2">
+              <div class="flex items-start gap-3">
+                <span class="text-lg mt-0.5">📄</span>
+                <div><div class="text-sm font-semibold text-gray-800">Informovaný souhlas</div><div class="text-xs text-gray-500">Podpis souhlasu s účastí ve studii</div></div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="text-lg mt-0.5">🕐</span>
+                <div><div class="text-sm font-semibold text-gray-800">MEQ – Chronotypový dotazník</div><div class="text-xs text-gray-500">Jednorázový dotazník ranního/večerního typu (v aplikaci)</div></div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="text-lg mt-0.5">⌚</span>
+                <div><div class="text-sm font-semibold text-gray-800 text-green-700">Nasadit chytré hodinky</div><div class="text-xs text-gray-500">Nosit po celou dobu studie — zaznamenávají HRV a spánek automaticky</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TÝDEN 1 -->
+          <div class="card p-5 border-l-4 border-blue-400">
+            <div class="flex items-center justify-between mb-3">
+              <div class="text-xs font-bold text-blue-600 uppercase tracking-widest">Týden 1 · dny 1–7</div>
+              <span class="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded-lg">Stimulace dle podmínky</span>
+            </div>
+
+            <!-- Kortizolové dny -->
+            <div class="bg-purple-50 border border-purple-200 rounded-xl p-3 mb-3">
+              <div class="text-xs font-bold text-purple-700 mb-2">🧪 Kortizol — DEN 1 a DEN 7</div>
+              <div class="text-xs text-purple-600 space-y-1">
+                <div>· <strong>T0</strong> — první odběr slin ihned po probuzení</div>
+                <div>· <strong>T+15 min</strong> — druhý odběr 15 minut po probuzení</div>
+                <div>· <strong>T+30 min</strong> — třetí odběr 30 minut po probuzení</div>
+                <div class="text-purple-400 mt-1">Nejezte, nepijte kávu ani nekuřte alespoň 30 min před odběrem</div>
+              </div>
+            </div>
+
+            <!-- Dotazníky v den 1 a 7 -->
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3">
+              <div class="text-xs font-bold text-blue-700 mb-2">📋 Dotazníky — DEN 1 a DEN 7</div>
+              <div class="text-xs text-blue-600 space-y-1">
+                <div>· <strong>MFI-20</strong> — dotazník únavy (20 otázek)</div>
+                <div>· <strong>PSQI</strong> — kvalita spánku za poslední týden</div>
+              </div>
+            </div>
+
+            <!-- Každá směna -->
+            <div class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Každá směna (dny 1–7)</div>
+            <div class="space-y-2">
+              <div class="flex items-start gap-3">
+                <span class="text-base">🌅</span>
+                <div><div class="text-sm font-semibold text-gray-800">PSD – Spánkový deník</div><div class="text-xs text-gray-500">Každé ráno — hodnocení předchozí noci</div></div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="text-base">😴</span>
+                <div><div class="text-sm font-semibold text-gray-800">KSS – Ospalost</div><div class="text-xs text-gray-500">Před směnou a po směně (škála 1–9)</div></div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="text-base">🎯</span>
+                <div><div class="text-sm font-semibold text-amber-700">Stimulace + Deník tAVNS</div><div class="text-xs text-gray-500">Zaznamenejte každou stimulaci v aplikaci (čas, délka, pocit)</div></div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="text-base">⚡</span>
+                <div><div class="text-sm font-semibold text-cyan-700">PVT – Reakční test</div><div class="text-xs text-gray-500">Po každé směně — 5 pokusů, ~1 minuta</div></div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="text-base">⌚</span>
+                <div><div class="text-sm font-semibold text-green-700">Hodinky — nepřetržitě</div><div class="text-xs text-gray-500">Nosit celý týden, HRV a spánek se zaznamenávají automaticky</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TÝDEN 2 – WASHOUT -->
+          <div class="card p-5 border-l-4 border-gray-300">
+            <div class="flex items-center justify-between mb-3">
+              <div class="text-xs font-bold text-gray-500 uppercase tracking-widest">Týden 2 · dny 8–14</div>
+              <span class="text-xs bg-gray-100 text-gray-600 font-semibold px-2 py-0.5 rounded-lg">Washout — bez stimulace</span>
+            </div>
+            <div class="space-y-2">
+              <div class="flex items-start gap-3">
+                <span class="text-base">⏸️</span>
+                <div><div class="text-sm font-semibold text-gray-700">Žádná stimulace</div><div class="text-xs text-gray-500">Vymývací perioda — tělo se vrací do výchozího stavu</div></div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="text-base">⌚</span>
+                <div><div class="text-sm font-semibold text-green-700">Hodinky — nosit dál</div><div class="text-xs text-gray-500">HRV a spánek se stále zaznamenávají</div></div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="text-base">🌅</span>
+                <div><div class="text-sm font-semibold text-gray-700">PSD + KSS</div><div class="text-xs text-gray-500">Spánkový deník a ospalost jako obvykle</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TÝDEN 3 -->
+          <div class="card p-5 border-l-4 border-pink-400">
+            <div class="flex items-center justify-between mb-3">
+              <div class="text-xs font-bold text-pink-600 uppercase tracking-widest">Týden 3 · dny 15–21</div>
+              <span class="text-xs bg-pink-100 text-pink-700 font-semibold px-2 py-0.5 rounded-lg">Opačná podmínka</span>
+            </div>
+
+            <div class="bg-purple-50 border border-purple-200 rounded-xl p-3 mb-3">
+              <div class="text-xs font-bold text-purple-700 mb-2">🧪 Kortizol — DEN 15 a DEN 21</div>
+              <div class="text-xs text-purple-600 space-y-1">
+                <div>· Stejný postup jako v týdnu 1 (T0 · T+15 · T+30)</div>
+                <div class="text-purple-400">Aplikace vás upozorní push notifikací v 6:00, 6:15 a 6:30</div>
+              </div>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3">
+              <div class="text-xs font-bold text-blue-700 mb-2">📋 Dotazníky — DEN 15 a DEN 21</div>
+              <div class="text-xs text-blue-600 space-y-1">
+                <div>· <strong>MFI-20</strong> + <strong>PSQI</strong> (stejné jako na začátku)</div>
+              </div>
+            </div>
+
+            <div class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Každá směna (dny 15–21)</div>
+            <div class="space-y-2">
+              <div class="flex items-start gap-3"><span class="text-base">🌅</span><div><div class="text-sm font-semibold text-gray-800">PSD + KSS + Stimulace + PVT</div><div class="text-xs text-gray-500">Stejný rytmus jako v týdnu 1</div></div></div>
+              <div class="flex items-start gap-3"><span class="text-base">⌚</span><div><div class="text-sm font-semibold text-green-700">Hodinky — nosit do konce</div><div class="text-xs text-gray-500">Odevzdat po posledním dni studie</div></div></div>
+            </div>
+          </div>
+
+          <!-- Shrnutí -->
+          <div class="card p-5 bg-navy-900" style="background:#0f2744">
+            <div class="text-xs font-bold text-blue-300 uppercase tracking-widest mb-3">Celkový přehled za studii</div>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="text-center">
+                <div class="text-2xl font-black text-white">4</div>
+                <div class="text-xs text-blue-300 mt-0.5">kortizolové dny<br>(1, 7, 15, 21)</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-black text-yellow-300">12</div>
+                <div class="text-xs text-blue-300 mt-0.5">odběrů slin<br>(3× v každý den)</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-black text-white">2×</div>
+                <div class="text-xs text-blue-300 mt-0.5">MFI-20 + PSQI<br>(den 1/7 a 15/21)</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-black text-cyan-300">21</div>
+                <div class="text-xs text-blue-300 mt-0.5">dní s hodinkami<br>(HRV + spánek)</div>
+              </div>
+            </div>
+            <div class="mt-4 text-xs text-blue-300 border-t border-blue-900 pt-3">
+              Aplikace vás každý den provede — stačí otevřít a postupovat dle denního plánu.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ── MOBILE BOTTOM NAV ── -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex z-40">
+      <template x-if="!isResearcher()">
+        <div class="flex w-full" x-init="$nextTick(()=>lucide&&lucide.createIcons())">
+          <button @click="activeTab='home'" class="mob-nav-btn" :class="activeTab==='home'?'active':''"><i data-lucide="home"></i>Domů</button>
+          <button @click="activeTab='questionnaires'" class="mob-nav-btn" :class="activeTab==='questionnaires'?'active':''"><i data-lucide="clipboard-list"></i>Dotazníky</button>
+          <button @click="activeTab='shift'" class="mob-nav-btn" :class="activeTab==='shift'?'active':''"><i data-lucide="zap"></i>Směna</button>
+          <button @click="activeTab='guide'" class="mob-nav-btn" :class="activeTab==='guide'?'active':''"><i data-lucide="book-open"></i>Průvodce</button>
+        </div>
+      </template>
+      <template x-if="isResearcher()">
+        <div class="flex w-full" x-init="$nextTick(()=>lucide&&lucide.createIcons())">
+          <button @click="activeTab='home'" class="mob-nav-btn" :class="activeTab==='home'?'active':''"><i data-lucide="bar-chart-2"></i>Přehled</button>
+          <button @click="activeTab='participants'" class="mob-nav-btn" :class="activeTab==='participants'?'active':''"><i data-lucide="users"></i>Účastníci</button>
+          <button @click="activeTab='data'" class="mob-nav-btn" :class="activeTab==='data'?'active':''"><i data-lucide="database"></i>Export</button>
+        </div>
+      </template>
+    </nav>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin;
+
+function app() { return {
+  token: localStorage.getItem('vahin_token')||'',
+  currentUser: JSON.parse(localStorage.getItem('vahin_user')||'null'),
+  loading: false, activeTab: 'home', apiBase: API,
+  loginForm: {email:'',password:''}, loginError: '',
+  myShifts: [], myResponses: [], garminMsg:'', garminOk:false,
+  guideTasks: [], allQDefs: [],
+  todayShiftType: null,
+  dayTasks: [],
+  // Tutorial
+  tutorialActive: false, tutorialStep: 0,
+  tutorialSteps: [
+    { icon: '👋', title: 'Vítejte ve VAHIN studii!',
+      body: 'Tato aplikace vás provede celou studií. Každý den vám připomene, co je třeba vyplnit, a uloží všechna data bezpečně na server.' },
+    { icon: '🌙', title: 'Vyberte typ dnešní služby',
+      body: 'Po přihlášení vždy klepněte na typ dne — Noční, Odpolední, Denní nebo Volno. Aplikace přizpůsobí plán pro tento den.' },
+    { icon: '✅', title: 'Denní úkoly',
+      body: 'Pod výběrem směny se zobrazí seznam úkolů pro daný den. Žlutě zvýrazněné jsou urgentní (vyplňte co nejdříve), šedé můžete vyplnit kdykoliv.' },
+    { icon: '⚡', title: 'Deník stimulace tAVNS',
+      body: 'Každou stimulaci zaznamenejte do Deníku tAVNS. Stačí pár sekund — datum, čas zahájení, délka a váš subjektivní pocit.' },
+    { icon: '🎯', title: 'PVT – Reakční test',
+      body: 'Po každé směně absolvujte krátký reakční test. Trvá asi 1 minutu (5 pokusů). Pomůže nám sledovat váš výkon v průběhu studie.' },
+    { icon: '📊', title: 'Týdenní dotazníky',
+      body: 'Jednou týdně vyplňte PSQI (spánek), MFI-20 (únava) a hlášení nežádoucích účinků. Chipsy v dolní části vás upozorní, pokud čekají.' },
+    { icon: '🔔', title: 'Zapněte připomínky',
+      body: 'Povolte push notifikace — aplikace vám bude posílat připomínky ve správný čas. Klepněte na tlačítko níže nebo to udělejte kdykoliv later na záložce Profil.', hasNotif: true },
+  ],
+  // PVT
+  pvtPhase:'intro', pvtActive:false, pvtTrials:[], pvtLastRt:null,
+  pvtFalseStart:false, pvtStimulusAt:null, pvtTimer:null, pvtResult:{}, pvtSaving:false,
+  // Kortizol
+  cortisolData: null,   // { study_day, is_cortisol_day, sample_type_today, logs[] }
+  cortisolSaving: false,
+  weeklyPending: [],
+  qSections: [
+    { label: '🌅 Každé ráno',          freqs: ['daily_morning'] },
+    { label: '⏱ Ke každé směně',       freqs: ['per_shift','per_shift_before','per_shift_after'] },
+    { label: '⚡ Po každé stimulaci',   freqs: ['per_stimulation'] },
+    { label: '📊 Jednou týdně',         freqs: ['weekly'] },
+    { label: '📋 Jednorázové',          freqs: ['once_start','once_end'] },
+  ],
+  selectedQ:'', qDef:null, qAnswers:{}, qMsg:'', qOk:false,
+  participants:[], stats:{total:0,active:0,consent:0,groupA:0,groupB:0},
+  showAddP:false, newP:{full_name:'',email:'',password:'',profession:'',group:''},
+  addMsg:'', addOk:false, actionMsg:'', actionOk:false,
+  detailPanel:false, selectedP:null, selectedPShifts:[], selectedPResponses:[],
+  drawerMsg:'', drawerOk:false,
+  liveResponses:[], liveShifts:[], liveGarmin:[], dataTab:'live', expandedRow:null,
+  editModal:false, editTarget:null, editMsg:'', editOk:false,
+  milestones: [], projectNotes: [], newNote:{type:'note',text:''},
+  vasStats:{pre:[],post:[],avgPre:null,avgPost:null,avgAlertPre:null,tVNSpct:0},
+  pmPanel:null, pmNotes:[], newPmNote:{type:'note',text:''},
+  kanbanPhase:'preparation', pmAlerts:[],
+  pushSupported: false, pushSubscribed: false, pushLoading: false,
+  drawerSchedules:[], drawerSchedSaving:false, drawerSchedMsg:'',
+
+  studySteps:[
+    {phase:'preparation', label:'Před zahájením',    desc:'Podpis informovaného souhlasu a vyplnění MEQ dotazníku. Budete přiřazeni do protokolu výzkumníkem.', duration:'jednorázově'},
+    {phase:'phase1',      label:'Týden 1 – dny 1–7',  desc:'Stimulace dle přiřazené podmínky. Kortizol (3× denně) den 1 a 7. MFI-20 + PSQI den 1 a 7. Kontinuální HRV + spánek přes hodinky.', duration:'7 dní'},
+    {phase:'washout',     label:'Týden 2 – dny 8–14', desc:'Vymývací perioda — bez stimulace. Pokračujte v nošení hodinek pro záznam HRV a spánku.', duration:'7 dní'},
+    {phase:'phase2',      label:'Týden 3 – dny 15–21',desc:'Stimulace dle opačné podmínky. Kortizol (3× denně) den 15 a 21. MFI-20 + PSQI den 15 a 21.', duration:'7 dní'},
+    {phase:'completed',   label:'Dokončeno',           desc:'Studie ukončena — děkujeme za účast!', duration:''},
+  ],
+
+  PHASES: ['preparation','phase1','washout','phase2','completed'],
+
+  async init() {
+    if (this.token) { await this.loadMe(); await this.loadData(); }
+    this.$watch('selectedQ', async q => {
+      if (!q) return;
+      this.qDef=null; this.qAnswers={};
+      const r = await this.apiFetch('/api/questionnaires/definitions/'+q);
+      if (r) { this.qDef=r; r.questions.forEach(q=>{ this.qAnswers[q.id]=q.type==='vas'?50:''; }); }
+    });
+    this.$watch('activeTab', t => {
+      if(t==='data') this.loadLiveData();
+      this.$nextTick(()=>{ if(typeof lucide!=='undefined') lucide.createIcons(); });
+    });
+    this.$nextTick(()=>{ if(typeof lucide!=='undefined') lucide.createIcons(); });
+    this.initPush();
+  },
+
+  async initPush() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    this.pushSupported = true;
+    try {
+      const reg = await navigator.serviceWorker.register('/sw.js', {scope: '/'});
+      const sub = await reg.pushManager.getSubscription();
+      this.pushSubscribed = !!sub;
+    } catch(e) { console.warn('SW init:', e); }
+  },
+
+  async togglePush() {
+    if (!this.pushSupported) return;
+    this.pushLoading = true;
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      if (this.pushSubscribed) {
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) {
+          const keys = sub.toJSON().keys;
+          await this.apiFetch('/api/push/subscribe', {method:'DELETE', body:JSON.stringify({endpoint:sub.endpoint, p256dh:keys.p256dh, auth:keys.auth})});
+          await sub.unsubscribe();
+        }
+        this.pushSubscribed = false;
+      } else {
+        const keyResp = await this.apiFetch('/api/push/vapid-public-key');
+        if (!keyResp) return;
+        const appServerKey = this.urlBase64ToUint8Array(keyResp.publicKey);
+        const sub = await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:appServerKey});
+        const keys = sub.toJSON().keys;
+        await this.apiFetch('/api/push/subscribe', {method:'POST', body:JSON.stringify({endpoint:sub.endpoint, p256dh:keys.p256dh, auth:keys.auth})});
+        this.pushSubscribed = true;
+      }
+    } catch(e) { console.error('Push toggle:', e); }
+    this.pushLoading = false;
+  },
+
+  urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = window.atob(base64);
+    return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+  },
+
+  async loadDrawerSchedules(userId) {
+    const r = await this.apiFetch('/api/push/schedules/'+userId);
+    if (r) {
+      const defaults = [
+        {notif_type:'pre_shift',  hour:18, minute:30, enabled:false, days_mask:127, custom_msg:''},
+        {notif_type:'post_shift', hour:8,  minute:0,  enabled:false, days_mask:127, custom_msg:''},
+        {notif_type:'weekly',     hour:10, minute:0,  enabled:false, days_mask:64,  custom_msg:''},
+        {notif_type:'reminder',   hour:9,  minute:0,  enabled:false, days_mask:127, custom_msg:''},
+      ];
+      this.drawerSchedules = defaults.map(d => {
+        const saved = r.find(s => s.notif_type === d.notif_type);
+        return saved ? {...d, ...saved, time: this.padTime(saved.hour, saved.minute)} : {...d, time: this.padTime(d.hour, d.minute)};
+      });
+    }
+  },
+
+  padTime(h, m) { return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'); },
+
+  async saveDrawerSchedules(userId) {
+    this.drawerSchedSaving = true; this.drawerSchedMsg = '';
+    const schedules = this.drawerSchedules.map(s => {
+      const [h,m] = (s.time||'00:00').split(':').map(Number);
+      return {notif_type:s.notif_type, hour:h, minute:m, days_mask:s.days_mask, enabled:s.enabled, custom_msg:s.custom_msg||null};
+    });
+    const r = await this.apiFetch('/api/push/schedules/'+userId, {method:'PUT', body:JSON.stringify(schedules)});
+    this.drawerSchedSaving = false;
+    this.drawerSchedMsg = r ? 'Uloženo ✓' : 'Chyba uložení';
+    setTimeout(()=>this.drawerSchedMsg='', 2500);
+  },
+
+  async sendTestPush(userId) {
+    const r = await this.apiFetch('/api/push/test', {method:'POST', body:JSON.stringify({user_id:userId, title:'VAHIN – Test', body:'Testovací notifikace funguje!'})});
+    alert(r ? `Odesláno na ${r.sent}/${r.total} zařízení.` : 'Chyba – účastník nemá aktivní notifikace (musí je nejdřív zapnout na svém zařízení).');
+  },
+
+  async login() {
+    this.loading=true; this.loginError='';
+    const form=new FormData();
+    form.append('username',this.loginForm.email);
+    form.append('password',this.loginForm.password);
+    try {
+      const r=await fetch(API+'/api/auth/token',{method:'POST',body:form});
+      const d=await r.json();
+      if(!r.ok){this.loginError=d.detail||'Chyba přihlášení';return;}
+      this.token=d.access_token;
+      localStorage.setItem('vahin_token',this.token);
+      await this.loadMe(); await this.loadData();
+    } catch(e){this.loginError='Nelze se spojit se serverem';}
+    finally{this.loading=false;}
+  },
+
+  logout(){
+    this.token=''; this.currentUser=null;
+    localStorage.removeItem('vahin_token'); localStorage.removeItem('vahin_user');
+  },
+
+  async loadMe(){
+    const r=await this.apiFetch('/api/auth/me');
+    if(r){this.currentUser=r; localStorage.setItem('vahin_user',JSON.stringify(r));}
+  },
+
+  async loadData(){
+    this.activeTab='home';
+    if(this.isResearcher()) await this.loadParticipants();
+    else {
+      const [s, r, defs] = await Promise.all([
+        this.apiFetch('/api/shifts/my'),
+        this.apiFetch('/api/questionnaires/my'),
+        this.apiFetch('/api/questionnaires/definitions'),
+      ]);
+      if(s) this.myShifts=s;
+      if(r) this.myResponses=r;
+      if(defs) {
+        const HIDDEN = new Set(['pvt','tavns_diary','tavns_adverse','tavns_satisfaction']);
+        this.allQDefs = Object.entries(defs).filter(([key]) => !HIDDEN.has(key)).map(([key, d]) => ({key, ...d}));
+        this.buildGuideTasks();
+      }
+      this.loadShiftType();
+      this.buildDayTasks();
+      this.loadCortisol();
+      this.$nextTick(() => this.tutorialCheck());
+    }
+  },
+
+  // ── PVT game ──────────────────────────────────────────────────────────────
+
+  startPvt(){
+    this.pvtPhase = 'intro';
+    this.pvtTrials = [];
+    this.pvtLastRt = null;
+    this.pvtFalseStart = false;
+    this.pvtActive = false;
+    this.pvtResult = {};
+    this.pvtSaving = false;
+    this.activeTab = 'pvt';
+  },
+
+  pvtStart(){
+    this.pvtPhase = 'running';
+    this.pvtTrials = [];
+    this._pvtScheduleNext();
+  },
+
+  _pvtScheduleNext(){
+    this.pvtActive = false;
+    this.pvtLastRt = null;
+    this.pvtFalseStart = false;
+    if(this.pvtTrials.length >= 5){ this._pvtFinish(); return; }
+    const delay = 2000 + Math.random() * 6000; // 2–8 s
+    this.pvtTimer = setTimeout(() => {
+      this.pvtActive = true;
+      this.pvtStimulusAt = Date.now();
+    }, delay);
+  },
+
+  pvtTap(){
+    if(this.pvtPhase !== 'running') return;
+    if(!this.pvtActive){
+      // falešný start
+      this.pvtFalseStart = true;
+      clearTimeout(this.pvtTimer);
+      setTimeout(() => this._pvtScheduleNext(), 1500);
+      return;
+    }
+    const rt = Date.now() - this.pvtStimulusAt;
+    this.pvtLastRt = rt;
+    this.pvtActive = false;
+    this.pvtTrials.push({rt, false_start: false});
+    setTimeout(() => this._pvtScheduleNext(), 1200);
+  },
+
+  _pvtFinish(){
+    this.pvtPhase = 'done';
+    this.pvtSaving = true;
+    const rts = this.pvtTrials.map(t => t.rt);
+    const mean = Math.round(rts.reduce((a,b)=>a+b,0) / rts.length);
+    const min  = Math.min(...rts);
+    const lapses = rts.filter(r => r > 500).length;
+    const falseStarts = this.pvtTrials.filter(t => t.false_start).length;
+    this.pvtResult = {mean_rt: mean, min_rt: min, lapses, false_starts: falseStarts, n_trials: rts.length, trials: rts};
+    // Auto-save — uloží výsledky automaticky po dokončení hry
+    this.pvtSave();
+  },
+
+  async pvtSave(){
+    this.pvtSaving = true;
+    try {
+      await fetch('/api/questionnaires/pvt/responses', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+this.token},
+        body: JSON.stringify({answers: this.pvtResult})
+      });
+      const fresh = await this._loadResponses();
+      if(fresh){ this.myResponses = fresh; this.buildGuideTasks(); this.buildDayTasks(); }
+    } catch(e){}
+    this.pvtSaving = false;
+    this.activeTab = 'home';
+  },
+
+  pvtAbort(){
+    clearTimeout(this.pvtTimer);
+    this.pvtActive = false;
+    this.pvtPhase = 'intro';
+    this.activeTab = 'home';
+  },
+
+  // ── Kortizol ──────────────────────────────────────────────────────────────
+
+  async loadCortisol(){
+    const r = await this.apiFetch('/api/cortisol/my');
+    if(r) this.cortisolData = r;
+  },
+
+  cortisolDoneToday(timepoint){
+    if(!this.cortisolData?.logs) return false;
+    const today = new Date().toISOString().slice(0,10);
+    return this.cortisolData.logs.some(l =>
+      l.timepoint === timepoint &&
+      l.sample_type === this.cortisolData.sample_type_today &&
+      l.sample_time.slice(0,10) === today
+    );
+  },
+
+  async logCortisol(timepoint){
+    if(this.cortisolSaving) return;
+    this.cortisolSaving = timepoint;
+    const now = new Date().toISOString();
+    const r = await this.apiFetch('/api/cortisol/', {
+      method: 'POST',
+      body: JSON.stringify({
+        sample_type: this.cortisolData.sample_type_today,
+        timepoint,
+        sample_time: now,
+      })
+    });
+    if(r){ await this.loadCortisol(); }
+    this.cortisolSaving = false;
+  },
+
+  async deleteCortisol(id){
+    await this.apiFetch('/api/cortisol/'+id, {method:'DELETE'});
+    await this.loadCortisol();
+  },
+
+  // ── Tutorial ──────────────────────────────────────────────────────────────
+
+  tutorialCheck(){
+    if(!localStorage.getItem('vahin_tutorial_done')){
+      this.tutorialStep = 0;
+      this.tutorialActive = true;
+    }
+  },
+
+  tutorialDone(){
+    this.tutorialActive = false;
+    localStorage.setItem('vahin_tutorial_done', '1');
+  },
+
+  tutorialReset(){
+    localStorage.removeItem('vahin_tutorial_done');
+    this.tutorialStep = 0;
+    this.tutorialActive = true;
+  },
+
+  // ── Denní průvodce – výběr směny a plán úkolů ─────────────────────────────
+
+  greetingText(){
+    const h = new Date().getHours();
+    const name = this.currentUser?.full_name?.split(' ').slice(-1)[0] || '';
+    const prefix = h < 10 ? 'Dobré ráno' : h < 18 ? 'Dobrý den' : 'Dobrý večer';
+    return `${prefix}, ${name}!`;
+  },
+
+  setShiftType(type){
+    this.todayShiftType = type;
+    const key = 'vahin_shift_' + new Date().toISOString().slice(0,10);
+    if(type) localStorage.setItem(key, type);
+    else localStorage.removeItem(key);
+    this.buildDayTasks();
+  },
+
+  loadShiftType(){
+    const key = 'vahin_shift_' + new Date().toISOString().slice(0,10);
+    this.todayShiftType = localStorage.getItem(key) || null;
+  },
+
+  shiftTypeStyle(type){
+    const S = {
+      nocni:    {label:'Noční směna',    stroke:'#4f46e5', header:'background:#eef2ff', icon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>'},
+      odpoledni:{label:'Odpolední směna',stroke:'#d97706', header:'background:#fffbeb', icon:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>'},
+      denni:    {label:'Denní směna',    stroke:'#0284c7', header:'background:#f0f9ff', icon:'<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>'},
+      volno:    {label:'Volno / den doma',stroke:'#16a34a',header:'background:#f0fdf4', icon:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'},
+    };
+    return S[type] || S.volno;
+  },
+
+  meqDone(){
+    return this.myResponses.some(r => r.q_type === 'meq');
+  },
+
+  buildDayTasks(){
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0,10);
+    const ms7d = 7*24*60*60*1000;
+
+    const filledToday = (qtype) => this.myResponses.some(r=>r.q_type===qtype && r.filled_at.slice(0,10)===todayStr);
+    const filledWithin7d = (qtype) => this.myResponses.some(r=>r.q_type===qtype && (now-new Date(r.filled_at))<ms7d);
+
+    // Týdenní — vždy viditelné bez ohledu na výběr směny
+    const weekly = [
+      {id:'psqi',     qtype:'psqi',             title:'PSQI spánek'},
+      {id:'mfi20',    qtype:'mfi20',            title:'MFI-20 únava'},
+      {id:'adverse',  qtype:'tavns_adverse',    title:'Nežádoucí účinky'},
+      {id:'wellbeing',qtype:'weekly_wellbeing', title:'Týdenní pohoda'},
+    ];
+    this.weeklyPending = weekly.filter(t => !filledWithin7d(t.qtype));
+
+    if(!this.todayShiftType){ this.dayTasks=[]; return; }
+
+    // Ikony
+    const ICON = {
+      moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+      sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+      zap:'<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>',
+      bed:'<path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/>',
+      clip:'<rect x="9" y="2" width="6" height="4" rx="1"/><path d="M12 2v2"/><rect x="3" y="6" width="18" height="16" rx="2"/><path d="M7 12h10M7 16h6"/>',
+      heart:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
+    };
+
+    // Definice úkolů dle typu dne
+    // Sdílené pomocné definice položek
+    const T = (id,title,when,qtype,icon,stroke,bg,tagCls,tag,req,urg) => ({id,title,when,qtype,action:'questionnaire',icon,stroke,bgClass:bg,tagClass:tagCls,tag,required:req,urgent:urg});
+    const PSD   = T('psd',    'Spánkový deník',      'Po probuzení (ráno)',       'psd',              ICON.bed,  '#2563eb','bg-blue-100',  'bg-blue-100 text-blue-700',  'Deník',    true,  true );
+    const KSSp  = T('kss_pre','KSS – Ospalost',      'Před nástupem směny',      'kss',              ICON.moon, '#4f46e5','bg-indigo-100','bg-indigo-100 text-indigo-700','Dotazník',true,  true );
+    const KSSpo = T('kss_post','KSS – Ospalost',     'Ihned po skončení směny',  'kss',              ICON.moon, '#4f46e5','bg-indigo-100','bg-indigo-100 text-indigo-700','Dotazník',true,  false);
+    const PVT   = {id:'pvt', title:'PVT – Reakční test', when:'Po skončení směny (~3 min)',
+                   qtype:'pvt', action:'pvt', icon:'<polygon points="5 3 19 12 5 21 5 3"/>',
+                   stroke:'#0891b2', bgClass:'bg-cyan-100', tagClass:'bg-cyan-100 text-cyan-700',
+                   tag:'Test', required:true, urgent:false};
+
+    const PLANS = {
+      nocni:     [PSD, KSSp, KSSpo, PVT],
+      odpoledni: [PSD, KSSp, KSSpo, PVT],
+      denni:     [PSD, KSSp, KSSpo, PVT],
+      volno:     [PSD],
+    };
+
+    // Nastav done pro každý úkol (kss a stim mohou být vyplněny vícekrát — bereme "alespoň 1x dnes")
+    const plan = (PLANS[this.todayShiftType] || []).map(t => ({
+      ...t,
+      done: filledToday(t.qtype)
+    }));
+    this.dayTasks = plan;
+  },
+
+  // ── Pomocné funkce pro dlaždicový seznam dotazníků ────────────────────────
+
+  qIsDone(qkey){
+    const task = (this.guideTasks||[]).find(t=>t.id===qkey || t.qtype===qkey);
+    return task ? task.done : false;
+  },
+
+  qShortTitle(qkey){
+    const MAP = {
+      psd:'Spánkový deník', kss:'KSS Ospalost',
+      pre_shift_fatigue:'Únava před směnou', post_shift_fatigue:'Únava po směně',
+      tavns_diary:'Deník stimulace', psqi:'PSQI Spánek',
+      mfi20:'MFI-20 Únava', tavns_adverse:'Nežádoucí účinky',
+      weekly_wellbeing:'Týdenní pohoda', sleep_quality:'Kvalita spánku',
+      meq:'MEQ Chronotyp', tavns_satisfaction:'Závěrečná spokojenost',
+    };
+    return MAP[qkey] || qkey;
+  },
+
+  qFreqLabel(freq){
+    const M = {
+      daily_morning:'Každé ráno', per_shift:'Každá směna',
+      per_shift_before:'Před směnou', per_shift_after:'Po směně',
+      per_stimulation:'Po stimulaci', weekly:'1× týdně',
+      once_start:'Jednou na začátku', once_end:'Jednou na konci',
+    };
+    return M[freq]||freq;
+  },
+
+  qColor(freq){
+    const M = {
+      daily_morning:{bg:'#dbeafe',stroke:'#2563eb'},
+      per_shift_before:{bg:'#e0e7ff',stroke:'#4f46e5'},
+      per_shift_after:{bg:'#fef3c7',stroke:'#d97706'},
+      per_shift:{bg:'#f3e8ff',stroke:'#7c3aed'},
+      per_stimulation:{bg:'#fef9c3',stroke:'#ca8a04'},
+      weekly:{bg:'#dcfce7',stroke:'#16a34a'},
+      once_start:{bg:'#fef3c7',stroke:'#d97706'},
+      once_end:{bg:'#d1fae5',stroke:'#059669'},
+    };
+    return M[freq]||{bg:'#f3f4f6',stroke:'#6b7280'};
+  },
+
+  qIconPath(qkey){
+    const M = {
+      psd:'<path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/>',
+      kss:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+      pre_shift_fatigue:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M18.36 5.64l1.41-1.41"/>',
+      post_shift_fatigue:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+      tavns_diary:'<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>',
+      psqi:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/><path d="M12 9v3l1.5 1.5"/>',
+      mfi20:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+      tavns_adverse:'<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+      weekly_wellbeing:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
+      sleep_quality:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+      meq:'<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>',
+      tavns_satisfaction:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+    };
+    return M[qkey]||'<circle cx="12" cy="12" r="10"/>';
+  },
+
+  buildGuideTasks(){
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0,10);
+    const ms12h = 12*60*60*1000;
+    const ms7d  = 7*24*60*60*1000;
+
+    const lastFilled = (qtype) => {
+      const found = this.myResponses.filter(r=>r.q_type===qtype);
+      if(!found.length) return null;
+      return new Date(found[0].filled_at);
+    };
+    const filledToday = (qtype) => {
+      const d = lastFilled(qtype);
+      return d && d.toISOString().slice(0,10)===todayStr;
+    };
+    const filledWithin = (qtype, ms) => {
+      const d = lastFilled(qtype);
+      return d && (now - d) < ms;
+    };
+    const filledEver = (qtype) => !!lastFilled(qtype);
+
+    // Icon SVG paths for guide tasks
+    const ICON_PATHS = {
+      bed: '<path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/>',
+      moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+      zap: '<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>',
+      sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+      calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
+      activity: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+      triangle: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>',
+      star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+    };
+    const ICON_COLORS = {
+      blue:'#2563eb', indigo:'#4f46e5', purple:'#7c3aed', orange:'#ea580c',
+      amber:'#d97706', yellow:'#ca8a04', green:'#16a34a', red:'#dc2626', gray:'#6b7280',
+    };
+    const COLOR_BG = {
+      blue:'bg-blue-100', indigo:'bg-indigo-100', purple:'bg-purple-100', orange:'bg-orange-100',
+      amber:'bg-amber-100', yellow:'bg-yellow-100', green:'bg-green-100', red:'bg-red-100', gray:'bg-gray-100',
+    };
+
+    const tasks = [];
+
+    // Daily morning
+    tasks.push({
+      id:'psd', qtype:'psd', title:'Spánkový deník (PSD)', when:'Každé ráno po probuzení',
+      iconPath: ICON_PATHS.bed, iconStroke: ICON_COLORS.blue, colorClass: COLOR_BG.blue,
+      done: filledToday('psd'),
+    });
+
+    // Per shift – before
+    tasks.push({
+      id:'pre_shift_fatigue', qtype:'pre_shift_fatigue', title:'Hodnocení únavy – před směnou', when:'Před každou noční směnou',
+      iconPath: ICON_PATHS.moon, iconStroke: ICON_COLORS.indigo, colorClass: COLOR_BG.indigo,
+      done: filledWithin('pre_shift_fatigue', ms12h),
+    });
+
+    // Per shift – KSS before
+    tasks.push({
+      id:'kss_before', qtype:'kss', title:'KSS – Karolinska (před směnou)', when:'Před směnou',
+      iconPath: ICON_PATHS.moon, iconStroke: ICON_COLORS.purple, colorClass: COLOR_BG.purple,
+      done: filledWithin('kss', ms12h),
+    });
+
+    // Per stimulation
+    tasks.push({
+      id:'tavns_diary', qtype:'tavns_diary', title:'Deník tAVNS stimulace', when:'Po každé stimulaci',
+      iconPath: ICON_PATHS.zap, iconStroke: ICON_COLORS.amber, colorClass: COLOR_BG.amber,
+      done: filledToday('tavns_diary'),
+    });
+
+    // Per shift – after
+    tasks.push({
+      id:'post_shift_fatigue', qtype:'post_shift_fatigue', title:'Hodnocení únavy – po směně', when:'Po každé noční směně',
+      iconPath: ICON_PATHS.sun, iconStroke: ICON_COLORS.orange, colorClass: COLOR_BG.orange,
+      done: filledWithin('post_shift_fatigue', ms12h),
+    });
+
+    // Weekly
+    tasks.push({
+      id:'psqi', qtype:'psqi', title:'PSQI – Pittsburgh Sleep Quality', when:'1× týdně',
+      iconPath: ICON_PATHS.calendar, iconStroke: ICON_COLORS.indigo, colorClass: COLOR_BG.indigo,
+      done: filledWithin('psqi', ms7d),
+    });
+    tasks.push({
+      id:'mfi20', qtype:'mfi20', title:'MFI-20 – Únava (multidimenzionální)', when:'1× týdně',
+      iconPath: ICON_PATHS.activity, iconStroke: ICON_COLORS.orange, colorClass: COLOR_BG.orange,
+      done: filledWithin('mfi20', ms7d),
+    });
+    tasks.push({
+      id:'tavns_adverse', qtype:'tavns_adverse', title:'Nežádoucí účinky tAVNS', when:'1× týdně',
+      iconPath: ICON_PATHS.triangle, iconStroke: ICON_COLORS.red, colorClass: COLOR_BG.red,
+      done: filledWithin('tavns_adverse', ms7d),
+    });
+    tasks.push({
+      id:'weekly_wellbeing', qtype:'weekly_wellbeing', title:'Týdenní pohoda', when:'1× týdně',
+      iconPath: ICON_PATHS.star, iconStroke: ICON_COLORS.green, colorClass: COLOR_BG.green,
+      done: filledWithin('weekly_wellbeing', ms7d),
+    });
+    tasks.push({
+      id:'sleep_quality', qtype:'sleep_quality', title:'Kvalita spánku (základní)', when:'1× týdně',
+      iconPath: ICON_PATHS.moon, iconStroke: ICON_COLORS.indigo, colorClass: COLOR_BG.indigo,
+      done: filledWithin('sleep_quality', ms7d),
+    });
+
+    // Once – start
+    tasks.push({
+      id:'meq', qtype:'meq', title:'MEQ – Ranní/večerní typ', when:'Jednou na začátku studie',
+      iconPath: ICON_PATHS.sun, iconStroke: ICON_COLORS.amber, colorClass: COLOR_BG.amber,
+      done: filledEver('meq'),
+    });
+
+    // Once – end (always show)
+    tasks.push({
+      id:'tavns_satisfaction', qtype:'tavns_satisfaction', title:'Dotazník spokojenosti (závěrečný)', when:'Jednou na konci studie',
+      iconPath: ICON_PATHS.star, iconStroke: ICON_COLORS.green, colorClass: COLOR_BG.green,
+      done: filledEver('tavns_satisfaction'),
+    });
+
+    this.guideTasks = tasks;
+  },
+
+  async loadParticipants(){
+    const ps=await this.apiFetch('/api/participants/');
+    if(ps){
+      this.participants=ps;
+      this.stats={total:ps.length,active:ps.filter(p=>p.is_active).length,
+        consent:ps.filter(p=>p.consent_signed).length,
+        groupA:ps.filter(p=>p.group==='A').length,groupB:ps.filter(p=>p.group==='B').length};
+    }
+  },
+
+  async loadLiveData(){
+    const [rsp, shf, gar] = await Promise.all([
+      this.apiFetch('/api/questionnaires/all'),
+      this.apiFetch('/api/shifts/all'),
+      this.apiFetch('/api/garmin/all'),
+    ]);
+    if(rsp) this.liveResponses=rsp;
+    if(shf) this.liveShifts=shf;
+    if(gar) this.liveGarmin=gar;
+  },
+
+  async loadProjectData(){
+    await this.loadLiveData();
+    this.milestones = JSON.parse(localStorage.getItem('vahin_milestones')||'null') || [
+      {label:'Schválení etickou komisí',       date:'2026-01-15', status:'done'},
+      {label:'Zahájení náboru účastníků',      date:'2026-02-01', status:'done'},
+      {label:'Cíl: 20 zapsaných účastníků',   date:'2026-04-30', status:'active'},
+      {label:'Baseline měření – ukončení',    date:'2026-05-31', status:'planned'},
+      {label:'Fáze 1 – zahájení stimulace',   date:'2026-06-01', status:'planned'},
+      {label:'Interim analýza',               date:'2026-09-01', status:'planned'},
+      {label:'Wash-out period',               date:'2026-11-01', status:'planned'},
+      {label:'Fáze 2 – cross-over',           date:'2026-12-01', status:'planned'},
+      {label:'Závěrečné odběry kortizolu',    date:'2027-05-01', status:'planned'},
+      {label:'Statistická analýza dat',       date:'2027-06-01', status:'planned'},
+      {label:'Příprava rukopisu',             date:'2027-08-01', status:'planned'},
+      {label:'Odeslání do časopisu',          date:'2027-10-01', status:'planned'},
+    ];
+    const pn = await this.apiFetch('/api/notes/project');
+    if(pn) this.projectNotes = pn;
+    this.computeVasStats();
+    this.buildAlerts();
+    // set kanban to first phase that has participants
+    const first = this.PHASES.find(ph => this.participants.some(p=>p.phase===ph));
+    if(first) this.kanbanPhase = first;
+  },
+
+  computeVasStats(){
+    const pre  = this.liveResponses.filter(r=>r.q_type==='pre_shift_fatigue'  && r.answers.vas_fatigue!=null);
+    const post = this.liveResponses.filter(r=>r.q_type==='post_shift_fatigue' && r.answers.vas_fatigue!=null);
+    const avg  = arr => arr.length ? Math.round(arr.reduce((s,r)=>s+Number(r.answers.vas_fatigue),0)/arr.length) : null;
+    const alertArr = this.liveResponses.filter(r=>r.q_type==='pre_shift_fatigue' && r.answers.vas_alertness!=null);
+    const tVNS = this.liveShifts.length ? Math.round(this.liveShifts.filter(s=>s.nurosym_used).length/this.liveShifts.length*100) : 0;
+    this.vasStats = { pre, post, avgPre:avg(pre), avgPost:avg(post),
+      avgAlertPre: alertArr.length ? Math.round(alertArr.reduce((s,r)=>s+Number(r.answers.vas_alertness),0)/alertArr.length) : null,
+      tVNSpct: tVNS };
+  },
+
+  buildAlerts(){
+    const alerts = [];
+    const cutoff7 = new Date(Date.now()-7*864e5);
+    for(const p of this.participants){
+      if(!p.consent_signed)
+        alerts.push({key:'consent_'+p.id, participant:p, icon:'⚠️', code:p.participant_code, msg:'Chybí podpis informovaného souhlasu'});
+      const lastQ = this.liveResponses.filter(r=>r.user_id===p.id).sort((a,b)=>new Date(b.filled_at)-new Date(a.filled_at))[0];
+      if(!lastQ || new Date(lastQ.filled_at)<cutoff7)
+        alerts.push({key:'q_'+p.id, participant:p, icon:'📋', code:p.participant_code, msg:'Žádný dotazník za posledních 7 dní'});
+      const lastShift = this.liveShifts.filter(s=>s.user_id===p.id).sort((a,b)=>new Date(b.shift_date)-new Date(a.shift_date))[0];
+      if(!lastShift || new Date(lastShift.shift_date)<cutoff7)
+        alerts.push({key:'shift_'+p.id, participant:p, icon:'🌙', code:p.participant_code, msg:'Žádná zalogovaná směna za 7 dní'});
+    }
+    this.pmAlerts = alerts;
+  },
+
+  // compliance helpers
+  _complianceAge(userId, qtype){
+    const found = this.liveResponses.filter(r=>r.user_id===userId && r.q_type===qtype);
+    if(!found.length) return null;
+    return (Date.now()-new Date(found[0].filled_at).getTime())/864e5;
+  },
+  _shiftAge(userId){
+    const found = this.liveShifts.filter(s=>s.user_id===userId);
+    if(!found.length) return null;
+    return (Date.now()-new Date(found[0].shift_date).getTime())/864e5;
+  },
+  _garminAge(userId){
+    const found = this.liveGarmin.filter(g=>g.user_id===userId);
+    if(!found.length) return null;
+    return (Date.now()-new Date(found[0].date+'T00:00:00').getTime())/864e5;
+  },
+  complianceColor(userId, qtype){
+    const d=this._complianceAge(userId,qtype);
+    if(d===null) return 'bg-gray-200';
+    if(d<7) return 'bg-green-400'; if(d<14) return 'bg-yellow-400'; return 'bg-orange-400';
+  },
+  shiftColor(userId){
+    const d=this._shiftAge(userId);
+    if(d===null) return 'bg-gray-200'; if(d<7) return 'bg-green-400'; if(d<14) return 'bg-yellow-400'; return 'bg-orange-400';
+  },
+  complianceDot(userId,qtype){ const d=this._complianceAge(userId,qtype); return d===null?'⚫':d<7?'🟢':d<14?'🟡':'🟠'; },
+  shiftDot(userId){ const d=this._shiftAge(userId); return d===null?'⚫':d<7?'🟢':d<14?'🟡':'🟠'; },
+  garminDot(userId){ const d=this._garminAge(userId); return d===null?'⚫':d<7?'🟢':d<14?'🟡':'🟠'; },
+  complianceBadge(userId,qtype){
+    const d=this._complianceAge(userId,qtype);
+    if(d===null) return '<span class="badge bg-gray-100 text-gray-400">Chybí</span>';
+    if(d<7)  return '<span class="badge bg-green-100 text-green-700">✓ před '+Math.round(d)+'d</span>';
+    if(d<14) return '<span class="badge bg-yellow-100 text-yellow-700">'+Math.round(d)+' dní</span>';
+    return '<span class="badge bg-red-100 text-red-600">'+Math.round(d)+' dní!</span>';
+  },
+  shiftBadge(userId){
+    const d=this._shiftAge(userId);
+    if(d===null) return '<span class="badge bg-gray-100 text-gray-400">Chybí</span>';
+    if(d<7)  return '<span class="badge bg-green-100 text-green-700">✓ před '+Math.round(d)+'d</span>';
+    return '<span class="badge bg-yellow-100 text-yellow-700">'+Math.round(d)+' dní</span>';
+  },
+  garminBadge(userId){
+    const d=this._garminAge(userId);
+    if(d===null) return '<span class="badge bg-gray-100 text-gray-400">Nenahrán</span>';
+    if(d<7)  return '<span class="badge bg-green-100 text-green-700">✓ před '+Math.round(d)+'d</span>';
+    return '<span class="badge bg-yellow-100 text-yellow-700">'+Math.round(d)+' dní</span>';
+  },
+
+  // PM panel
+  async openPmPanel(p){
+    this.pmPanel = p; this.pmNotes = []; this.newPmNote = {type:'note', text:''};
+    const notes = await this.apiFetch('/api/notes/participant/'+p.id);
+    if(notes) this.pmNotes = notes;
+  },
+
+  async pmNextPhase(p){
+    const idx=this.PHASES.indexOf(p.phase); if(idx>=4) return;
+    if(!confirm('Posunout '+p.participant_code+' → '+this.phaseLabel(this.PHASES[idx+1])+'?')) return;
+    const r=await this.apiFetch('/api/participants/'+p.id,{method:'PATCH',body:JSON.stringify({phase:this.PHASES[idx+1]})});
+    if(r){ await this.loadParticipants(); this.pmPanel={...this.pmPanel,phase:this.PHASES[idx+1]}; this.buildAlerts(); }
+  },
+
+  async pmPrevPhase(p){
+    const idx=this.PHASES.indexOf(p.phase); if(idx<=0) return;
+    if(!confirm('Vrátit '+p.participant_code+' zpět na '+this.phaseLabel(this.PHASES[idx-1])+'?')) return;
+    const r=await this.apiFetch('/api/participants/'+p.id,{method:'PATCH',body:JSON.stringify({phase:this.PHASES[idx-1]})});
+    if(r){ await this.loadParticipants(); this.pmPanel={...this.pmPanel,phase:this.PHASES[idx-1]}; this.buildAlerts(); }
+  },
+
+  async quickPhaseForward(p){
+    const idx=this.PHASES.indexOf(p.phase); if(idx>=4) return;
+    if(!confirm('Posunout '+p.participant_code+' → '+this.phaseLabel(this.PHASES[idx+1])+'?')) return;
+    const r=await this.apiFetch('/api/participants/'+p.id,{method:'PATCH',body:JSON.stringify({phase:this.PHASES[idx+1]})});
+    if(r){ await this.loadParticipants(); this.buildAlerts(); }
+  },
+
+  async pmMarkConsent(){
+    const r=await this.apiFetch('/api/participants/'+this.pmPanel.id,{method:'PATCH',body:JSON.stringify({consent_signed:true})});
+    if(r){ this.pmPanel={...this.pmPanel,consent_signed:true}; await this.loadParticipants(); this.buildAlerts(); }
+  },
+
+  async addPmNote(){
+    if(!this.newPmNote.text.trim()) return;
+    const r=await this.apiFetch('/api/notes/',{method:'POST',body:JSON.stringify({text:this.newPmNote.text,note_type:this.newPmNote.type,user_id:this.pmPanel.id})});
+    if(r){ this.pmNotes.unshift(r); this.newPmNote.text=''; }
+  },
+
+  async toggleResolveNote(n){
+    const r=await this.apiFetch('/api/notes/'+n.id,{method:'PATCH',body:JSON.stringify({resolved:!n.resolved})});
+    if(r){ const i=this.pmNotes.findIndex(x=>x.id===n.id); if(i>=0) this.pmNotes[i]=r; }
+  },
+
+  async deletePmNote(n){
+    if(!confirm('Smazat poznámku?')) return;
+    const r=await this.apiFetch('/api/notes/'+n.id,{method:'DELETE'});
+    if(r) this.pmNotes=this.pmNotes.filter(x=>x.id!==n.id);
+  },
+
+  async addProjectNote(){
+    if(!this.newNote.text.trim()) return;
+    const r=await this.apiFetch('/api/notes/',{method:'POST',body:JSON.stringify({text:this.newNote.text,note_type:this.newNote.type,user_id:null})});
+    if(r){ this.projectNotes.unshift(r); this.newNote.text=''; }
+  },
+
+  async deleteProjectNote(n){
+    if(!confirm('Smazat?')) return;
+    const r=await this.apiFetch('/api/notes/'+n.id,{method:'DELETE'});
+    if(r) this.projectNotes=this.projectNotes.filter(x=>x.id!==n.id);
+  },
+
+  addMilestone(){
+    this.milestones.push({label:'Nový milník', date:'', status:'planned'});
+    this.saveMilestones();
+  },
+  cycleMilestoneStatus(i){
+    const c=['planned','active','done','delayed'];
+    this.milestones[i].status=c[(c.indexOf(this.milestones[i].status)+1)%c.length];
+    this.saveMilestones();
+  },
+  saveMilestones(){ localStorage.setItem('vahin_milestones',JSON.stringify(this.milestones)); },
+
+  openEditModal(r){
+    this.editTarget = { id: r.id, answers: JSON.parse(JSON.stringify(r.answers)) };
+    this.editMsg=''; this.editOk=false; this.editModal=true;
+  },
+
+  async saveEditedResponse(){
+    this.editMsg=''; this.editOk=false;
+    const r = await this.apiFetch('/api/questionnaires/'+this.editTarget.id, {
+      method:'PATCH', body: JSON.stringify({ answers: this.editTarget.answers })
+    });
+    if(r){
+      this.editMsg='Uloženo ✓'; this.editOk=true;
+      const idx = this.liveResponses.findIndex(x=>x.id===this.editTarget.id);
+      if(idx>=0) this.liveResponses[idx].answers = r.answers;
+      setTimeout(()=>{ this.editModal=false; this.editMsg=''; }, 1200);
+    } else { this.editMsg='Chyba uložení'; }
+  },
+
+  async deleteResponse(r){
+    if(!confirm('Smazat dotazník #'+r.id+' ('+this.qTypeLabel(r.q_type)+') od '+this.participantCode(r.user_id)+'?')) return;
+    const ok = await this.apiFetch('/api/questionnaires/'+r.id, { method:'DELETE' });
+    if(ok) this.liveResponses = this.liveResponses.filter(x=>x.id!==r.id);
+  },
+
+  isResearcher(){ return this.currentUser?.role==='researcher'||this.currentUser?.role==='admin'; },
+
+  goQuestionnaire(type){ this.selectedQ=type; this.activeTab='questionnaire'; },
+
+  async submitQuestionnaire(){
+    this.loading=true; this.qMsg=''; this.qOk=false;
+    const r=await this.apiFetch('/api/questionnaires/',{method:'POST',body:JSON.stringify({q_type:this.selectedQ,answers:this.qAnswers})});
+    if(r){
+      this.qMsg='Dotazník byl úspěšně uložen!'; this.qOk=true; this.qAnswers={};
+      // Refresh myResponses and rebuild guide tasks
+      const fresh = await this.apiFetch('/api/questionnaires/my');
+      if(fresh){ this.myResponses=fresh; this.buildGuideTasks(); this.buildDayTasks(); }
+    } else {this.qMsg='Chyba při ukládání.'; this.qOk=false;}
+    this.loading=false;
+  },
+
+
+  async uploadGarmin(evt){
+    const file=evt.target.files[0]; if(!file) return;
+    this.garminMsg='Nahrávám…'; this.garminOk=false;
+    const form=new FormData(); form.append('file',file);
+    const endpoint = file.name.endsWith('.json') ? '/api/garmin/upload-json' : '/api/garmin/upload-csv';
+    try{
+      const r=await fetch(API+endpoint,{method:'POST',headers:{Authorization:'Bearer '+this.token},body:form});
+      const d=await r.json();
+      if(r.ok){
+        const ins = d.inserted??d.sleep_updated??0;
+        this.garminMsg=`Nahráno: ${ins} nových záznamů, ${d.skipped??0} přeskočeno.`;
+        this.garminOk=true;
+      } else {this.garminMsg=d.detail||'Chyba nahrávání';}
+    }catch(e){this.garminMsg='Chyba spojení';}
+    evt.target.value='';
+  },
+
+  async uploadGarminZip(evt){
+    const file=evt.target.files[0]; if(!file) return;
+    this.garminMsg='Zpracovávám ZIP…'; this.garminOk=false;
+    const form=new FormData(); form.append('file',file);
+    try{
+      const r=await fetch(API+'/api/garmin/upload-zip',{method:'POST',headers:{Authorization:'Bearer '+this.token},body:form});
+      const d=await r.json();
+      if(r.ok){
+        let msg=`Denní záznamy: ${d.inserted} nových, ${d.skipped} přeskočeno.`;
+        if(d.sleep_updated) msg+=` Spánek: ${d.sleep_updated} dní.`;
+        if(d.files_found?.length) msg+=` (${d.files_found.join(', ')})`;
+        this.garminMsg=msg; this.garminOk=true;
+      } else {this.garminMsg=d.detail||'Chyba nahrávání ZIP';}
+    }catch(e){this.garminMsg='Chyba spojení';}
+    evt.target.value='';
+  },
+
+  async addParticipant(){
+    this.addMsg=''; this.addOk=false;
+    const r=await this.apiFetch('/api/participants/',{method:'POST',body:JSON.stringify(this.newP)});
+    if(r){this.addMsg='Účastník '+r.participant_code+' vytvořen!'; this.addOk=true;
+      await this.loadParticipants();
+      this.newP={full_name:'',email:'',password:'',profession:'',group:''};
+      setTimeout(()=>{this.showAddP=false;this.addMsg='';},2000);}
+    else{this.addMsg='Chyba — zkontrolujte údaje.';}
+  },
+
+  async markConsent(p){
+    const r=await this.apiFetch('/api/participants/'+p.id,{method:'PATCH',body:JSON.stringify({consent_signed:true})});
+    if(r){this.actionMsg='Souhlas potvrzen pro '+p.participant_code; this.actionOk=true; await this.loadParticipants();}
+  },
+
+  async openParticipant(p){
+    this.selectedP=p; this.detailPanel=true; this.drawerMsg='';
+    this.selectedPShifts=[]; this.selectedPResponses=[]; this.drawerSchedules=[];
+    const [shifts, responses] = await Promise.all([
+      this.apiFetch('/api/shifts/user/'+p.id),
+      this.apiFetch('/api/questionnaires/user/'+p.id),
+    ]);
+    if(shifts) this.selectedPShifts=shifts;
+    if(responses) this.selectedPResponses=responses;
+    await this.loadDrawerSchedules(p.id);
+  },
+
+  async setPhase(p, phase){
+    this.drawerMsg='';
+    const r=await this.apiFetch('/api/participants/'+p.id,{method:'PATCH',body:JSON.stringify({phase})});
+    if(r){
+      this.drawerMsg='Fáze → '+this.phaseLabel(phase); this.drawerOk=true;
+      const updated={...this.selectedP, phase};
+      this.selectedP=updated;
+      await this.loadParticipants();
+      setTimeout(()=>{this.drawerMsg='';},2000);
+    } else {this.drawerMsg='Chyba uložení'; this.drawerOk=false;}
+  },
+
+  prevPhase(p){
+    const idx=this.PHASES.indexOf(p.phase); if(idx<=0) return;
+    if(!confirm('Vrátit '+p.participant_code+' zpět na: '+this.phaseLabel(this.PHASES[idx-1])+'?')) return;
+    this.setPhase(p, this.PHASES[idx-1]);
+  },
+
+  nextPhaseDrawer(p){
+    const idx=this.PHASES.indexOf(p.phase); if(idx>=this.PHASES.length-1) return;
+    if(!confirm('Posunout '+p.participant_code+' na: '+this.phaseLabel(this.PHASES[idx+1])+'?')) return;
+    this.setPhase(p, this.PHASES[idx+1]);
+  },
+
+  async markConsentDrawer(){
+    const r=await this.apiFetch('/api/participants/'+this.selectedP.id,{method:'PATCH',body:JSON.stringify({consent_signed:true})});
+    if(r){this.selectedP={...this.selectedP,consent_signed:true}; await this.loadParticipants();}
+  },
+
+  async setStudyStartDate(p, dateStr){
+    const r = await this.apiFetch('/api/participants/'+p.id, {method:'PATCH', body:JSON.stringify({study_start_date: dateStr})});
+    if(r){ Object.assign(p, r); this.selectedP = {...p}; await this.loadParticipants(); }
+  },
+
+  async applyRecommendedPhase(p){
+    if(!p.recommended_phase) return;
+    if(!confirm('Přepnout fázi na: '+this.phaseLabel(p.recommended_phase)+'?')) return;
+    const r = await this.apiFetch('/api/participants/'+p.id, {method:'PATCH', body:JSON.stringify({phase: p.recommended_phase})});
+    if(r){ Object.assign(p, r); this.selectedP = {...p}; await this.loadParticipants(); }
+  },
+
+  async deleteParticipant(p){
+    if(!confirm(`Opravdu smazat ${p.full_name} (${p.participant_code||'bez kódu'})?\n\nTato akce je NEVRATNÁ a smaže všechny záznamy tohoto účastníka (dotazníky, směny, Garmin data, poznámky).`)) return;
+    const r = await this.apiFetch('/api/participants/'+p.id, {method:'DELETE'});
+    if(r && r.ok){
+      this.participants = this.participants.filter(x=>x.id!==p.id);
+      this.detailPanel = false;
+      this.pmPanel = null;
+    } else {
+      alert('Chyba při mazání účastníka. Zkuste znovu.');
+    }
+  },
+
+  phaseIndex(phase){ return this.PHASES.indexOf(phase); },
+
+  participantCode(userId){
+    const p=this.participants.find(p=>p.id===userId);
+    return p?p.participant_code:'#'+userId;
+  },
+
+  async apiFetch(path,opts={}){
+    try{
+      const r=await fetch(API+path,{...opts,headers:{'Authorization':'Bearer '+this.token,'Content-Type':'application/json',...(opts.headers||{})}});
+      if(r.status===401){this.logout();return null;}
+      if(!r.ok) return null;
+      return await r.json();
+    }catch(e){return null;}
+  },
+
+  phaseLabel(p){return {preparation:'Před randomizací',phase1:'Týden 1 (dny 1–7)',washout:'Týden 2 – Washout',phase2:'Týden 3 (dny 15–21)',completed:'Dokončeno'}[p]||p||'—';},
+  qTypeLabel(t){return {
+    pre_shift_fatigue:'Před směnou',post_shift_fatigue:'Po směně',
+    sleep_quality:'Spánek (týdenní)',weekly_wellbeing:'Týdenní pohoda',
+    kss:'KSS – Karolinska',psd:'Spánkový deník',
+    tavns_diary:'Deník tAVNS',psqi:'PSQI – Pittsburgh',
+    mfi20:'MFI-20 – Únava',tavns_adverse:'Nežádoucí účinky',
+    meq:'MEQ – Chronotyp',tavns_satisfaction:'Dotazník spokojenosti',
+  }[t]||t||'—';},
+  roleLabel(r){return {admin:'Admin',researcher:'Výzkumník',participant:'Účastník'}[r]||r||'—';},
+  stepClass(phase){
+    const ph=this.PHASES; const cur=ph.indexOf(this.currentUser?.phase); const idx=ph.indexOf(phase);
+    return idx<cur?'done':idx===cur?'current':'';
+  },
+  todayStr(){ return new Date().toLocaleDateString('cs-CZ',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); },
+  formatDate(d){ return d?new Date(d).toLocaleDateString('cs-CZ',{day:'2-digit',month:'2-digit',year:'numeric'}):'—'; },
+  formatDateTime(d){ return d?new Date(d).toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'; },
+  formatTime(d){ return d?new Date(d).toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}):'—'; },
+  pageTitle(){ const m={home:'Přehled studie',participants:'Účastníci',data:'Data & Export',schedule:'Harmonogram',project:'Řízení projektu',questionnaire:'Dotazník',questionnaires:'Dotazníky',shift:'Noční směna',guide:'Průvodce studií'}; return m[this.activeTab]||'VAHIN Pilot'; },
+};}
+</script>
+</body>
+</html>

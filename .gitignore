@@ -1,0 +1,30 @@
+# Databáze a klíče — na Railway použijte Volume
+data/vahin.db
+data/vapid_key.b64
+
+# Velká testovací data
+data/GARMIN/
+data/*.zip
+
+# Studijní dokumenty (lokální archiv)
+Information/
+
+# Lokální spouštění
+ngrok/
+spustit_*.bat
+server.log
+server_err.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# IDE / systém
+.env
+.DS_Store
+Thumbs.db
+.claude/
