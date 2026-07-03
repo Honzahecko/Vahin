@@ -121,15 +121,14 @@ def _seed_admin():
 _UPLOAD_SECRET = os.environ.get("DB_UPLOAD_SECRET", "")
 
 @app.get("/db-upload", response_class=HTMLResponse)
-def db_upload_form():
-    if not _UPLOAD_SECRET:
-        raise HTTPException(403, "Upload není povolen — nastavte DB_UPLOAD_SECRET")
+def db_upload_form(key: str = ""):
+    if not _UPLOAD_SECRET or key != _UPLOAD_SECRET:
+        raise HTTPException(403, "Přidejte ?key=VÁŠ_SECRET do URL")
     return HTMLResponse(f"""
     <html><body style="font-family:sans-serif;padding:2rem;max-width:500px">
     <h2>📦 Nahrát databázi VAHIN</h2>
     <p style="color:#666">Nahrajte soubor <b>vahin.db</b> — stávající databáze na serveru bude přepsána.</p>
-    <form method="post" action="/db-upload" enctype="multipart/form-data">
-      <input type="hidden" name="secret" value="{_UPLOAD_SECRET}">
+    <form method="post" action="/db-upload?key={key}" enctype="multipart/form-data">
       <input type="file" name="file" accept=".db" required style="margin:1rem 0;display:block">
       <button type="submit" style="background:#0f2744;color:white;padding:.75rem 2rem;border:none;border-radius:8px;font-size:1rem;cursor:pointer">
         Nahrát a přepsat DB
@@ -139,8 +138,8 @@ def db_upload_form():
     """)
 
 @app.post("/db-upload")
-async def db_upload(secret: str = Form(""), file: UploadFile = File(...)):
-    if not _UPLOAD_SECRET or secret != _UPLOAD_SECRET:
+async def db_upload(key: str = "", file: UploadFile = File(...)):
+    if not _UPLOAD_SECRET or key != _UPLOAD_SECRET:
         raise HTTPException(403, "Nesprávný klíč")
     if not file.filename.endswith(".db"):
         raise HTTPException(400, "Soubor musí být .db")
