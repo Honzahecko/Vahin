@@ -93,7 +93,7 @@ class QuestionnaireResponse(Base):
     id            = Column(Integer, primary_key=True, index=True)
     user_id       = Column(Integer, ForeignKey("users.id"), nullable=False)
     shift_id      = Column(Integer, ForeignKey("night_shifts.id"), nullable=True)
-    q_type        = Column(SAEnum(QuestionnaireType), nullable=False)
+    q_type        = Column(String, nullable=False)
     answers       = Column(Text, nullable=False)   # JSON string
     phase         = Column(SAEnum(StudyPhase), nullable=True)
     filled_at     = Column(DateTime, default=datetime.utcnow)
