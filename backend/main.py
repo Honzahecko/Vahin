@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-import os, sys
+from fastapi.responses import FileResponse, HTMLResponse
+import os, sys, shutil
 
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -116,6 +116,47 @@ def _seed_admin():
             print("[VAHIN] Admin ucet jiz existuje")
     finally:
         db.close()
+
+# ── Dočasný DB upload (odstranit po nahrání!) ────────────────────────────────
+_UPLOAD_SECRET = os.environ.get("DB_UPLOAD_SECRET", "")
+
+@app.get("/db-upload", response_class=HTMLResponse)
+def db_upload_form():
+    if not _UPLOAD_SECRET:
+        raise HTTPException(403, "Upload není povolen — nastavte DB_UPLOAD_SECRET")
+    return HTMLResponse(f"""
+    <html><body style="font-family:sans-serif;padding:2rem;max-width:500px">
+    <h2>📦 Nahrát databázi VAHIN</h2>
+    <p style="color:#666">Nahrajte soubor <b>vahin.db</b> — stávající databáze na serveru bude přepsána.</p>
+    <form method="post" action="/db-upload" enctype="multipart/form-data">
+      <input type="hidden" name="secret" value="{_UPLOAD_SECRET}">
+      <input type="file" name="file" accept=".db" required style="margin:1rem 0;display:block">
+      <button type="submit" style="background:#0f2744;color:white;padding:.75rem 2rem;border:none;border-radius:8px;font-size:1rem;cursor:pointer">
+        Nahrát a přepsat DB
+      </button>
+    </form>
+    </body></html>
+    """)
+
+@app.post("/db-upload")
+async def db_upload(secret: str = "", file: UploadFile = File(...)):
+    if not _UPLOAD_SECRET or secret != _UPLOAD_SECRET:
+        raise HTTPException(403, "Nesprávný klíč")
+    if not file.filename.endswith(".db"):
+        raise HTTPException(400, "Soubor musí být .db")
+    db_path = os.path.join(os.path.dirname(__file__), "..", "data", "vahin.db")
+    backup  = db_path + ".bak"
+    if os.path.exists(db_path):
+        shutil.copy2(db_path, backup)
+    with open(db_path, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+    return HTMLResponse("""
+    <html><body style="font-family:sans-serif;padding:2rem">
+    <h2>✅ Databáze nahrána!</h2>
+    <p>Soubor vahin.db byl úspěšně nahrazen. Restartujte service v Railway pro načtení.</p>
+    <p style="color:#666;font-size:.9rem">Záloha původní DB je uložena jako vahin.db.bak</p>
+    </body></html>
+    """)
 
 if __name__ == "__main__":
     import uvicorn
