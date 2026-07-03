@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
@@ -139,7 +139,7 @@ def db_upload_form():
     """)
 
 @app.post("/db-upload")
-async def db_upload(secret: str = "", file: UploadFile = File(...)):
+async def db_upload(secret: str = Form(""), file: UploadFile = File(...)):
     if not _UPLOAD_SECRET or secret != _UPLOAD_SECRET:
         raise HTTPException(403, "Nesprávný klíč")
     if not file.filename.endswith(".db"):
