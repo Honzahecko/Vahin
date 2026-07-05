@@ -212,6 +212,46 @@
         </template>
       </div>
 
+      <!-- ═══ Rozvrh směn (N/D/V pro každý den studie) ═══ -->
+      <div class="border-t border-gray-100 pt-4 mb-4">
+        <div class="flex items-center justify-between mb-2">
+          <div class="text-xs font-bold text-gray-400 uppercase tracking-wide">Rozvrh směn · 21 dní</div>
+          <button @click="saveShiftSchedule(selectedP.id)" :disabled="shiftSchedSaving"
+            class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 disabled:opacity-40">
+            <span x-show="!shiftSchedSaving">Uložit rozvrh</span>
+            <span x-show="shiftSchedSaving">…</span>
+          </button>
+        </div>
+        <!-- 7 × 3 mřížka; kliknutí cykluje N→D→V→N -->
+        <div class="grid gap-1 mb-2" style="grid-template-columns:repeat(7,1fr)">
+          <template x-for="(day, i) in participantShiftSchedule" :key="i">
+            <button type="button"
+              @click="participantShiftSchedule = participantShiftSchedule.map((d,j) => j===i ? (d==='N'?'D':d==='D'?'V':'N') : d)"
+              :class="{
+                'bg-indigo-700 text-white': day==='N',
+                'bg-sky-400 text-white': day==='D',
+                'bg-emerald-50 text-emerald-700 border border-emerald-200': day==='V'
+              }"
+              class="rounded-md py-1.5 font-bold transition-colors text-center"
+              style="font-size:11px;line-height:1.25"
+            >
+              <div class="opacity-50 font-normal" style="font-size:8px" x-text="(i+1)+'.'"></div>
+              <div x-text="day"></div>
+            </button>
+          </template>
+        </div>
+        <div class="flex items-center gap-3 text-xs text-gray-400 mb-2.5" style="font-size:10px">
+          <span class="flex items-center gap-1"><span class="inline-block w-4 h-3 rounded bg-indigo-700"></span> N = Noční</span>
+          <span class="flex items-center gap-1"><span class="inline-block w-4 h-3 rounded bg-sky-400"></span> D = Denní</span>
+          <span class="flex items-center gap-1"><span class="inline-block w-4 h-3 rounded bg-emerald-100 border border-emerald-300"></span> V = Volno</span>
+          <span class="text-gray-300">· kliknutím přepínáte</span>
+        </div>
+        <button @click="applyShiftSchedule()"
+          class="w-full text-xs py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-colors">
+          Použít rozvrh → automaticky nastavit dny notifikací
+        </button>
+      </div>
+
       <!-- Notifikace – admin schedule editor -->
       <div class="border-t border-gray-100 pt-4 mb-4">
         <div class="flex items-center justify-between mb-3">
@@ -236,24 +276,13 @@
                 <div class="flex-1 min-w-0">
                   <div class="text-xs font-semibold text-gray-700" x-text="({'pre_shift':'📋 KSS – před směnou','post_shift':'📋 KSS+PSD – po směně','weekly':'📊 MFI/PSQI (týdenní)','stimulation_start':'🎯 Stimulace – začátek (15 min)','stimulation_p1':'🎯 Stimulace – pauza 1 (15 min)','stimulation_p2':'🎯 Stimulace – pauza 2 (15 min)','stimulation_p3':'🎯 Stimulace – pauza 3 (15 min)','stimulation_end':'🎯 Stimulace – konec (15 min)','stimulation_volno':'🎯 Stimulace – volno/udržovací (15 min)','cortisol_am':'🧪 Kortizol – ráno (vzorek č.1)','cortisol_pm':'🧪 Kortizol – odpoledne (vzorek č.2)','cortisol_eve':'🧪 Kortizol – večer (vzorek č.3)','shift_entry':'📅 Zadat směnu/volno (denně ráno)','reminder':'🔔 Obecná připomínka','stimulation':'🎯 Stimulace'})[s.notif_type] || s.notif_type"></div>
                   <input x-show="s.notif_type==='reminder'" x-model="s.custom_msg" type="text" placeholder="Text zprávy…" class="mt-1 w-full text-xs border border-gray-200 rounded px-2 py-1" style="font-size:11px" />
+                  <!-- Kompaktní přehled aktivních dnů -->
+                  <div class="mt-0.5 text-gray-400" style="font-size:10px"
+                    x-text="s.study_days_mask > 0 ? ([...Array(21)].filter((_,d)=>s.study_days_mask&(1<<d)).length+'/21 dní') : 'dle týdne'"></div>
                 </div>
                 <input type="time" x-model="s.time"
                   class="text-xs border border-gray-200 rounded px-1.5 py-1 w-20 text-center"
                   style="width:72px;padding:4px 6px;font-size:12px;border-radius:6px;border:1.5px solid #e5e7eb" />
-              </div>
-              <!-- Dny studie 1–21 -->
-              <div class="flex flex-wrap gap-1 mt-1.5 ml-6">
-                <template x-for="d in Array.from({length:21},(_,i)=>i+1)" :key="d">
-                  <button type="button"
-                    @click="s.study_days_mask = (s.study_days_mask & (1<<(d-1))) ? (s.study_days_mask & ~(1<<(d-1))) : (s.study_days_mask | (1<<(d-1)))"
-                    :class="(s.study_days_mask & (1<<(d-1))) ? 'bg-indigo-600 text-white' : 'bg-white text-gray-400 border border-gray-200'"
-                    class="text-xs font-semibold rounded transition-colors"
-                    style="font-size:10px;min-width:22px;padding:2px 4px"
-                    x-text="d+'.'"
-                  ></button>
-                </template>
-                <button type="button" @click="s.study_days_mask=0" class="ml-1 text-xs text-gray-400 hover:text-red-500 transition-colors" title="Odznačit vše">✕</button>
-                <button type="button" @click="s.study_days_mask=(1<<21)-1" class="text-xs text-gray-400 hover:text-indigo-600 transition-colors" title="Označit všechny dny">vše</button>
               </div>
             </div>
           </template>
@@ -2139,6 +2168,7 @@ function app() { return {
   kanbanPhase:'preparation', pmAlerts:[],
   pushSupported: false, pushSubscribed: false, pushLoading: false,
   drawerSchedules:[], drawerSchedSaving:false, drawerSchedMsg:'',
+  participantShiftSchedule: Array(21).fill('V'), shiftSchedSaving:false,
 
   studySteps:[
     {phase:'preparation', label:'Před zahájením',    desc:'Podpis informovaného souhlasu a vyplnění MEQ dotazníku. Budete přiřazeni do protokolu výzkumníkem.', duration:'jednorázově'},
@@ -2338,6 +2368,49 @@ function app() { return {
   async sendTestPush(userId) {
     const r = await this.apiFetch('/api/push/test', {method:'POST', body:JSON.stringify({user_id:userId, title:'VAHIN – Test', body:'Testovací notifikace funguje!'})});
     alert(r ? `Odesláno na ${r.sent}/${r.total} zařízení.` : 'Chyba – účastník nemá aktivní notifikace (musí je nejdřív zapnout na svém zařízení).');
+  },
+
+  applyShiftSchedule() {
+    const sch = this.participantShiftSchedule;
+    let maskShift = 0, maskVolno = 0;
+    for (let d = 0; d < 21; d++) {
+      if (sch[d] === 'N' || sch[d] === 'D') maskShift |= (1 << d);
+      if (sch[d] === 'V') maskVolno |= (1 << d);
+    }
+    const cortisolMask = (1<<0)|(1<<6)|(1<<14)|(1<<20);
+    const weeklyMask   = (1<<6)|(1<<13)|(1<<20);
+    const allMask      = (1<<21)-1;
+    const nCount = sch.filter(d=>d==='N').length;
+    const dCount = sch.filter(d=>d==='D').length;
+    const mainProfile = nCount >= dCount ? 'nocni' : 'ranni';
+    this.applyNotifProfile(mainProfile);
+    const TYPE_MASKS = {
+      pre_shift:         maskShift,
+      stimulation_start: maskShift,
+      stimulation_p1:    maskShift,
+      stimulation_p2:    maskShift,
+      stimulation_p3:    maskShift,
+      stimulation_end:   maskShift,
+      post_shift:        maskShift,
+      stimulation_volno: maskVolno,
+      cortisol_am:       cortisolMask,
+      cortisol_pm:       cortisolMask,
+      cortisol_eve:      cortisolMask,
+      shift_entry:       allMask,
+      weekly:            weeklyMask,
+    };
+    this.drawerSchedules = this.drawerSchedules.map(s => {
+      if (!Object.prototype.hasOwnProperty.call(TYPE_MASKS, s.notif_type)) return s;
+      const mask = TYPE_MASKS[s.notif_type];
+      return {...s, study_days_mask: mask, enabled: mask > 0};
+    });
+  },
+
+  async saveShiftSchedule(userId) {
+    this.shiftSchedSaving = true;
+    const schedule = this.participantShiftSchedule.join('');
+    await this.apiFetch('/api/push/shift-schedule/'+userId, {method:'PUT', body:JSON.stringify({schedule})});
+    this.shiftSchedSaving = false;
   },
 
   async login() {
@@ -3228,12 +3301,15 @@ function app() { return {
   async openParticipant(p){
     this.selectedP=p; this.detailPanel=true; this.drawerMsg='';
     this.selectedPShifts=[]; this.selectedPResponses=[]; this.drawerSchedules=[];
-    const [shifts, responses] = await Promise.all([
+    this.participantShiftSchedule = Array(21).fill('V');
+    const [shifts, responses, sched] = await Promise.all([
       this.apiFetch('/api/shifts/user/'+p.id),
       this.apiFetch('/api/questionnaires/user/'+p.id),
+      this.apiFetch('/api/push/shift-schedule/'+p.id),
     ]);
     if(shifts) this.selectedPShifts=shifts;
     if(responses) this.selectedPResponses=responses;
+    if(sched) this.participantShiftSchedule = (sched.schedule || 'V'.repeat(21)).split('');
     await this.loadDrawerSchedules(p.id);
   },
 

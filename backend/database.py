@@ -57,6 +57,7 @@ class User(Base):
     consent_signed = Column(Boolean, default=False)
     consent_date   = Column(DateTime, nullable=True)
     study_start_date = Column(DateTime, nullable=True)  # den 1 studie — od první noční směny
+    shift_schedule   = Column(String(21), nullable=True)  # 21 znaků N/D/V pro každý den studie
     notes          = Column(Text, nullable=True)
 
     shifts       = relationship("NightShift",   back_populates="user")

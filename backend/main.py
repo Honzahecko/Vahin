@@ -93,6 +93,7 @@ def _migrate_db():
             print(f"[VAHIN migrate] Přidán sloupec {table}.{col}")
 
     add_col("users",                   "study_start_date",  "DATETIME")
+    add_col("users",                   "shift_schedule",    "TEXT")
     add_col("cortisol_logs",           "timepoint",         "TEXT NOT NULL DEFAULT 't0'")
     add_col("notification_schedules",  "study_days_mask",   "INTEGER DEFAULT 0")
 

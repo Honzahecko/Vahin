@@ -34,6 +34,9 @@ class ScheduleIn(BaseModel):
     enabled: bool = True
     custom_msg: Optional[str] = None
 
+class ShiftScheduleIn(BaseModel):
+    schedule: str  # 21 znaků N/D/V
+
 class TestPushIn(BaseModel):
     user_id: int
     title: str = "VAHIN Připomínka"
@@ -101,6 +104,24 @@ def set_schedules(user_id: int, schedules: List[ScheduleIn], db: Session = Depen
         ))
     db.commit()
     return {"ok": True, "count": len(schedules)}
+
+@router.get("/shift-schedule/{user_id}", dependencies=[Depends(require_researcher)])
+def get_shift_schedule(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "Účastník nenalezen")
+    return {"schedule": user.shift_schedule or "V" * 21}
+
+@router.put("/shift-schedule/{user_id}", dependencies=[Depends(require_researcher)])
+def save_shift_schedule(user_id: int, data: ShiftScheduleIn, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "Účastník nenalezen")
+    raw = data.schedule[:21]
+    schedule = ''.join(c if c in 'NDV' else 'V' for c in raw).ljust(21, 'V')
+    user.shift_schedule = schedule
+    db.commit()
+    return {"ok": True, "schedule": schedule}
 
 @router.post("/test", dependencies=[Depends(require_researcher)])
 def send_test_push(data: TestPushIn, db: Session = Depends(get_db)):
