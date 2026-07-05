@@ -274,7 +274,7 @@
               <div class="flex items-center gap-2">
                 <input type="checkbox" x-model="s.enabled" class="w-4 h-4 rounded accent-indigo-600" style="width:16px;flex-shrink:0" />
                 <div class="flex-1 min-w-0">
-                  <div class="text-xs font-semibold text-gray-700" x-text="({'pre_shift':'📋 KSS – před směnou','post_shift':'📋 KSS – po směně','psd_morning':'🌅 Spánkový deník (každé ráno)','pvt_post':'⚡ PVT – Reakční test (po noční směně)','weekly':'📊 MFI/PSQI (týdenní)','stimulation_start':'🎯 Stimulace – začátek (15 min)','stimulation_p1':'🎯 Stimulace – pauza 1 (15 min)','stimulation_p2':'🎯 Stimulace – pauza 2 (15 min)','stimulation_p3':'🎯 Stimulace – pauza 3 (15 min)','stimulation_end':'🎯 Stimulace – konec (15 min)','stimulation_volno':'🎯 Stimulace – volno/udržovací (15 min)','cortisol_am':'🧪 Kortizol – ráno (vzorek č.1)','cortisol_pm':'🧪 Kortizol – odpoledne (vzorek č.2)','cortisol_eve':'🧪 Kortizol – večer (vzorek č.3)','shift_entry':'📅 Zadat směnu/volno (denně ráno)','reminder':'🔔 Obecná připomínka','stimulation':'🎯 Stimulace'})[s.notif_type] || s.notif_type"></div>
+                  <div class="text-xs font-semibold text-gray-700" x-text="({'pre_shift':'📋 KSS – před noční směnou','post_shift':'📋 KSS – po noční směně','psd_morning':'🌅 Spánkový deník (každé ráno)','pvt_post':'⚡ PVT – Reakční test (po noční směně)','weekly':'📊 MFI/PSQI (týdenní)','stimulation_start':'🎯 tAVNS – začátek noční (15 min)','stimulation_p1':'🎯 tAVNS – pauza 1 – noční (15 min)','stimulation_p2':'🎯 tAVNS – pauza 2 – noční (15 min)','stimulation_p3':'🎯 tAVNS – pauza 3 – noční (15 min)','stimulation_end':'🎯 tAVNS – konec noční (15 min)','stimulation_volno':'🎯 tAVNS – udržovací / denní směna (15 min)','cortisol_am':'🧪 Kortizol – ráno (vzorek č.1)','cortisol_pm':'🧪 Kortizol – odpoledne (vzorek č.2)','cortisol_eve':'🧪 Kortizol – večer (vzorek č.3)','shift_entry':'📅 Zadat směnu/volno (denně ráno)','reminder':'🔔 Obecná připomínka','stimulation':'🎯 tAVNS Stimulace'})[s.notif_type] || s.notif_type"></div>
                   <input x-show="s.notif_type==='reminder'" x-model="s.custom_msg" type="text" placeholder="Text zprávy…" class="mt-1 w-full text-xs border border-gray-200 rounded px-2 py-1" style="font-size:11px" />
                   <!-- Kompaktní přehled aktivních dnů -->
                   <div class="mt-0.5 text-gray-400" style="font-size:10px"
@@ -2207,9 +2207,9 @@ function app() { return {
 
   studySteps:[
     {phase:'preparation', label:'Před zahájením',    desc:'Podpis informovaného souhlasu a vyplnění dotazníku MEQ. Výzkumník vás zařadí do studie.', duration:'jednorázově'},
-    {phase:'phase1',      label:'Fáze 1 – dny 1–7',  desc:'Kortizol (3× denně: ráno, odpoledne, večer) den 1 a 7. Dotazníky MFI-20 + PSQI den 1 a 7. Používejte stimulátor dle pokynů výzkumníka. Noste hodinky nepřetržitě.', duration:'7 dní'},
-    {phase:'washout',     label:'Fáze 2 – dny 8–14', desc:'Pokračujte dle pokynů výzkumníka. Noste hodinky pro záznam HRV a spánku. Spánkový deník a KSS jako obvykle.', duration:'7 dní'},
-    {phase:'phase2',      label:'Fáze 3 – dny 15–21',desc:'Kortizol (3× denně: ráno, odpoledne, večer) den 15 a 21. Dotazníky MFI-20 + PSQI den 15 a 21. Používejte stimulátor dle pokynů výzkumníka.', duration:'7 dní'},
+    {phase:'phase1',      label:'Fáze 1 – dny 1–7',  desc:'Kortizol (3× denně: ráno, odpoledne, večer) den 1 a 7. MFI-20 + PSQI den 1 a 7. Při každé noční směně: KSS před/po + tAVNS stimulace + PVT reakční test. Noste hodinky nepřetržitě.', duration:'7 dní'},
+    {phase:'washout',     label:'Fáze 2 – dny 8–14', desc:'Spánkový deník každé ráno. Při noční směně: KSS před/po + stimulace + PVT. Noste hodinky pro záznam HRV a spánku.', duration:'7 dní'},
+    {phase:'phase2',      label:'Fáze 3 – dny 15–21',desc:'Kortizol (3× denně: ráno, odpoledne, večer) den 15 a 21. MFI-20 + PSQI den 15 a 21. Při každé noční směně: KSS před/po + stimulace + PVT.', duration:'7 dní'},
     {phase:'completed',   label:'Dokončeno',           desc:'Studie ukončena — děkujeme za účast!', duration:''},
   ],
 
@@ -2729,10 +2729,9 @@ function app() { return {
                    tag:'Test', required:true, urgent:false};
 
     const PLANS = {
-      nocni:     [PSD, KSSp, KSSpo, PVT],
-      odpoledni: [PSD, KSSp, KSSpo, PVT],
-      denni:     [PSD, KSSp, KSSpo, PVT],
-      volno:     [PSD],
+      nocni: [PSD, KSSp, KSSpo, PVT],
+      denni: [PSD],
+      volno: [PSD],
     };
 
     // Nastav done pro každý úkol (kss a stim mohou být vyplněny vícekrát — bereme "alespoň 1x dnes")
