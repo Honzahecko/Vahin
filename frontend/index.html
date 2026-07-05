@@ -622,7 +622,7 @@
                     <template x-for="key in Object.keys(r.answers)" :key="key">
                       <div class="bg-slate-50 rounded-lg px-3 py-2">
                         <div class="text-xs text-gray-400 mb-0.5" x-text="answerLabel(key)"></div>
-                        <div class="font-semibold text-navy-900 text-sm break-words" x-text="r.answers[key]!=null?r.answers[key]:'—'"></div>
+                        <div class="font-semibold text-navy-900 text-sm break-words" x-text="answerDisplay(r.q_type, key, r.answers[key])"></div>
                       </div>
                     </template>
                   </div>
@@ -2046,7 +2046,7 @@ function app() { return {
   loading: false, activeTab: 'home', apiBase: API,
   loginForm: {email:'',password:''}, loginError: '',
   myShifts: [], myResponses: [], garminMsg:'', garminOk:false,
-  guideTasks: [], allQDefs: [],
+  guideTasks: [], allQDefs: [], rawDefs: {},
   todayShiftType: null,
   dayTasks: [],
   // Tutorial
@@ -2262,6 +2262,7 @@ function app() { return {
       if(s) this.myShifts=s;
       if(r) this.myResponses=r;
       if(defs) {
+        this.rawDefs = defs;
         const HIDDEN = new Set(['pvt','tavns_diary','tavns_adverse','tavns_satisfaction']);
         this.allQDefs = Object.entries(defs).filter(([key]) => !HIDDEN.has(key)).map(([key, d]) => ({key, ...d}));
         this.buildGuideTasks();
@@ -2808,6 +2809,20 @@ function app() { return {
     if(d===null) return '<span class="badge bg-gray-100 text-gray-400">Nenahrán</span>';
     if(d<7)  return '<span class="badge bg-green-100 text-green-700">✓ před '+Math.round(d)+'d</span>';
     return '<span class="badge bg-yellow-100 text-yellow-700">'+Math.round(d)+' dní</span>';
+  },
+
+  answerDisplay(qType, questionId, value){
+    if(value==null) return '—';
+    const def = this.rawDefs?.[qType];
+    if(!def) return value;
+    const q = def.questions?.find(q=>q.id===questionId);
+    if(!q?.options) return value;
+    // choice type: options=[{label, value}]
+    const opt = q.options.find(o=>String(o.value)===String(value));
+    if(opt) return opt.label;
+    // scale4/scale5 type: options=['label0','label1',...]
+    if(typeof q.options[0]==='string') return q.options[value]??value;
+    return value;
   },
 
   answerLabel(key){
