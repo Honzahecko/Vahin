@@ -1315,44 +1315,82 @@
           </div>
         </template>
 
+        <!-- ══ RYCHLÉ AKCE — přímý přístup ke všem aktivitám ══ -->
+        <div x-show="currentUser?.phase !== 'preparation'" class="card p-4 mb-4">
+          <!-- Upomínka na hodinky -->
+          <div class="flex items-center gap-2.5 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2.5 mb-3">
+            <span class="text-xl flex-shrink-0">⌚</span>
+            <div>
+              <div class="text-xs font-bold text-emerald-800">Hodinky Garmin — nosit nepřetržitě</div>
+              <div class="text-xs text-emerald-600">I při spánku. HRV a spánek se zaznamenávají automaticky.</div>
+            </div>
+          </div>
+          <!-- Akce -->
+          <div class="grid grid-cols-2 gap-2">
+            <button @click="goQuestionnaire('psd')"
+              class="flex items-center gap-2.5 p-3 rounded-xl border-2 border-gray-100 hover:border-blue-300 hover:bg-blue-50 active:scale-95 transition-all text-left">
+              <div class="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0 text-lg">🌅</div>
+              <div>
+                <div class="text-sm font-bold text-gray-800">Spánkový deník</div>
+                <div class="text-xs text-gray-400">PSD · každé ráno</div>
+              </div>
+            </button>
+            <button @click="goQuestionnaire('kss_pre')"
+              class="flex items-center gap-2.5 p-3 rounded-xl border-2 border-gray-100 hover:border-purple-300 hover:bg-purple-50 active:scale-95 transition-all text-left">
+              <div class="w-9 h-9 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0 text-lg">😴</div>
+              <div>
+                <div class="text-sm font-bold text-gray-800">KSS před směnou</div>
+                <div class="text-xs text-gray-400">Před nástupem</div>
+              </div>
+            </button>
+            <button @click="goQuestionnaire('kss_post')"
+              class="flex items-center gap-2.5 p-3 rounded-xl border-2 border-gray-100 hover:border-indigo-300 hover:bg-indigo-50 active:scale-95 transition-all text-left">
+              <div class="w-9 h-9 rounded-lg bg-indigo-100 flex items-center justify-center flex-shrink-0 text-lg">🌙</div>
+              <div>
+                <div class="text-sm font-bold text-gray-800">KSS po směně</div>
+                <div class="text-xs text-gray-400">Po skončení směny</div>
+              </div>
+            </button>
+            <button @click="startPvt()"
+              class="flex items-center gap-2.5 p-3 rounded-xl border-2 border-gray-100 hover:border-cyan-300 hover:bg-cyan-50 active:scale-95 transition-all text-left">
+              <div class="w-9 h-9 rounded-lg bg-cyan-100 flex items-center justify-center flex-shrink-0 text-lg">⚡</div>
+              <div>
+                <div class="text-sm font-bold text-gray-800">PVT – Reakční test</div>
+                <div class="text-xs text-gray-400">Po noční směně · ~1 min</div>
+              </div>
+            </button>
+            <button @click="activeTab='questionnaires'"
+              class="col-span-2 flex items-center gap-2.5 p-3 rounded-xl border-2 border-gray-100 hover:border-green-300 hover:bg-green-50 active:scale-95 transition-all text-left">
+              <div class="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0 text-lg">📊</div>
+              <div>
+                <div class="text-sm font-bold text-gray-800">Týdenní dotazníky</div>
+                <div class="text-xs text-gray-400">MFI-20 únava · PSQI spánek · pohoda</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
         <!-- ══ VÝBĚR TYPU DNE (jen od phase1) ══ -->
         <div x-show="currentUser?.phase !== 'preparation'" class="card mb-4 overflow-hidden">
           <!-- Pokud nezvoleno -->
           <div x-show="!todayShiftType" class="p-4">
             <div class="font-semibold text-navy-900 text-sm mb-1">Jakou máte dnes službu?</div>
             <div class="text-xs text-gray-400 mb-3">Podle typu dne přizpůsobíme váš plán dotazníků a stimulace.</div>
-            <div class="grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-3 gap-2">
               <button @click="setShiftType('nocni')"
-                class="flex items-center gap-2 border-2 border-gray-200 rounded-xl px-3 py-2.5 hover:border-indigo-400 hover:bg-indigo-50 transition-all text-left">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-                <div>
-                  <div class="text-sm font-semibold text-gray-800">Noční směna</div>
-                  <div class="text-xs text-gray-400">Dnes v noci</div>
-                </div>
-              </button>
-              <button @click="setShiftType('odpoledni')"
-                class="flex items-center gap-2 border-2 border-gray-200 rounded-xl px-3 py-2.5 hover:border-amber-400 hover:bg-amber-50 transition-all text-left">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-                <div>
-                  <div class="text-sm font-semibold text-gray-800">Odpolední směna</div>
-                  <div class="text-xs text-gray-400">Odpolední / večerní</div>
-                </div>
+                class="flex flex-col items-center gap-1.5 border-2 border-gray-200 rounded-xl px-2 py-3 hover:border-indigo-400 hover:bg-indigo-50 transition-all text-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                <div class="text-xs font-semibold text-gray-800">Noční</div>
               </button>
               <button @click="setShiftType('denni')"
-                class="flex items-center gap-2 border-2 border-gray-200 rounded-xl px-3 py-2.5 hover:border-sky-400 hover:bg-sky-50 transition-all text-left">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                <div>
-                  <div class="text-sm font-semibold text-gray-800">Denní směna</div>
-                  <div class="text-xs text-gray-400">Ranní / dopolední</div>
-                </div>
+                class="flex flex-col items-center gap-1.5 border-2 border-gray-200 rounded-xl px-2 py-3 hover:border-sky-400 hover:bg-sky-50 transition-all text-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                <div class="text-xs font-semibold text-gray-800">Denní</div>
               </button>
               <button @click="setShiftType('volno')"
-                class="flex items-center gap-2 border-2 border-gray-200 rounded-xl px-3 py-2.5 hover:border-green-400 hover:bg-green-50 transition-all text-left">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                <div>
-                  <div class="text-sm font-semibold text-gray-800">Volno / den doma</div>
-                  <div class="text-xs text-gray-400">Bez nemocnice</div>
-                </div>
+                class="flex flex-col items-center gap-1.5 border-2 border-gray-200 rounded-xl px-2 py-3 hover:border-green-400 hover:bg-green-50 transition-all text-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <div class="text-xs font-semibold text-gray-800">Volno</div>
               </button>
             </div>
           </div>
@@ -2643,7 +2681,6 @@ function app() { return {
   shiftTypeStyle(type){
     const S = {
       nocni:    {label:'Noční směna',    stroke:'#4f46e5', header:'background:#eef2ff', icon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>'},
-      odpoledni:{label:'Odpolední směna',stroke:'#d97706', header:'background:#fffbeb', icon:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>'},
       denni:    {label:'Denní směna',    stroke:'#0284c7', header:'background:#f0f9ff', icon:'<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>'},
       volno:    {label:'Volno / den doma',stroke:'#16a34a',header:'background:#f0fdf4', icon:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>'},
     };
