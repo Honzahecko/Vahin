@@ -163,6 +163,8 @@ NOTIF_TEXTS = {
     "cortisol_eve":      ("VAHIN – Kortizol večer",       "Odběr slin – vzorek č.3 (večer, před spánkem).",                   "/"),
     "weekly":            ("VAHIN – Týdenní dotazníky",    "Vyplňte týdenní dotazníky MFI-20 a PSQI.",                         "/?q=mfi"),
     "shift_entry":       ("VAHIN – Připomínka",             "Nezapomeňte zadat směnu nebo den volna do aplikace.",              "/?tab=home"),
+    "psd_morning":       ("VAHIN – Spánkový deník",         "Vyplňte spánkový deník po probuzení.",                             "/?q=psd"),
+    "pvt_post":          ("VAHIN – Reakční test PVT",       "Vyplňte PVT reakční test po skončení noční směny.",                "/?q=pvt"),
     "reminder":          ("VAHIN – Připomínka",            "Připomínka od výzkumného týmu VAHIN.",                             "/"),
     "stimulation":       ("VAHIN – Čas na stimulaci",     "Zahajte tAVNS stimulaci.",                                         "/?tab=home"),
     "cortisol":          ("VAHIN – Kortizol",              "Čas na odběr kortizolu ze slin.",                                  "/"),

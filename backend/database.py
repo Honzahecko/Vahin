@@ -206,6 +206,8 @@ class NotifType(str, enum.Enum):
     cortisol_pm       = "cortisol_pm"        # kortizol odpoledne
     cortisol_eve      = "cortisol_eve"       # kortizol večer
     shift_entry       = "shift_entry"       # denní připomínka zadat směnu/volno
+    psd_morning       = "psd_morning"       # spánkový deník každé ráno po probuzení
+    pvt_post          = "pvt_post"          # PVT reakční test po noční směně
     weekly            = "weekly"
     reminder          = "reminder"
     cortisol          = "cortisol"           # legacy / generic

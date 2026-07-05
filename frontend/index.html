@@ -205,7 +205,7 @@
               <template x-for="tp in ['t0','t15','t30']" :key="tp">
                 <span :class="g[1].some(l=>l.timepoint===tp) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'"
                       class="text-xs px-2 py-0.5 rounded font-semibold"
-                      x-text="{t0:'T0',t15:'T+15',t30:'T+30'}[tp]+(g[1].find(l=>l.timepoint===tp) ? ' ✓' : ' –')"></span>
+                      x-text="{t0:'Ráno',t15:'Odpoledne',t30:'Večer'}[tp]+(g[1].find(l=>l.timepoint===tp) ? ' ✓' : ' –')"></span>
               </template>
             </div>
           </div>
@@ -274,7 +274,7 @@
               <div class="flex items-center gap-2">
                 <input type="checkbox" x-model="s.enabled" class="w-4 h-4 rounded accent-indigo-600" style="width:16px;flex-shrink:0" />
                 <div class="flex-1 min-w-0">
-                  <div class="text-xs font-semibold text-gray-700" x-text="({'pre_shift':'📋 KSS – před směnou','post_shift':'📋 KSS+PSD – po směně','weekly':'📊 MFI/PSQI (týdenní)','stimulation_start':'🎯 Stimulace – začátek (15 min)','stimulation_p1':'🎯 Stimulace – pauza 1 (15 min)','stimulation_p2':'🎯 Stimulace – pauza 2 (15 min)','stimulation_p3':'🎯 Stimulace – pauza 3 (15 min)','stimulation_end':'🎯 Stimulace – konec (15 min)','stimulation_volno':'🎯 Stimulace – volno/udržovací (15 min)','cortisol_am':'🧪 Kortizol – ráno (vzorek č.1)','cortisol_pm':'🧪 Kortizol – odpoledne (vzorek č.2)','cortisol_eve':'🧪 Kortizol – večer (vzorek č.3)','shift_entry':'📅 Zadat směnu/volno (denně ráno)','reminder':'🔔 Obecná připomínka','stimulation':'🎯 Stimulace'})[s.notif_type] || s.notif_type"></div>
+                  <div class="text-xs font-semibold text-gray-700" x-text="({'pre_shift':'📋 KSS – před směnou','post_shift':'📋 KSS – po směně','psd_morning':'🌅 Spánkový deník (každé ráno)','pvt_post':'⚡ PVT – Reakční test (po směně)','weekly':'📊 MFI/PSQI (týdenní)','stimulation_start':'🎯 Stimulace – začátek (15 min)','stimulation_p1':'🎯 Stimulace – pauza 1 (15 min)','stimulation_p2':'🎯 Stimulace – pauza 2 (15 min)','stimulation_p3':'🎯 Stimulace – pauza 3 (15 min)','stimulation_end':'🎯 Stimulace – konec (15 min)','stimulation_volno':'🎯 Stimulace – volno/udržovací (15 min)','cortisol_am':'🧪 Kortizol – ráno (vzorek č.1)','cortisol_pm':'🧪 Kortizol – odpoledne (vzorek č.2)','cortisol_eve':'🧪 Kortizol – večer (vzorek č.3)','shift_entry':'📅 Zadat směnu/volno (denně ráno)','reminder':'🔔 Obecná připomínka','stimulation':'🎯 Stimulace'})[s.notif_type] || s.notif_type"></div>
                   <input x-show="s.notif_type==='reminder'" x-model="s.custom_msg" type="text" placeholder="Text zprávy…" class="mt-1 w-full text-xs border border-gray-200 rounded px-2 py-1" style="font-size:11px" />
                   <!-- Kompaktní přehled aktivních dnů -->
                   <div class="mt-0.5 text-gray-400" style="font-size:10px"
@@ -1435,13 +1435,13 @@
               <span class="text-xl">🧪</span>
               <div>
                 <div class="font-bold text-purple-900">Odběr kortizolu — den <span x-text="cortisolData.study_day"></span></div>
-                <div class="text-xs text-purple-600">3 vzorky slin: ihned po probuzení, +15 min, +30 min</div>
+                <div class="text-xs text-purple-600">3 vzorky slin: ráno · odpoledne · večer</div>
               </div>
             </div>
 
             <!-- 3 timepoints -->
             <div class="grid grid-cols-3 gap-2 mb-3">
-              <template x-for="tp in [{id:'t0',label:'T0',sub:'Po probuzení'},{id:'t15',label:'T+15',sub:'za 15 min'},{id:'t30',label:'T+30',sub:'za 30 min'}]" :key="tp.id">
+              <template x-for="tp in [{id:'t0',label:'Ráno',sub:'Vzorek č. 1'},{id:'t15',label:'Odpoledne',sub:'Vzorek č. 2'},{id:'t30',label:'Večer',sub:'Vzorek č. 3'}]" :key="tp.id">
                 <button @click="!cortisolDoneToday(tp.id) && logCortisol(tp.id)"
                   :disabled="cortisolSaving===tp.id"
                   :class="cortisolDoneToday(tp.id)
@@ -1460,7 +1460,7 @@
                 <div class="text-xs text-purple-500 font-semibold mb-1">Dnešní záznamy</div>
                 <template x-for="log in cortisolData.logs.filter(l=>l.sample_time.slice(0,10)===new Date().toISOString().slice(0,10))" :key="log.id">
                   <div class="flex justify-between items-center text-xs py-0.5">
-                    <span class="font-semibold text-purple-700" x-text="{t0:'T0 – po probuzení',t15:'T+15 min',t30:'T+30 min'}[log.timepoint]"></span>
+                    <span class="font-semibold text-purple-700" x-text="{t0:'Vzorek 1 – ráno',t15:'Vzorek 2 – odpoledne',t30:'Vzorek 3 – večer'}[log.timepoint]"></span>
                     <span class="text-purple-400" x-text="log.sample_time.slice(11,16)"></span>
                     <button @click="deleteCortisol(log.id)" class="text-red-400 hover:text-red-600 ml-2">✕</button>
                   </div>
@@ -1854,18 +1854,17 @@
           <!-- TÝDEN 1 -->
           <div class="card p-5 border-l-4 border-blue-400">
             <div class="flex items-center justify-between mb-3">
-              <div class="text-xs font-bold text-blue-600 uppercase tracking-widest">Týden 1 · dny 1–7</div>
-              <span class="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded-lg">Stimulace dle podmínky</span>
+              <div class="text-xs font-bold text-blue-600 uppercase tracking-widest">Fáze 1 · dny 1–7</div>
             </div>
 
             <!-- Kortizolové dny -->
             <div class="bg-purple-50 border border-purple-200 rounded-xl p-3 mb-3">
               <div class="text-xs font-bold text-purple-700 mb-2">🧪 Kortizol — DEN 1 a DEN 7</div>
               <div class="text-xs text-purple-600 space-y-1">
-                <div>· <strong>T0</strong> — první odběr slin ihned po probuzení</div>
-                <div>· <strong>T+15 min</strong> — druhý odběr 15 minut po probuzení</div>
-                <div>· <strong>T+30 min</strong> — třetí odběr 30 minut po probuzení</div>
-                <div class="text-purple-400 mt-1">Nejezte, nepijte kávu ani nekuřte alespoň 30 min před odběrem</div>
+                <div>· <strong>Vzorek 1</strong> — ráno (cca 30 min po probuzení, nalačno)</div>
+                <div>· <strong>Vzorek 2</strong> — odpoledne (cca 6 h po ranním vzorku)</div>
+                <div>· <strong>Vzorek 3</strong> — večer (před spánkem)</div>
+                <div class="text-purple-400 mt-1">Aplikace vás upozorní push notifikací na každý odběr</div>
               </div>
             </div>
 
@@ -1907,13 +1906,12 @@
           <!-- TÝDEN 2 – WASHOUT -->
           <div class="card p-5 border-l-4 border-gray-300">
             <div class="flex items-center justify-between mb-3">
-              <div class="text-xs font-bold text-gray-500 uppercase tracking-widest">Týden 2 · dny 8–14</div>
-              <span class="text-xs bg-gray-100 text-gray-600 font-semibold px-2 py-0.5 rounded-lg">Washout — bez stimulace</span>
+              <div class="text-xs font-bold text-gray-500 uppercase tracking-widest">Fáze 2 · dny 8–14</div>
             </div>
             <div class="space-y-2">
               <div class="flex items-start gap-3">
-                <span class="text-base">⏸️</span>
-                <div><div class="text-sm font-semibold text-gray-700">Žádná stimulace</div><div class="text-xs text-gray-500">Vymývací perioda — tělo se vrací do výchozího stavu</div></div>
+                <span class="text-base">📋</span>
+                <div><div class="text-sm font-semibold text-gray-700">Pokračujte dle pokynů výzkumníka</div><div class="text-xs text-gray-500">V případě dotazů kontaktujte výzkumný tým</div></div>
               </div>
               <div class="flex items-start gap-3">
                 <span class="text-base">⌚</span>
@@ -1929,15 +1927,14 @@
           <!-- TÝDEN 3 -->
           <div class="card p-5 border-l-4 border-pink-400">
             <div class="flex items-center justify-between mb-3">
-              <div class="text-xs font-bold text-pink-600 uppercase tracking-widest">Týden 3 · dny 15–21</div>
-              <span class="text-xs bg-pink-100 text-pink-700 font-semibold px-2 py-0.5 rounded-lg">Opačná podmínka</span>
+              <div class="text-xs font-bold text-pink-600 uppercase tracking-widest">Fáze 3 · dny 15–21</div>
             </div>
 
             <div class="bg-purple-50 border border-purple-200 rounded-xl p-3 mb-3">
               <div class="text-xs font-bold text-purple-700 mb-2">🧪 Kortizol — DEN 15 a DEN 21</div>
               <div class="text-xs text-purple-600 space-y-1">
-                <div>· Stejný postup jako v týdnu 1 (T0 · T+15 · T+30)</div>
-                <div class="text-purple-400">Aplikace vás upozorní push notifikací v 6:00, 6:15 a 6:30</div>
+                <div>· Stejný postup jako ve fázi 1 (ráno · odpoledne · večer)</div>
+                <div class="text-purple-400">Aplikace vás upozorní push notifikací na každý odběr</div>
               </div>
             </div>
 
@@ -2171,10 +2168,10 @@ function app() { return {
   participantShiftSchedule: Array(21).fill('V'), shiftSchedSaving:false,
 
   studySteps:[
-    {phase:'preparation', label:'Před zahájením',    desc:'Podpis informovaného souhlasu a vyplnění MEQ dotazníku. Budete přiřazeni do protokolu výzkumníkem.', duration:'jednorázově'},
-    {phase:'phase1',      label:'Týden 1 – dny 1–7',  desc:'Stimulace dle přiřazené podmínky. Kortizol (3× denně) den 1 a 7. MFI-20 + PSQI den 1 a 7. Kontinuální HRV + spánek přes hodinky.', duration:'7 dní'},
-    {phase:'washout',     label:'Týden 2 – dny 8–14', desc:'Vymývací perioda — bez stimulace. Pokračujte v nošení hodinek pro záznam HRV a spánku.', duration:'7 dní'},
-    {phase:'phase2',      label:'Týden 3 – dny 15–21',desc:'Stimulace dle opačné podmínky. Kortizol (3× denně) den 15 a 21. MFI-20 + PSQI den 15 a 21.', duration:'7 dní'},
+    {phase:'preparation', label:'Před zahájením',    desc:'Podpis informovaného souhlasu a vyplnění dotazníku MEQ. Výzkumník vás zařadí do studie.', duration:'jednorázově'},
+    {phase:'phase1',      label:'Fáze 1 – dny 1–7',  desc:'Kortizol (3× denně: ráno, odpoledne, večer) den 1 a 7. Dotazníky MFI-20 + PSQI den 1 a 7. Používejte stimulátor dle pokynů výzkumníka. Noste hodinky nepřetržitě.', duration:'7 dní'},
+    {phase:'washout',     label:'Fáze 2 – dny 8–14', desc:'Pokračujte dle pokynů výzkumníka. Noste hodinky pro záznam HRV a spánku. Spánkový deník a KSS jako obvykle.', duration:'7 dní'},
+    {phase:'phase2',      label:'Fáze 3 – dny 15–21',desc:'Kortizol (3× denně: ráno, odpoledne, večer) den 15 a 21. Dotazníky MFI-20 + PSQI den 15 a 21. Používejte stimulátor dle pokynů výzkumníka.', duration:'7 dní'},
     {phase:'completed',   label:'Dokončeno',           desc:'Studie ukončena — děkujeme za účast!', duration:''},
   ],
 
@@ -2254,6 +2251,8 @@ function app() { return {
         // -- Dotazníky --
         {notif_type:'pre_shift',         hour:21, minute:30, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
         {notif_type:'post_shift',        hour:7,  minute:0,  enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
+        {notif_type:'psd_morning',       hour:8,  minute:0,  enabled:false, days_mask:127, study_days_mask:(1<<21)-1, custom_msg:''},
+        {notif_type:'pvt_post',          hour:7,  minute:15, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
         {notif_type:'weekly',            hour:10, minute:0,  enabled:false, days_mask:127, study_days_mask:(1<<6)|(1<<13)|(1<<20), custom_msg:''},
         // -- Stimulace (noční) --
         {notif_type:'stimulation_start', hour:21, minute:45, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
@@ -2303,6 +2302,8 @@ function app() { return {
         stimulation_p3:    {h:4,  m:30, en:true},
         stimulation_end:   {h:6,  m:30, en:true},
         post_shift:        {h:7,  m:0,  en:true},
+        pvt_post:          {h:7,  m:15, en:true},
+        psd_morning:       {h:8,  m:0,  en:true},
         stimulation_volno: {h:10, m:0,  en:false},
         cortisol_am:       {h:7,  m:30, en:false},
         cortisol_pm:       {h:14, m:0,  en:false},
@@ -2319,6 +2320,8 @@ function app() { return {
         stimulation_p3:    {h:13, m:30, en:true},
         stimulation_end:   {h:14, m:45, en:true},
         post_shift:        {h:15, m:15, en:true},
+        pvt_post:          {h:15, m:30, en:true},
+        psd_morning:       {h:8,  m:0,  en:true},
         stimulation_volno: {h:10, m:0,  en:false},
         cortisol_am:       {h:7,  m:30, en:false},
         cortisol_pm:       {h:14, m:0,  en:false},
@@ -2335,6 +2338,8 @@ function app() { return {
         stimulation_p3:    {h:8,  m:0,  en:false},
         stimulation_end:   {h:8,  m:0,  en:false},
         post_shift:        {h:8,  m:0,  en:false},
+        pvt_post:          {h:8,  m:0,  en:false},
+        psd_morning:       {h:8,  m:0,  en:true},
         stimulation_volno: {h:10, m:0,  en:true},
         cortisol_am:       {h:7,  m:30, en:false},
         cortisol_pm:       {h:14, m:0,  en:false},
@@ -2392,7 +2397,9 @@ function app() { return {
       stimulation_p3:    maskShift,
       stimulation_end:   maskShift,
       post_shift:        maskShift,
+      pvt_post:          maskShift,
       stimulation_volno: maskVolno,
+      psd_morning:       allMask,
       cortisol_am:       cortisolMask,
       cortisol_pm:       cortisolMask,
       cortisol_eve:      cortisolMask,
@@ -2447,7 +2454,8 @@ function app() { return {
     const defs = await this.apiFetch('/api/questionnaires/definitions');
     if(defs) {
       this.rawDefs = defs;
-      const HIDDEN = new Set(['pvt','tavns_diary','tavns_adverse','tavns_satisfaction']);
+      const HIDDEN = new Set(['pvt','tavns_diary','tavns_adverse','tavns_satisfaction',
+        'kss','kss_pre','kss_post','pre_shift_fatigue','post_shift_fatigue']);
       this.allQDefs = Object.entries(defs).filter(([key]) => !HIDDEN.has(key)).map(([key, d]) => ({key, ...d}));
     }
     if(this.isResearcher()) {

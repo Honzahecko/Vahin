@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from database import create_tables, SessionLocal, User, UserRole, StudyPhase
 from auth import hash_password
 from routers import auth_router, participants, shifts, questionnaires, garmin, export, admin_notes, push
-from routers import cortisol as cortisol_router
+from routers import cortisol as cortisol_router  # noqa: F401 – router needed for its API endpoints
 
 app = FastAPI(
     title="VAHIN Pilot Study",
@@ -65,16 +65,9 @@ def startup():
     push_manager.init_vapid()
     from apscheduler.schedulers.background import BackgroundScheduler
     from routers.push import check_and_send
-    from routers.cortisol import send_cortisol_push_all
     scheduler = BackgroundScheduler()
     scheduler.add_job(check_and_send, 'interval', minutes=1, args=[SessionLocal])
-    # Kortizol push: T0 v 6:00, T+15 v 6:15, T+30 v 6:30 (jen v kortizolové dny)
-    scheduler.add_job(send_cortisol_push_all, 'cron', hour=6, minute=0,
-                      args=[SessionLocal, "t0",  "🧪 Kortizol T0",  "Odeberte první vzorek slin ihned po probuzení."])
-    scheduler.add_job(send_cortisol_push_all, 'cron', hour=6, minute=15,
-                      args=[SessionLocal, "t15", "🧪 Kortizol T+15", "Čas na druhý vzorek slin (+15 minut po probuzení)."])
-    scheduler.add_job(send_cortisol_push_all, 'cron', hour=6, minute=30,
-                      args=[SessionLocal, "t30", "🧪 Kortizol T+30", "Poslední vzorek slin (+30 minut po probuzení)."])
+    # Kortizol notifikace jsou řešeny přes push.py (cortisol_am/pm/eve)
     scheduler.start()
 
 def _migrate_db():
