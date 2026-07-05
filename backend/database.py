@@ -225,7 +225,8 @@ class NotificationSchedule(Base):
     notif_type = Column(SAEnum(NotifType), nullable=False)
     hour       = Column(Integer, nullable=False)
     minute     = Column(Integer, default=0)
-    days_mask  = Column(Integer, default=127)   # bitmask 1=Po…64=Ne, 127=každý den
+    days_mask       = Column(Integer, default=127)        # bitmask 1=Po…64=Ne, 127=každý den (legacy)
+    study_days_mask = Column(Integer, default=0)          # bitmask bit0=den1…bit20=den21 studie; 0=nepoužívat
     enabled    = Column(Boolean, default=True)
     custom_msg = Column(String(300), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)

@@ -241,19 +241,19 @@
                   class="text-xs border border-gray-200 rounded px-1.5 py-1 w-20 text-center"
                   style="width:72px;padding:4px 6px;font-size:12px;border-radius:6px;border:1.5px solid #e5e7eb" />
               </div>
-              <!-- Dny v týdnu -->
-              <div class="flex items-center gap-1 mt-1.5 ml-6">
-                <template x-for="(day, di) in [{l:'Po',b:1},{l:'Út',b:2},{l:'St',b:4},{l:'Čt',b:8},{l:'Pá',b:16},{l:'So',b:32},{l:'Ne',b:64}]" :key="di">
+              <!-- Dny studie 1–21 -->
+              <div class="flex flex-wrap gap-1 mt-1.5 ml-6">
+                <template x-for="d in Array.from({length:21},(_,i)=>i+1)" :key="d">
                   <button type="button"
-                    @click="s.days_mask = (s.days_mask & day.b) ? (s.days_mask & ~day.b) : (s.days_mask | day.b)"
-                    :class="(s.days_mask & day.b) ? 'bg-indigo-600 text-white' : 'bg-white text-gray-400 border border-gray-200'"
-                    class="text-xs font-semibold rounded px-1.5 py-0.5 transition-colors"
-                    style="font-size:10px;min-width:22px"
-                    x-text="day.l">
-                  </button>
+                    @click="s.study_days_mask = (s.study_days_mask & (1<<(d-1))) ? (s.study_days_mask & ~(1<<(d-1))) : (s.study_days_mask | (1<<(d-1)))"
+                    :class="(s.study_days_mask & (1<<(d-1))) ? 'bg-indigo-600 text-white' : 'bg-white text-gray-400 border border-gray-200'"
+                    class="text-xs font-semibold rounded transition-colors"
+                    style="font-size:10px;min-width:22px;padding:2px 4px"
+                    x-text="d+'.'"
+                  ></button>
                 </template>
-                <span x-show="['cortisol_am','cortisol_pm','cortisol_eve'].includes(s.notif_type)" class="ml-1 text-xs text-amber-600">← dny 1,7,15,21</span>
-                <span x-show="s.notif_type==='weekly'" class="ml-1 text-xs text-blue-500">← vyberte 1 den</span>
+                <button type="button" @click="s.study_days_mask=0" class="ml-1 text-xs text-gray-400 hover:text-red-500 transition-colors" title="Odznačit vše">✕</button>
+                <button type="button" @click="s.study_days_mask=(1<<21)-1" class="text-xs text-gray-400 hover:text-indigo-600 transition-colors" title="Označit všechny dny">vše</button>
               </div>
             </div>
           </template>
@@ -2222,45 +2222,38 @@ function app() { return {
     if (r) {
       const defaults = [
         // -- Dotazníky --
-        {notif_type:'pre_shift',         hour:21, minute:30, enabled:false, days_mask:127, custom_msg:''},
-        {notif_type:'post_shift',        hour:7,  minute:0,  enabled:false, days_mask:127, custom_msg:''},
-        {notif_type:'weekly',            hour:10, minute:0,  enabled:false, days_mask:64,  custom_msg:''},
+        {notif_type:'pre_shift',         hour:21, minute:30, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
+        {notif_type:'post_shift',        hour:7,  minute:0,  enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
+        {notif_type:'weekly',            hour:10, minute:0,  enabled:false, days_mask:127, study_days_mask:(1<<6)|(1<<13)|(1<<20), custom_msg:''},
         // -- Stimulace (noční) --
-        {notif_type:'stimulation_start', hour:21, minute:45, enabled:false, days_mask:127, custom_msg:''},
-        {notif_type:'stimulation_p1',    hour:0,  minute:30, enabled:false, days_mask:127, custom_msg:''},
-        {notif_type:'stimulation_p2',    hour:2,  minute:30, enabled:false, days_mask:127, custom_msg:''},
-        {notif_type:'stimulation_p3',    hour:4,  minute:30, enabled:false, days_mask:127, custom_msg:''},
-        {notif_type:'stimulation_end',   hour:6,  minute:30, enabled:false, days_mask:127, custom_msg:''},
+        {notif_type:'stimulation_start', hour:21, minute:45, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
+        {notif_type:'stimulation_p1',    hour:0,  minute:30, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
+        {notif_type:'stimulation_p2',    hour:2,  minute:30, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
+        {notif_type:'stimulation_p3',    hour:4,  minute:30, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
+        {notif_type:'stimulation_end',   hour:6,  minute:30, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
         // -- Stimulace (volno/denní) --
-        {notif_type:'stimulation_volno', hour:10, minute:0,  enabled:false, days_mask:127, custom_msg:''},
+        {notif_type:'stimulation_volno', hour:10, minute:0,  enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
         // -- Kortizol (aktivovat jen v den 1,7,15,21) --
-        {notif_type:'cortisol_am',       hour:7,  minute:30, enabled:false, days_mask:0,   custom_msg:''},
-        {notif_type:'cortisol_pm',       hour:14, minute:0,  enabled:false, days_mask:0,   custom_msg:''},
-        {notif_type:'cortisol_eve',      hour:21, minute:0,  enabled:false, days_mask:0,   custom_msg:''},
+        {notif_type:'cortisol_am',       hour:7,  minute:30, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
+        {notif_type:'cortisol_pm',       hour:14, minute:0,  enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
+        {notif_type:'cortisol_eve',      hour:21, minute:0,  enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
         // -- Denní připomínka zadání --
-        {notif_type:'shift_entry',       hour:8,  minute:0,  enabled:true,  days_mask:127, custom_msg:''},
+        {notif_type:'shift_entry',       hour:8,  minute:0,  enabled:true,  days_mask:127, study_days_mask:(1<<21)-1, custom_msg:''},
         // -- Obecná --
-        {notif_type:'reminder',          hour:9,  minute:0,  enabled:false, days_mask:127, custom_msg:''},
+        {notif_type:'reminder',          hour:9,  minute:0,  enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
       ];
 
-      // Automatický výpočet kortizolových dnů z study_start_date
-      // Dny 1,7,15,21 → den1 a den7 jsou vždy 2 různé dny v týdnu (den15=den1, den21=den7)
-      // JS getDay(): 0=Ne,1=Po...6=So → bits: [64,1,2,4,8,16,32]
-      const dayBits = [64,1,2,4,8,16,32];
-      let cortisolMask = 0;
-      if (this.selectedP && this.selectedP.study_start_date) {
-        const start = new Date(this.selectedP.study_start_date + 'T00:00:00');
-        const day1  = new Date(start); day1.setDate(start.getDate() + 0);
-        const day7  = new Date(start); day7.setDate(start.getDate() + 6);
-        cortisolMask = dayBits[day1.getDay()] | dayBits[day7.getDay()];
-      }
+      // Auto-fill: kortizol dny 1,7,15,21 = bity 0,6,14,20
+      const cortisolStudyMask = (1<<0)|(1<<6)|(1<<14)|(1<<20); // = 1065025
 
       this.drawerSchedules = defaults.map(d => {
         const saved = r.find(s => s.notif_type === d.notif_type);
-        let entry = saved ? {...d, ...saved, time: this.padTime(saved.hour, saved.minute)} : {...d, time: this.padTime(d.hour, d.minute)};
+        let entry = saved
+          ? {...d, ...saved, study_days_mask: saved.study_days_mask ?? d.study_days_mask, time: this.padTime(saved.hour, saved.minute)}
+          : {...d, time: this.padTime(d.hour, d.minute)};
         // Předvyplň kortizolové dny jen pokud nejsou uloženy
-        if (!saved && cortisolMask && ['cortisol_am','cortisol_pm','cortisol_eve'].includes(d.notif_type)) {
-          entry.days_mask = cortisolMask;
+        if (!saved && ['cortisol_am','cortisol_pm','cortisol_eve'].includes(d.notif_type)) {
+          entry.study_days_mask = cortisolStudyMask;
         }
         return entry;
       });
@@ -2334,7 +2327,7 @@ function app() { return {
     this.drawerSchedSaving = true; this.drawerSchedMsg = '';
     const schedules = this.drawerSchedules.map(s => {
       const [h,m] = (s.time||'00:00').split(':').map(Number);
-      return {notif_type:s.notif_type, hour:h, minute:m, days_mask:s.days_mask, enabled:s.enabled, custom_msg:s.custom_msg||null};
+      return {notif_type:s.notif_type, hour:h, minute:m, days_mask:s.days_mask, study_days_mask:s.study_days_mask||0, enabled:s.enabled, custom_msg:s.custom_msg||null};
     });
     const r = await this.apiFetch('/api/push/schedules/'+userId, {method:'PUT', body:JSON.stringify(schedules)});
     this.drawerSchedSaving = false;

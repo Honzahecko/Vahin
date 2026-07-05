@@ -92,8 +92,9 @@ def _migrate_db():
             cur.execute(f"ALTER TABLE {table} ADD COLUMN {col} {typedef}")
             print(f"[VAHIN migrate] Přidán sloupec {table}.{col}")
 
-    add_col("users",         "study_start_date", "DATETIME")
-    add_col("cortisol_logs", "timepoint",        "TEXT NOT NULL DEFAULT 't0'")
+    add_col("users",                   "study_start_date",  "DATETIME")
+    add_col("cortisol_logs",           "timepoint",         "TEXT NOT NULL DEFAULT 't0'")
+    add_col("notification_schedules",  "study_days_mask",   "INTEGER DEFAULT 0")
 
     con.commit()
     con.close()

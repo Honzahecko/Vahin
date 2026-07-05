@@ -30,6 +30,7 @@ class ScheduleIn(BaseModel):
     hour: int
     minute: int = 0
     days_mask: int = 127
+    study_days_mask: int = 0
     enabled: bool = True
     custom_msg: Optional[str] = None
 
@@ -94,6 +95,7 @@ def set_schedules(user_id: int, schedules: List[ScheduleIn], db: Session = Depen
             hour=s.hour,
             minute=s.minute,
             days_mask=s.days_mask,
+            study_days_mask=s.study_days_mask,
             enabled=s.enabled,
             custom_msg=s.custom_msg,
         ))
@@ -121,6 +123,7 @@ def sched_to_dict(s: NotificationSchedule) -> dict:
         "hour": s.hour,
         "minute": s.minute,
         "days_mask": s.days_mask,
+        "study_days_mask": s.study_days_mask or 0,
         "enabled": s.enabled,
         "custom_msg": s.custom_msg,
     }
@@ -159,8 +162,20 @@ def check_and_send(db_session_factory):
         ).all()
 
         for sched in schedules:
-            if not (sched.days_mask & weekday_bit):
-                continue
+            sdm = sched.study_days_mask or 0
+            if sdm:
+                # Filtrovat podle dne studie (bit0=den1 … bit20=den21)
+                user = db.query(User).filter(User.id == sched.user_id).first()
+                if not user or not user.study_start_date:
+                    continue
+                study_day = (now.date() - user.study_start_date.date()).days + 1
+                if study_day < 1 or study_day > 21:
+                    continue
+                if not (sdm & (1 << (study_day - 1))):
+                    continue
+            else:
+                if not (sched.days_mask & weekday_bit):
+                    continue
             subs = db.query(PushSubscription).filter(
                 PushSubscription.user_id == sched.user_id).all()
             title, body, url = NOTIF_TEXTS.get(sched.notif_type, ("VAHIN", "Připomínka", "/"))
