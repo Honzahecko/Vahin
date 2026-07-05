@@ -1580,7 +1580,7 @@
               <div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3" x-text="section.label"></div>
               <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
                 <template x-for="q in allQDefs.filter(d=>section.freqs.includes(d.frequency))" :key="q.key">
-                  <button @click="goQuestionnaire(q.key)"
+                  <button @click="q.key==='pvt' ? startPvt() : goQuestionnaire(q.key)"
                     class="relative text-left rounded-2xl p-4 transition-all border-2"
                     :style="qIsDone(q.key)
                       ? 'background:#f0fdf4;border-color:#bbf7d0'
@@ -2183,11 +2183,11 @@ function app() { return {
   cortisolSaving: false,
   weeklyPending: [],
   qSections: [
-    { label: '🌅 Každé ráno',          freqs: ['daily_morning'] },
-    { label: '⏱ Ke každé směně',       freqs: ['per_shift','per_shift_before','per_shift_after'] },
-    { label: '⚡ Po každé stimulaci',   freqs: ['per_stimulation'] },
-    { label: '📊 Jednou týdně',         freqs: ['weekly'] },
-    { label: '📋 Jednorázové',          freqs: ['once_start','once_end'] },
+    { label: '🌅 Každé ráno',               freqs: ['daily_morning'] },
+    { label: '🌙 Před každou noční směnou', freqs: ['per_shift_before'] },
+    { label: '🌙 Po každé noční směně',     freqs: ['per_shift_after'] },
+    { label: '📊 Jednou týdně',              freqs: ['weekly'] },
+    { label: '📋 Jednorázové',               freqs: ['once_start','once_end'] },
   ],
   selectedQ:'', qDef:null, qAnswers:{}, qMsg:'', qOk:false,
   participants:[], stats:{total:0,active:0,consent:0,groupA:0,groupB:0},
@@ -2415,29 +2415,26 @@ function app() { return {
 
   applyShiftSchedule() {
     const sch = this.participantShiftSchedule;
-    let maskShift = 0, maskNocni = 0, maskVolno = 0;
+    let maskNocni = 0, maskDenni = 0, maskVolno = 0;
     for (let d = 0; d < 21; d++) {
-      if (sch[d] === 'N' || sch[d] === 'D') maskShift |= (1 << d);
       if (sch[d] === 'N') maskNocni |= (1 << d);
+      if (sch[d] === 'D') maskDenni |= (1 << d);
       if (sch[d] === 'V') maskVolno |= (1 << d);
     }
     const cortisolMask = (1<<0)|(1<<6)|(1<<14)|(1<<20);
     const weeklyMask   = (1<<6)|(1<<13)|(1<<20);
     const allMask      = (1<<21)-1;
-    const nCount = sch.filter(d=>d==='N').length;
-    const dCount = sch.filter(d=>d==='D').length;
-    const mainProfile = nCount >= dCount ? 'nocni' : 'ranni';
-    this.applyNotifProfile(mainProfile);
+    this.applyNotifProfile('nocni');
     const TYPE_MASKS = {
-      pre_shift:         maskShift,
-      stimulation_start: maskShift,
-      stimulation_p1:    maskShift,
-      stimulation_p2:    maskShift,
-      stimulation_p3:    maskShift,
-      stimulation_end:   maskShift,
-      post_shift:        maskShift,
+      pre_shift:         maskNocni,
+      stimulation_start: maskNocni,
+      stimulation_p1:    maskNocni,
+      stimulation_p2:    maskNocni,
+      stimulation_p3:    maskNocni,
+      stimulation_end:   maskNocni,
+      post_shift:        maskNocni,
       pvt_post:          maskNocni,
-      stimulation_volno: maskVolno,
+      stimulation_volno: maskVolno | maskDenni,
       psd_morning:       allMask,
       cortisol_am:       cortisolMask,
       cortisol_pm:       cortisolMask,
@@ -2493,8 +2490,8 @@ function app() { return {
     const defs = await this.apiFetch('/api/questionnaires/definitions');
     if(defs) {
       this.rawDefs = defs;
-      const HIDDEN = new Set(['pvt','tavns_diary','tavns_adverse','tavns_satisfaction',
-        'kss','kss_pre','kss_post','pre_shift_fatigue','post_shift_fatigue']);
+      const HIDDEN = new Set(['tavns_diary','tavns_adverse','tavns_satisfaction',
+        'kss','pre_shift_fatigue','post_shift_fatigue']);
       this.allQDefs = Object.entries(defs).filter(([key]) => !HIDDEN.has(key)).map(([key, d]) => ({key, ...d}));
     }
     if(this.isResearcher()) {
@@ -2749,13 +2746,21 @@ function app() { return {
   // ── Pomocné funkce pro dlaždicový seznam dotazníků ────────────────────────
 
   qIsDone(qkey){
-    const task = (this.guideTasks||[]).find(t=>t.id===qkey || t.qtype===qkey);
-    return task ? task.done : false;
+    const todayStr = new Date().toISOString().slice(0,10);
+    const ms7d = 7*24*60*60*1000;
+    const def = this.allQDefs.find(d=>d.key===qkey);
+    const freq = def?.frequency;
+    const last = (this.myResponses||[]).find(r=>r.q_type===qkey);
+    if(!last) return false;
+    if(freq==='once_start'||freq==='once_end') return true;
+    if(freq==='weekly') return (new Date()-new Date(last.filled_at)) < ms7d;
+    return last.filled_at.slice(0,10)===todayStr;
   },
 
   qShortTitle(qkey){
     const MAP = {
       psd:'Spánkový deník', kss:'KSS Ospalost',
+      kss_pre:'KSS – před směnou', kss_post:'KSS – po směně', pvt:'PVT – Reakční test',
       pre_shift_fatigue:'Únava před směnou', post_shift_fatigue:'Únava po směně',
       tavns_diary:'Deník stimulace', psqi:'PSQI Spánek',
       mfi20:'MFI-20 Únava', tavns_adverse:'Nežádoucí účinky',
@@ -2793,6 +2798,9 @@ function app() { return {
     const M = {
       psd:'<path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/>',
       kss:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+      kss_pre:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+      kss_post:'<path d="M17 18a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2"/><circle cx="12" cy="11" r="3"/><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+      pvt:'<polygon points="5 3 19 12 5 21 5 3"/>',
       pre_shift_fatigue:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M18.36 5.64l1.41-1.41"/>',
       post_shift_fatigue:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
       tavns_diary:'<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>',
