@@ -83,9 +83,49 @@ QUESTIONNAIRE_DEFINITIONS = {
         "icon": "moon",
         "color": "purple",
         "questions": [
-            {"id": "timepoint", "type": "choice", "label": "Kdy vyplňujete?",
-             "options": [{"label": "Před směnou", "value": "before_shift"}, {"label": "Po směně", "value": "after_shift"}]},
             {"id": "sleepiness_level", "type": "choice", "label": "Jak ospalý/á se právě teď cítíte?",
+             "options": [
+                {"label": "1 – Zcela bdělý/á", "value": 1},
+                {"label": "2 – Velmi bdělý/á", "value": 2},
+                {"label": "3 – Bdělý/á", "value": 3},
+                {"label": "4 – Spíše bdělý/á, ale ne zcela", "value": 4},
+                {"label": "5 – Ani ospalý/á, ani bdělý/á", "value": 5},
+                {"label": "6 – Trochu ospalý/á", "value": 6},
+                {"label": "7 – Dosti ospalý/á, udržuji bdělost snadno", "value": 7},
+                {"label": "8 – Dosti ospalý/á, udržuji bdělost s obtížemi", "value": 8},
+                {"label": "9 – Velmi ospalý/á, snažím se neusnout", "value": 9},
+             ]},
+        ]
+    },
+    "kss_pre": {
+        "title": "KSS – Ospalost před směnou",
+        "description": "Vyplňte těsně před nástupem na směnu.",
+        "frequency": "per_shift_before",
+        "icon": "moon",
+        "color": "indigo",
+        "questions": [
+            {"id": "sleepiness_level", "type": "choice", "label": "Jak ospalý/á se právě teď cítíte (před směnou)?",
+             "options": [
+                {"label": "1 – Zcela bdělý/á", "value": 1},
+                {"label": "2 – Velmi bdělý/á", "value": 2},
+                {"label": "3 – Bdělý/á", "value": 3},
+                {"label": "4 – Spíše bdělý/á, ale ne zcela", "value": 4},
+                {"label": "5 – Ani ospalý/á, ani bdělý/á", "value": 5},
+                {"label": "6 – Trochu ospalý/á", "value": 6},
+                {"label": "7 – Dosti ospalý/á, udržuji bdělost snadno", "value": 7},
+                {"label": "8 – Dosti ospalý/á, udržuji bdělost s obtížemi", "value": 8},
+                {"label": "9 – Velmi ospalý/á, snažím se neusnout", "value": 9},
+             ]},
+        ]
+    },
+    "kss_post": {
+        "title": "KSS – Ospalost po směně",
+        "description": "Vyplňte ihned po skončení směny.",
+        "frequency": "per_shift_after",
+        "icon": "moon",
+        "color": "indigo",
+        "questions": [
+            {"id": "sleepiness_level", "type": "choice", "label": "Jak ospalý/á se právě teď cítíte (po směně)?",
              "options": [
                 {"label": "1 – Zcela bdělý/á", "value": 1},
                 {"label": "2 – Velmi bdělý/á", "value": 2},

@@ -1637,7 +1637,7 @@
               <template x-for="(q, qi) in qDef?.questions" :key="q.id">
                 <div class="mb-6 pb-6 border-b border-gray-50 last:border-0">
                   <label class="text-sm font-semibold text-gray-800 block mb-2"
-                         x-text="(qi+1)+'. '+q.label+(q.optional?' (volitelné)':'')"></label>
+                         x-text="(/^\d+\./.test(q.label) ? '' : (qi+1)+'. ')+q.label+(q.optional?' (volitelné)':'')"></label>
                   <!-- VAS -->
                   <div x-show="q.type==='vas'" class="px-1">
                     <input type="range" min="0" max="100" x-model="qAnswers[q.id]" class="vas-slider mb-2" />
@@ -1898,8 +1898,8 @@
 const API = window.location.origin;
 
 function app() { return {
-  token: localStorage.getItem('vahin_token')||'',
-  currentUser: JSON.parse(localStorage.getItem('vahin_user')||'null'),
+  token: localStorage.getItem('vahin_token')||sessionStorage.getItem('vahin_token')||'',
+  currentUser: JSON.parse(localStorage.getItem('vahin_user')||sessionStorage.getItem('vahin_user')||'null'),
   loading: false, activeTab: 'home', apiBase: API,
   loginForm: {email:'',password:''}, loginError: '',
   myShifts: [], myResponses: [], garminMsg:'', garminOk:false,
@@ -2068,6 +2068,7 @@ function app() { return {
       if(!r.ok){this.loginError=d.detail||'Chyba přihlášení';return;}
       this.token=d.access_token;
       localStorage.setItem('vahin_token',this.token);
+      sessionStorage.setItem('vahin_token',this.token);
       await this.loadMe(); await this.loadData();
     } catch(e){this.loginError='Nelze se spojit se serverem';}
     finally{this.loading=false;}
@@ -2076,11 +2077,12 @@ function app() { return {
   logout(){
     this.token=''; this.currentUser=null;
     localStorage.removeItem('vahin_token'); localStorage.removeItem('vahin_user');
+    sessionStorage.removeItem('vahin_token'); sessionStorage.removeItem('vahin_user');
   },
 
   async loadMe(){
     const r=await this.apiFetch('/api/auth/me');
-    if(r){this.currentUser=r; localStorage.setItem('vahin_user',JSON.stringify(r));}
+    if(r){this.currentUser=r; const u=JSON.stringify(r); localStorage.setItem('vahin_user',u); sessionStorage.setItem('vahin_user',u);}
   },
 
   async loadData(){
@@ -2178,7 +2180,7 @@ function app() { return {
       if(fresh){ this.myResponses = fresh; this.buildGuideTasks(); this.buildDayTasks(); }
     } catch(e){}
     this.pvtSaving = false;
-    this.activeTab = 'home';
+    setTimeout(() => { this.activeTab = 'home'; }, 2500);
   },
 
   pvtAbort(){
@@ -2229,7 +2231,9 @@ function app() { return {
   // ── Tutorial ──────────────────────────────────────────────────────────────
 
   tutorialCheck(){
-    if(!localStorage.getItem('vahin_tutorial_done')){
+    const done = localStorage.getItem('vahin_tutorial_done');
+    const hasActivity = this.myResponses.length > 0;
+    if(!done && !hasActivity){
       this.tutorialStep = 0;
       this.tutorialActive = true;
     }
@@ -2315,8 +2319,8 @@ function app() { return {
     // Sdílené pomocné definice položek
     const T = (id,title,when,qtype,icon,stroke,bg,tagCls,tag,req,urg) => ({id,title,when,qtype,action:'questionnaire',icon,stroke,bgClass:bg,tagClass:tagCls,tag,required:req,urgent:urg});
     const PSD   = T('psd',    'Spánkový deník',      'Po probuzení (ráno)',       'psd',              ICON.bed,  '#2563eb','bg-blue-100',  'bg-blue-100 text-blue-700',  'Deník',    true,  true );
-    const KSSp  = T('kss_pre','KSS – Ospalost',      'Před nástupem směny',      'kss',              ICON.moon, '#4f46e5','bg-indigo-100','bg-indigo-100 text-indigo-700','Dotazník',true,  true );
-    const KSSpo = T('kss_post','KSS – Ospalost',     'Ihned po skončení směny',  'kss',              ICON.moon, '#4f46e5','bg-indigo-100','bg-indigo-100 text-indigo-700','Dotazník',true,  false);
+    const KSSp  = T('kss_pre', 'KSS – Ospalost', 'Před nástupem směny',   'kss_pre',  ICON.moon, '#4f46e5','bg-indigo-100','bg-indigo-100 text-indigo-700','Dotazník',true,  true );
+    const KSSpo = T('kss_post','KSS – Ospalost', 'Ihned po skončení směny','kss_post', ICON.moon, '#4f46e5','bg-indigo-100','bg-indigo-100 text-indigo-700','Dotazník',true,  false);
     const PVT   = {id:'pvt', title:'PVT – Reakční test', when:'Po skončení směny (~3 min)',
                    qtype:'pvt', action:'pvt', icon:'<polygon points="5 3 19 12 5 21 5 3"/>',
                    stroke:'#0891b2', bgClass:'bg-cyan-100', tagClass:'bg-cyan-100 text-cyan-700',
@@ -2747,9 +2751,9 @@ function app() { return {
     const r=await this.apiFetch('/api/questionnaires/',{method:'POST',body:JSON.stringify({q_type:this.selectedQ,answers:this.qAnswers})});
     if(r){
       this.qMsg='Dotazník byl úspěšně uložen!'; this.qOk=true; this.qAnswers={};
-      // Refresh myResponses and rebuild guide tasks
       const fresh = await this.apiFetch('/api/questionnaires/my');
       if(fresh){ this.myResponses=fresh; this.buildGuideTasks(); this.buildDayTasks(); }
+      setTimeout(() => { this.activeTab='home'; this.qMsg=''; }, 1500);
     } else {this.qMsg='Chyba při ukládání.'; this.qOk=false;}
     this.loading=false;
   },

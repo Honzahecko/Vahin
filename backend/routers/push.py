@@ -7,6 +7,11 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
+try:
+    from zoneinfo import ZoneInfo
+    _PRAGUE = ZoneInfo("Europe/Prague")
+except Exception:
+    _PRAGUE = None
 from database import get_db, User, PushSubscription, NotificationSchedule, NotifType
 from auth import get_current_user, require_researcher
 import push_manager
@@ -130,7 +135,7 @@ NOTIF_TEXTS = {
 def check_and_send(db_session_factory):
     """Spouštěno každou minutu APSchedulerem."""
     from sqlalchemy.orm import Session as DBSession
-    now = datetime.now()
+    now = datetime.now(_PRAGUE) if _PRAGUE else datetime.now()
     weekday_bit = 1 << now.weekday()   # Po=1, Út=2 … Ne=64
 
     db: DBSession = db_session_factory()
