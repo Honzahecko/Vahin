@@ -41,6 +41,20 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     )
 
 
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+@router.post("/change-password")
+def change_password(data: ChangePasswordRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if not verify_password(data.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Nesprávné současné heslo")
+    if len(data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Heslo musí mít alespoň 6 znaků")
+    current_user.hashed_password = hash_password(data.new_password)
+    db.commit()
+    return {"ok": True}
+
 @router.get("/me")
 def me(current_user: User = Depends(get_current_user)):
     from datetime import datetime
