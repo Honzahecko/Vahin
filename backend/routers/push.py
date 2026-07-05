@@ -128,9 +128,9 @@ def sched_to_dict(s: NotificationSchedule) -> dict:
 NOTIF_TEXTS = {
     "pre_shift":         ("VAHIN – Před směnou",         "Vyplňte KSS před začátkem směny.",                                 "/?q=kss_pre"),
     "stimulation_start": ("VAHIN – Zahajte stimulaci",   "Zahajte 15–30minutovou tAVNS stimulaci (začátek směny).",          "/?tab=home"),
-    "stimulation_p1":    ("VAHIN – Pauza: stimulace",    "Krátká tAVNS stimulace v pauze (5–10 minut).",                     "/?tab=home"),
-    "stimulation_p2":    ("VAHIN – Pauza: stimulace",    "Krátká tAVNS stimulace v pauze (5–10 minut).",                     "/?tab=home"),
-    "stimulation_p3":    ("VAHIN – Pauza: stimulace",    "Krátká tAVNS stimulace v pauze (5–10 minut).",                     "/?tab=home"),
+    "stimulation_p1":    ("VAHIN – Pauza: stimulace",    "Zahajte 15minutovou tAVNS stimulaci v pauze.",                     "/?tab=home"),
+    "stimulation_p2":    ("VAHIN – Pauza: stimulace",    "Zahajte 15minutovou tAVNS stimulaci v pauze.",                     "/?tab=home"),
+    "stimulation_p3":    ("VAHIN – Pauza: stimulace",    "Zahajte 15minutovou tAVNS stimulaci v pauze.",                     "/?tab=home"),
     "stimulation_end":   ("VAHIN – Závěrečná stimulace", "Zahajte 15–30minutovou tAVNS stimulaci (konec směny).",             "/?tab=home"),
     "post_shift":        ("VAHIN – Po směně",             "Vyplňte KSS a spánkový deník po směně.",                           "/?q=kss_post"),
     "stimulation_volno": ("VAHIN – Denní stimulace",      "Nezapomeňte na 15minutovou udržovací tAVNS stimulaci.",             "/?tab=home"),
