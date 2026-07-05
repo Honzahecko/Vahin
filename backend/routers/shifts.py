@@ -50,6 +50,8 @@ def create_shift(data: ShiftCreate, current_user: User = Depends(get_current_use
         notes=data.notes,
     )
     db.add(shift)
+    if not current_user.study_start_date:
+        current_user.study_start_date = data.shift_date
     db.commit()
     db.refresh(shift)
     return shift_to_dict(shift)

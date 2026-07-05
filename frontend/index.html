@@ -1165,7 +1165,7 @@
               <div class="card p-5 mb-4 text-center">
                 <div class="text-3xl mb-3">✅</div>
                 <div class="font-bold text-navy-900 text-base mb-1">Dotazník MEQ vyplněn</div>
-                <div class="text-sm text-gray-500 leading-relaxed">Skvěle! Nyní čekáme na přiřazení do skupiny koordinátorem studie. Po zahájení první fáze dostanete oznámení a studijní plán se otevře.</div>
+                <div class="text-sm text-gray-500 leading-relaxed">Skvěle! Nyní čekáme na zahájení první fáze studie koordinátorem. Po zahájení dostanete oznámení a studijní plán se otevře.</div>
                 <div class="mt-4 inline-flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-2 text-xs text-blue-700 font-semibold">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
                   Čekáme na koordinátora studie
@@ -1374,35 +1374,8 @@
             </div>
           </div>
 
-          <!-- Garmin + last shifts -->
+          <!-- Last shifts -->
           <div class="flex flex-col gap-4">
-            <div class="card p-5">
-              <div class="flex items-center gap-2 mb-1">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F3864" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                <div class="font-bold text-navy-900">Nahrát data z Garmin</div>
-              </div>
-              <!-- ZIP export -->
-              <div class="mb-3">
-                <div class="text-xs font-semibold text-gray-500 mb-1">ZIP export (doporučeno)</div>
-                <div class="text-xs text-gray-400 mb-2">Garmin Connect → Profil → Nastavení → Export dat → stáhnout ZIP</div>
-                <label class="flex items-center gap-2 cursor-pointer bg-indigo-50 hover:bg-indigo-100 transition-colors rounded-lg px-3 py-2">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  <span class="text-xs font-semibold text-indigo-700">Nahrát ZIP soubor</span>
-                  <input type="file" accept=".zip" class="hidden" @change="uploadGarminZip($event)" />
-                </label>
-              </div>
-              <!-- CSV / JSON manual -->
-              <div class="border-t border-gray-100 pt-3">
-                <div class="text-xs font-semibold text-gray-500 mb-1">Nebo jednotlivý soubor</div>
-                <div class="text-xs text-gray-400 mb-2">UDSFile*.json / sleepData*.json / CSV export</div>
-                <label class="flex items-center gap-2 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors rounded-lg px-3 py-2">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  <span class="text-xs font-semibold text-gray-600">Nahrát JSON / CSV</span>
-                  <input type="file" accept=".csv,.json" class="hidden" @change="uploadGarmin($event)" />
-                </label>
-              </div>
-              <div x-show="garminMsg" class="mt-2 text-sm font-semibold" :class="garminOk?'text-green-600':'text-red-600'" x-text="garminMsg"></div>
-            </div>
             <div class="card p-5">
               <div class="font-bold text-navy-900 mb-3">🌙 Poslední směny</div>
               <template x-if="myShifts.length===0">
@@ -1879,7 +1852,6 @@
         <div class="flex w-full" x-init="$nextTick(()=>lucide&&lucide.createIcons())">
           <button @click="activeTab='home'" class="mob-nav-btn" :class="activeTab==='home'?'active':''"><i data-lucide="home"></i>Domů</button>
           <button @click="activeTab='questionnaires'" class="mob-nav-btn" :class="activeTab==='questionnaires'?'active':''"><i data-lucide="clipboard-list"></i>Dotazníky</button>
-          <button @click="activeTab='shift'" class="mob-nav-btn" :class="activeTab==='shift'?'active':''"><i data-lucide="zap"></i>Směna</button>
           <button @click="activeTab='guide'" class="mob-nav-btn" :class="activeTab==='guide'?'active':''"><i data-lucide="book-open"></i>Průvodce</button>
         </div>
       </template>
@@ -2904,7 +2876,7 @@ function app() { return {
     return idx<cur?'done':idx===cur?'current':'';
   },
   todayStr(){ return new Date().toLocaleDateString('cs-CZ',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); },
-  formatDate(d){ return d?new Date(d).toLocaleDateString('cs-CZ',{day:'2-digit',month:'2-digit',year:'numeric'}):'—'; },
+  formatDate(d){ if(!d) return '—'; const p=d.split('T')[0].split('-'); const dt=new Date(+p[0],+p[1]-1,+p[2]); return dt.toLocaleDateString('cs-CZ',{weekday:'short',day:'2-digit',month:'2-digit'}); },
   formatDateTime(d){ return d?new Date(d).toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'; },
   formatTime(d){ return d?new Date(d).toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}):'—'; },
   pageTitle(){ const m={home:'Přehled studie',participants:'Účastníci',data:'Data & Export',schedule:'Harmonogram',project:'Řízení projektu',questionnaire:'Dotazník',questionnaires:'Dotazníky',shift:'Noční směna',guide:'Průvodce studií'}; return m[this.activeTab]||'VAHIN Pilot'; },
