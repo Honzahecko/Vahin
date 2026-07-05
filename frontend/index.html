@@ -233,7 +233,8 @@
             <div class="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
               <input type="checkbox" x-model="s.enabled" class="w-4 h-4 rounded accent-indigo-600" style="width:16px;flex-shrink:0" />
               <div class="flex-1 min-w-0">
-                <div class="text-xs font-semibold text-gray-700" x-text="{'pre_shift':'Před směnou','post_shift':'Po směně','stimulation':'Stimulace tAVNS','weekly':'Týdenní pohoda','reminder':'Připomínka'}[s.notif_type]"></div>
+                <div class="text-xs font-semibold text-gray-700" x-text="({'pre_shift':'📋 KSS – před směnou','post_shift':'📋 KSS+PSD – po směně','weekly':'📊 MFI/PSQI (týdenní)','stimulation_start':'🎯 Stimulace – začátek (30 min)','stimulation_p1':'🎯 Stimulace – pauza 1 (5–10 min)','stimulation_p2':'🎯 Stimulace – pauza 2 (5–10 min)','stimulation_p3':'🎯 Stimulace – pauza 3 (5–10 min)','stimulation_end':'🎯 Stimulace – konec (30 min)','stimulation_volno':'🎯 Stimulace – volno/udržovací (15 min)','cortisol_am':'🧪 Kortizol – ráno (vzorek č.1)','cortisol_pm':'🧪 Kortizol – odpoledne (vzorek č.2)','cortisol_eve':'🧪 Kortizol – večer (vzorek č.3)','reminder':'🔔 Obecná připomínka','stimulation':'🎯 Stimulace'})[s.notif_type] || s.notif_type"></div>
+                <div x-show="['cortisol_am','cortisol_pm','cortisol_eve'].includes(s.notif_type)" class="text-xs text-amber-600 mt-0.5">Aktivovat jen v den 1, 7, 15 a 21 studie</div>
               </div>
               <input type="time" x-model="s.time"
                 class="text-xs border border-gray-200 rounded px-1.5 py-1 w-20 text-center"
@@ -2204,12 +2205,26 @@ function app() { return {
     const r = await this.apiFetch('/api/push/schedules/'+userId);
     if (r) {
       const defaults = [
-        {notif_type:'pre_shift',   hour:18, minute:30, enabled:false, days_mask:127, custom_msg:''},
-        {notif_type:'post_shift',  hour:8,  minute:0,  enabled:false, days_mask:127, custom_msg:''},
-        {notif_type:'stimulation', hour:22, minute:30, enabled:false, days_mask:127, custom_msg:''},
-        {notif_type:'weekly',      hour:10, minute:0,  enabled:false, days_mask:64,  custom_msg:''},
-        {notif_type:'reminder',    hour:9,  minute:0,  enabled:false, days_mask:127, custom_msg:''},
+        // -- Dotazníky --
+        {notif_type:'pre_shift',         hour:21, minute:30, enabled:false, days_mask:127, custom_msg:''},
+        {notif_type:'post_shift',        hour:7,  minute:0,  enabled:false, days_mask:127, custom_msg:''},
+        {notif_type:'weekly',            hour:10, minute:0,  enabled:false, days_mask:64,  custom_msg:''},
+        // -- Stimulace (noční) --
+        {notif_type:'stimulation_start', hour:21, minute:45, enabled:false, days_mask:127, custom_msg:''},
+        {notif_type:'stimulation_p1',    hour:0,  minute:30, enabled:false, days_mask:127, custom_msg:''},
+        {notif_type:'stimulation_p2',    hour:2,  minute:30, enabled:false, days_mask:127, custom_msg:''},
+        {notif_type:'stimulation_p3',    hour:4,  minute:30, enabled:false, days_mask:127, custom_msg:''},
+        {notif_type:'stimulation_end',   hour:6,  minute:30, enabled:false, days_mask:127, custom_msg:''},
+        // -- Stimulace (volno/denní) --
+        {notif_type:'stimulation_volno', hour:10, minute:0,  enabled:false, days_mask:127, custom_msg:''},
+        // -- Kortizol (aktivovat jen v den 1,7,15,21) --
+        {notif_type:'cortisol_am',       hour:7,  minute:30, enabled:false, days_mask:127, custom_msg:''},
+        {notif_type:'cortisol_pm',       hour:14, minute:0,  enabled:false, days_mask:127, custom_msg:''},
+        {notif_type:'cortisol_eve',      hour:21, minute:0,  enabled:false, days_mask:127, custom_msg:''},
+        // -- Obecná --
+        {notif_type:'reminder',          hour:9,  minute:0,  enabled:false, days_mask:127, custom_msg:''},
       ];
+      // Multi-entry types: načti všechny uložené záznamy pro daný typ
       this.drawerSchedules = defaults.map(d => {
         const saved = r.find(s => s.notif_type === d.notif_type);
         return saved ? {...d, ...saved, time: this.padTime(saved.hour, saved.minute)} : {...d, time: this.padTime(d.hour, d.minute)};
@@ -2220,15 +2235,60 @@ function app() { return {
   padTime(h, m) { return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'); },
 
   applyNotifProfile(profile) {
+    // Noční směna 22:00-06:00 | Ranní 07:00-15:00 | Volno
     const P = {
-      nocni: {pre_shift:{h:18,m:30,en:true}, post_shift:{h:8,m:0,en:true},  stimulation:{h:22,m:30,en:true}, weekly:{h:10,m:0,en:false}, reminder:{h:9,m:0,en:false}},
-      ranni: {pre_shift:{h:5,m:30,en:true},  post_shift:{h:14,m:0,en:true}, stimulation:{h:6,m:0,en:true},  weekly:{h:10,m:0,en:false}, reminder:{h:9,m:0,en:false}},
-      volno: {pre_shift:{h:8,m:0,en:false},  post_shift:{h:8,m:0,en:false}, stimulation:{h:8,m:0,en:false}, weekly:{h:10,m:0,en:true},  reminder:{h:9,m:0,en:false}},
+      nocni: {
+        pre_shift:         {h:21, m:30, en:true},
+        stimulation_start: {h:21, m:45, en:true},
+        stimulation_p1:    {h:0,  m:30, en:true},
+        stimulation_p2:    {h:2,  m:30, en:true},
+        stimulation_p3:    {h:4,  m:30, en:true},
+        stimulation_end:   {h:6,  m:30, en:true},
+        post_shift:        {h:7,  m:0,  en:true},
+        stimulation_volno: {h:10, m:0,  en:false},
+        cortisol_am:       {h:7,  m:30, en:false},
+        cortisol_pm:       {h:14, m:0,  en:false},
+        cortisol_eve:      {h:21, m:0,  en:false},
+        weekly:            {h:10, m:0,  en:true,  days_mask:64},
+        reminder:          {h:9,  m:0,  en:false},
+      },
+      ranni: {
+        pre_shift:         {h:6,  m:30, en:true},
+        stimulation_start: {h:6,  m:45, en:true},
+        stimulation_p1:    {h:9,  m:30, en:true},
+        stimulation_p2:    {h:11, m:30, en:true},
+        stimulation_p3:    {h:13, m:30, en:true},
+        stimulation_end:   {h:14, m:45, en:true},
+        post_shift:        {h:15, m:15, en:true},
+        stimulation_volno: {h:10, m:0,  en:false},
+        cortisol_am:       {h:7,  m:30, en:false},
+        cortisol_pm:       {h:14, m:0,  en:false},
+        cortisol_eve:      {h:21, m:0,  en:false},
+        weekly:            {h:10, m:0,  en:true,  days_mask:64},
+        reminder:          {h:9,  m:0,  en:false},
+      },
+      volno: {
+        pre_shift:         {h:8,  m:0,  en:false},
+        stimulation_start: {h:8,  m:0,  en:false},
+        stimulation_p1:    {h:8,  m:0,  en:false},
+        stimulation_p2:    {h:8,  m:0,  en:false},
+        stimulation_p3:    {h:8,  m:0,  en:false},
+        stimulation_end:   {h:8,  m:0,  en:false},
+        post_shift:        {h:8,  m:0,  en:false},
+        stimulation_volno: {h:10, m:0,  en:true},
+        cortisol_am:       {h:7,  m:30, en:false},
+        cortisol_pm:       {h:14, m:0,  en:false},
+        cortisol_eve:      {h:21, m:0,  en:false},
+        weekly:            {h:10, m:0,  en:true,  days_mask:64},
+        reminder:          {h:9,  m:0,  en:false},
+      },
     };
     const p = P[profile]; if (!p) return;
     this.drawerSchedules = this.drawerSchedules.map(s => {
       const c = p[s.notif_type]; if (!c) return s;
-      return {...s, hour:c.h, minute:c.m, enabled:c.en, time:this.padTime(c.h, c.m)};
+      const upd = {...s, hour:c.h, minute:c.m, enabled:c.en, time:this.padTime(c.h, c.m)};
+      if (c.days_mask !== undefined) upd.days_mask = c.days_mask;
+      return upd;
     });
   },
 

@@ -126,11 +126,21 @@ def sched_to_dict(s: NotificationSchedule) -> dict:
     }
 
 NOTIF_TEXTS = {
-    "pre_shift":   ("VAHIN – Před směnou",     "Vyplňte KSS před začátkem směny.",          "/?q=kss_pre"),
-    "post_shift":  ("VAHIN – Po směně",         "Vyplňte KSS a spánkový deník po směně.",    "/?q=kss_post"),
-    "stimulation": ("VAHIN – Čas na stimulaci", "Zahajte 30minutovou tAVNS stimulaci.",       "/?tab=home"),
-    "weekly":      ("VAHIN – Týdenní pohoda",   "Vyplňte týdenní dotazník pohody.",           "/?q=psd"),
-    "reminder":    ("VAHIN – Připomínka",        "Připomínka od výzkumného týmu VAHIN.",       "/"),
+    "pre_shift":         ("VAHIN – Před směnou",         "Vyplňte KSS před začátkem směny.",                                 "/?q=kss_pre"),
+    "stimulation_start": ("VAHIN – Zahajte stimulaci",   "Zahajte 15–30minutovou tAVNS stimulaci (začátek směny).",          "/?tab=home"),
+    "stimulation_p1":    ("VAHIN – Pauza: stimulace",    "Krátká tAVNS stimulace v pauze (5–10 minut).",                     "/?tab=home"),
+    "stimulation_p2":    ("VAHIN – Pauza: stimulace",    "Krátká tAVNS stimulace v pauze (5–10 minut).",                     "/?tab=home"),
+    "stimulation_p3":    ("VAHIN – Pauza: stimulace",    "Krátká tAVNS stimulace v pauze (5–10 minut).",                     "/?tab=home"),
+    "stimulation_end":   ("VAHIN – Závěrečná stimulace", "Zahajte 15–30minutovou tAVNS stimulaci (konec směny).",             "/?tab=home"),
+    "post_shift":        ("VAHIN – Po směně",             "Vyplňte KSS a spánkový deník po směně.",                           "/?q=kss_post"),
+    "stimulation_volno": ("VAHIN – Denní stimulace",      "Nezapomeňte na 15minutovou udržovací tAVNS stimulaci.",             "/?tab=home"),
+    "cortisol_am":       ("VAHIN – Kortizol ráno",        "Odběr slin – vzorek č.1 (ráno, 30 min po probuzení, nalačno).",    "/"),
+    "cortisol_pm":       ("VAHIN – Kortizol odpoledne",   "Odběr slin – vzorek č.2 (odpoledne, cca 6 h po ranním vzorku).",   "/"),
+    "cortisol_eve":      ("VAHIN – Kortizol večer",       "Odběr slin – vzorek č.3 (večer, před spánkem).",                   "/"),
+    "weekly":            ("VAHIN – Týdenní dotazníky",    "Vyplňte týdenní dotazníky MFI-20 a PSQI.",                         "/?q=mfi"),
+    "reminder":          ("VAHIN – Připomínka",            "Připomínka od výzkumného týmu VAHIN.",                             "/"),
+    "stimulation":       ("VAHIN – Čas na stimulaci",     "Zahajte tAVNS stimulaci.",                                         "/?tab=home"),
+    "cortisol":          ("VAHIN – Kortizol",              "Čas na odběr kortizolu ze slin.",                                  "/"),
 }
 
 def check_and_send(db_session_factory):

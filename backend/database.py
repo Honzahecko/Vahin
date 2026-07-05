@@ -193,11 +193,20 @@ class AdminNote(Base):
     resolved    = Column(Boolean, default=False)
 
 class NotifType(str, enum.Enum):
-    pre_shift  = "pre_shift"
-    post_shift = "post_shift"
-    weekly     = "weekly"
-    reminder   = "reminder"
-    cortisol   = "cortisol"   # připomínka odběru kortizolu (T0/T15/T30)
+    pre_shift         = "pre_shift"
+    stimulation_start = "stimulation_start"  # 30 min stimulace na začátku směny
+    stimulation_p1    = "stimulation_p1"     # pauza 1 (5-10 min)
+    stimulation_p2    = "stimulation_p2"     # pauza 2 (5-10 min)
+    stimulation_p3    = "stimulation_p3"     # pauza 3 (5-10 min)
+    stimulation_end   = "stimulation_end"    # 30 min stimulace na konci směny
+    post_shift        = "post_shift"
+    stimulation_volno = "stimulation_volno"  # 15 min udržovací (volno/denní)
+    cortisol_am       = "cortisol_am"        # kortizol ráno (den 1,7,15,21)
+    cortisol_pm       = "cortisol_pm"        # kortizol odpoledne
+    cortisol_eve      = "cortisol_eve"       # kortizol večer
+    weekly            = "weekly"
+    reminder          = "reminder"
+    cortisol          = "cortisol"           # legacy / generic
 
 class PushSubscription(Base):
     __tablename__ = "push_subscriptions"
