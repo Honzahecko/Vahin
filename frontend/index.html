@@ -274,7 +274,7 @@
               <div class="flex items-center gap-2">
                 <input type="checkbox" x-model="s.enabled" class="w-4 h-4 rounded accent-indigo-600" style="width:16px;flex-shrink:0" />
                 <div class="flex-1 min-w-0">
-                  <div class="text-xs font-semibold text-gray-700" x-text="({'pre_shift':'📋 KSS – před směnou','post_shift':'📋 KSS – po směně','psd_morning':'🌅 Spánkový deník (každé ráno)','pvt_post':'⚡ PVT – Reakční test (po směně)','weekly':'📊 MFI/PSQI (týdenní)','stimulation_start':'🎯 Stimulace – začátek (15 min)','stimulation_p1':'🎯 Stimulace – pauza 1 (15 min)','stimulation_p2':'🎯 Stimulace – pauza 2 (15 min)','stimulation_p3':'🎯 Stimulace – pauza 3 (15 min)','stimulation_end':'🎯 Stimulace – konec (15 min)','stimulation_volno':'🎯 Stimulace – volno/udržovací (15 min)','cortisol_am':'🧪 Kortizol – ráno (vzorek č.1)','cortisol_pm':'🧪 Kortizol – odpoledne (vzorek č.2)','cortisol_eve':'🧪 Kortizol – večer (vzorek č.3)','shift_entry':'📅 Zadat směnu/volno (denně ráno)','reminder':'🔔 Obecná připomínka','stimulation':'🎯 Stimulace'})[s.notif_type] || s.notif_type"></div>
+                  <div class="text-xs font-semibold text-gray-700" x-text="({'pre_shift':'📋 KSS – před směnou','post_shift':'📋 KSS – po směně','psd_morning':'🌅 Spánkový deník (každé ráno)','pvt_post':'⚡ PVT – Reakční test (po noční směně)','weekly':'📊 MFI/PSQI (týdenní)','stimulation_start':'🎯 Stimulace – začátek (15 min)','stimulation_p1':'🎯 Stimulace – pauza 1 (15 min)','stimulation_p2':'🎯 Stimulace – pauza 2 (15 min)','stimulation_p3':'🎯 Stimulace – pauza 3 (15 min)','stimulation_end':'🎯 Stimulace – konec (15 min)','stimulation_volno':'🎯 Stimulace – volno/udržovací (15 min)','cortisol_am':'🧪 Kortizol – ráno (vzorek č.1)','cortisol_pm':'🧪 Kortizol – odpoledne (vzorek č.2)','cortisol_eve':'🧪 Kortizol – večer (vzorek č.3)','shift_entry':'📅 Zadat směnu/volno (denně ráno)','reminder':'🔔 Obecná připomínka','stimulation':'🎯 Stimulace'})[s.notif_type] || s.notif_type"></div>
                   <input x-show="s.notif_type==='reminder'" x-model="s.custom_msg" type="text" placeholder="Text zprávy…" class="mt-1 w-full text-xs border border-gray-200 rounded px-2 py-1" style="font-size:11px" />
                   <!-- Kompaktní přehled aktivních dnů -->
                   <div class="mt-0.5 text-gray-400" style="font-size:10px"
@@ -2377,9 +2377,10 @@ function app() { return {
 
   applyShiftSchedule() {
     const sch = this.participantShiftSchedule;
-    let maskShift = 0, maskVolno = 0;
+    let maskShift = 0, maskNocni = 0, maskVolno = 0;
     for (let d = 0; d < 21; d++) {
       if (sch[d] === 'N' || sch[d] === 'D') maskShift |= (1 << d);
+      if (sch[d] === 'N') maskNocni |= (1 << d);
       if (sch[d] === 'V') maskVolno |= (1 << d);
     }
     const cortisolMask = (1<<0)|(1<<6)|(1<<14)|(1<<20);
@@ -2397,7 +2398,7 @@ function app() { return {
       stimulation_p3:    maskShift,
       stimulation_end:   maskShift,
       post_shift:        maskShift,
-      pvt_post:          maskShift,
+      pvt_post:          maskNocni,
       stimulation_volno: maskVolno,
       psd_morning:       allMask,
       cortisol_am:       cortisolMask,
