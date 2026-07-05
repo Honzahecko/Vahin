@@ -222,12 +222,18 @@
             Test
           </button>
         </div>
+        <!-- Přednastavené profily -->
+        <div class="flex gap-1.5 mb-3">
+          <button @click="applyNotifProfile('nocni')" class="flex-1 text-xs py-1.5 rounded-lg bg-gray-100 hover:bg-indigo-100 font-semibold text-gray-600 transition-colors">🌙 Noční</button>
+          <button @click="applyNotifProfile('ranni')" class="flex-1 text-xs py-1.5 rounded-lg bg-gray-100 hover:bg-indigo-100 font-semibold text-gray-600 transition-colors">🌅 Ranní</button>
+          <button @click="applyNotifProfile('volno')"  class="flex-1 text-xs py-1.5 rounded-lg bg-gray-100 hover:bg-indigo-100 font-semibold text-gray-600 transition-colors">☀️ Volno</button>
+        </div>
         <div class="space-y-2">
           <template x-for="(s, i) in drawerSchedules" :key="s.notif_type">
             <div class="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
               <input type="checkbox" x-model="s.enabled" class="w-4 h-4 rounded accent-indigo-600" style="width:16px;flex-shrink:0" />
               <div class="flex-1 min-w-0">
-                <div class="text-xs font-semibold text-gray-700" x-text="{'pre_shift':'Před směnou','post_shift':'Po směně','weekly':'Týdenní pohoda','reminder':'Připomínka'}[s.notif_type]"></div>
+                <div class="text-xs font-semibold text-gray-700" x-text="{'pre_shift':'Před směnou','post_shift':'Po směně','stimulation':'Stimulace tAVNS','weekly':'Týdenní pohoda','reminder':'Připomínka'}[s.notif_type]"></div>
               </div>
               <input type="time" x-model="s.time"
                 class="text-xs border border-gray-200 rounded px-1.5 py-1 w-20 text-center"
@@ -539,6 +545,7 @@
           <button @click="dataTab='live'; loadLiveData()" class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors" :class="dataTab==='live'?'bg-navy-900 text-white':'bg-white text-gray-500 hover:bg-gray-100'">📋 Dotazníky</button>
           <button @click="dataTab='shifts'; loadLiveData()" class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors" :class="dataTab==='shifts'?'bg-navy-900 text-white':'bg-white text-gray-500 hover:bg-gray-100'">🌙 Směny</button>
           <button @click="dataTab='garmin'; loadLiveData()" class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors" :class="dataTab==='garmin'?'bg-navy-900 text-white':'bg-white text-gray-500 hover:bg-gray-100'">⌚ Hodinky</button>
+          <button @click="dataTab='charts'; loadLiveData()" class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors" :class="dataTab==='charts'?'bg-navy-900 text-white':'bg-white text-gray-500 hover:bg-gray-100'">📊 Grafy</button>
           <button @click="dataTab='export'" class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors" :class="dataTab==='export'?'bg-navy-900 text-white':'bg-white text-gray-500 hover:bg-gray-100'">📤 Export</button>
           <button @click="loadLiveData()" class="ml-auto px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-white border border-gray-200">↻ Obnovit</button>
         </div>
@@ -686,6 +693,52 @@
                 </template>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- GRAFY -->
+        <div x-show="dataTab==='charts'">
+          <div class="space-y-5">
+            <!-- KSS chart -->
+            <div class="card p-5">
+              <div class="font-bold text-navy-900 mb-1">Ospalost KSS – průměr za den</div>
+              <div class="text-xs text-gray-400 mb-3">Modře = před směnou · Oranžově = po směně · Škála 1–9</div>
+              <div class="overflow-x-auto">
+                <svg viewBox="0 0 520 140" width="100%" style="min-width:280px;display:block" x-html="svgLineChart(chartKss().dates,[chartKss().pre,chartKss().post],['#3b82f6','#f97316'],9)"></svg>
+              </div>
+              <div class="flex gap-4 mt-2">
+                <span class="flex items-center gap-1.5 text-xs text-gray-500"><span class="inline-block w-3 h-3 rounded-full bg-blue-500"></span>KSS před směnou</span>
+                <span class="flex items-center gap-1.5 text-xs text-gray-500"><span class="inline-block w-3 h-3 rounded-full bg-orange-400"></span>KSS po směně</span>
+              </div>
+            </div>
+            <!-- VAS chart -->
+            <div class="card p-5">
+              <div class="font-bold text-navy-900 mb-1">VAS Únava – průměr za den</div>
+              <div class="text-xs text-gray-400 mb-3">Průměrné skóre únavy všech účastníků · Škála 0–100</div>
+              <div class="overflow-x-auto">
+                <svg viewBox="0 0 520 140" width="100%" style="min-width:280px;display:block" x-html="svgLineChart(chartVas().dates,[chartVas().vals],['#1F3864'],100)"></svg>
+              </div>
+            </div>
+            <!-- Per-participant table -->
+            <div class="card overflow-hidden">
+              <div class="p-4 border-b border-gray-100 font-bold text-navy-900">Poslední KSS hodnoty per účastník</div>
+              <div class="overflow-x-auto">
+                <table>
+                  <thead><tr><th>Kód</th><th>KSS před (posl.)</th><th>KSS po (posl.)</th><th>Průměr před</th><th>Průměr po</th></tr></thead>
+                  <tbody>
+                    <template x-for="p in participants.filter(p=>p.is_active)" :key="p.id">
+                      <tr>
+                        <td class="font-mono text-xs font-bold text-navy-900" x-text="p.participant_code"></td>
+                        <td x-text="participantKss(p.id,'kss_pre','last')"></td>
+                        <td x-text="participantKss(p.id,'kss_post','last')"></td>
+                        <td x-text="participantKss(p.id,'kss_pre','avg')"></td>
+                        <td x-text="participantKss(p.id,'kss_post','avg')"></td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -2064,6 +2117,14 @@ function app() { return {
       const reg = await navigator.serviceWorker.register('/sw.js', {scope: '/'});
       const sub = await reg.pushManager.getSubscription();
       this.pushSubscribed = !!sub;
+      navigator.serviceWorker.addEventListener('message', e => {
+        if (e.data?.type !== 'navigate' || !e.data.url) return;
+        const params = new URLSearchParams((e.data.url.split('?')[1]) || '');
+        const q = params.get('q'), tab = params.get('tab');
+        if (q) this.goQuestionnaire(q);
+        else if (tab) this.activeTab = tab;
+        else this.activeTab = 'home';
+      });
     } catch(e) { console.warn('SW init:', e); }
   },
 
@@ -2104,10 +2165,11 @@ function app() { return {
     const r = await this.apiFetch('/api/push/schedules/'+userId);
     if (r) {
       const defaults = [
-        {notif_type:'pre_shift',  hour:18, minute:30, enabled:false, days_mask:127, custom_msg:''},
-        {notif_type:'post_shift', hour:8,  minute:0,  enabled:false, days_mask:127, custom_msg:''},
-        {notif_type:'weekly',     hour:10, minute:0,  enabled:false, days_mask:64,  custom_msg:''},
-        {notif_type:'reminder',   hour:9,  minute:0,  enabled:false, days_mask:127, custom_msg:''},
+        {notif_type:'pre_shift',   hour:18, minute:30, enabled:false, days_mask:127, custom_msg:''},
+        {notif_type:'post_shift',  hour:8,  minute:0,  enabled:false, days_mask:127, custom_msg:''},
+        {notif_type:'stimulation', hour:22, minute:30, enabled:false, days_mask:127, custom_msg:''},
+        {notif_type:'weekly',      hour:10, minute:0,  enabled:false, days_mask:64,  custom_msg:''},
+        {notif_type:'reminder',    hour:9,  minute:0,  enabled:false, days_mask:127, custom_msg:''},
       ];
       this.drawerSchedules = defaults.map(d => {
         const saved = r.find(s => s.notif_type === d.notif_type);
@@ -2117,6 +2179,19 @@ function app() { return {
   },
 
   padTime(h, m) { return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'); },
+
+  applyNotifProfile(profile) {
+    const P = {
+      nocni: {pre_shift:{h:18,m:30,en:true}, post_shift:{h:8,m:0,en:true},  stimulation:{h:22,m:30,en:true}, weekly:{h:10,m:0,en:false}, reminder:{h:9,m:0,en:false}},
+      ranni: {pre_shift:{h:5,m:30,en:true},  post_shift:{h:14,m:0,en:true}, stimulation:{h:6,m:0,en:true},  weekly:{h:10,m:0,en:false}, reminder:{h:9,m:0,en:false}},
+      volno: {pre_shift:{h:8,m:0,en:false},  post_shift:{h:8,m:0,en:false}, stimulation:{h:8,m:0,en:false}, weekly:{h:10,m:0,en:true},  reminder:{h:9,m:0,en:false}},
+    };
+    const p = P[profile]; if (!p) return;
+    this.drawerSchedules = this.drawerSchedules.map(s => {
+      const c = p[s.notif_type]; if (!c) return s;
+      return {...s, hour:c.h, minute:c.m, enabled:c.en, time:this.padTime(c.h, c.m)};
+    });
+  },
 
   async saveDrawerSchedules(userId) {
     this.drawerSchedSaving = true; this.drawerSchedMsg = '';
@@ -2721,6 +2796,65 @@ function app() { return {
     if(d===null) return '<span class="badge bg-gray-100 text-gray-400">Nenahrán</span>';
     if(d<7)  return '<span class="badge bg-green-100 text-green-700">✓ před '+Math.round(d)+'d</span>';
     return '<span class="badge bg-yellow-100 text-yellow-700">'+Math.round(d)+' dní</span>';
+  },
+
+  chartKss(){
+    const byDate={};
+    this.liveResponses.filter(r=>r.q_type==='kss_pre'||r.q_type==='kss_post').forEach(r=>{
+      const d=(r.filled_at||'').split('T')[0]; if(!d) return;
+      if(!byDate[d]) byDate[d]={pre:[],post:[]};
+      const v=r.answers?.kss_score; if(v==null) return;
+      byDate[d][r.q_type==='kss_pre'?'pre':'post'].push(+v);
+    });
+    const dates=Object.keys(byDate).sort().slice(-14);
+    const avg=arr=>arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:null;
+    return {dates, pre:dates.map(d=>avg(byDate[d].pre)), post:dates.map(d=>avg(byDate[d].post))};
+  },
+
+  chartVas(){
+    const byDate={};
+    this.liveResponses.filter(r=>r.answers?.vas_fatigue!=null).forEach(r=>{
+      const d=(r.filled_at||'').split('T')[0]; if(!d) return;
+      if(!byDate[d]) byDate[d]=[];
+      byDate[d].push(+r.answers.vas_fatigue);
+    });
+    const dates=Object.keys(byDate).sort().slice(-14);
+    return {dates, vals:dates.map(d=>byDate[d].reduce((a,b)=>a+b,0)/byDate[d].length)};
+  },
+
+  participantKss(userId, qtype, mode){
+    const rr=this.liveResponses.filter(x=>x.user_id===userId&&x.q_type===qtype&&x.answers?.kss_score!=null);
+    if(!rr.length) return '—';
+    if(mode==='last') return rr.sort((a,b)=>new Date(b.filled_at)-new Date(a.filled_at))[0].answers.kss_score;
+    return (rr.reduce((s,x)=>s+(+x.answers.kss_score),0)/rr.length).toFixed(1);
+  },
+
+  svgLineChart(dates, series, colors, yMax){
+    if(!dates||!dates.length) return '<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#9ca3af" font-size="13">Žádná data</text>';
+    const pad={l:32,r:12,t:10,b:28}, W=520, H=140;
+    const iw=W-pad.l-pad.r, ih=H-pad.t-pad.b, n=dates.length;
+    const xP=i=>pad.l+(n<2?iw/2:i/(n-1)*iw);
+    const yP=v=>pad.t+ih-(Math.max(0,Math.min(v,yMax))/yMax)*ih;
+    let o='';
+    [0,0.25,0.5,0.75,1].forEach(f=>{const y=pad.t+ih*(1-f);o+=`<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${pad.l+iw}" y2="${y.toFixed(1)}" stroke="#f3f4f6" stroke-width="1"/>`;});
+    [0,+(yMax*0.5).toFixed(0),yMax].forEach(v=>{const y=yP(v);o+=`<text x="${pad.l-4}" y="${y.toFixed(1)}" text-anchor="end" dominant-baseline="middle" fill="#9ca3af" font-size="10">${v}</text>`;});
+    const show=[0,Math.floor(n/2),n-1].filter((v,i,a)=>a.indexOf(v)===i);
+    show.forEach(i=>{o+=`<text x="${xP(i).toFixed(1)}" y="${H-4}" text-anchor="middle" fill="#9ca3af" font-size="9">${(dates[i]||'').slice(5)}</text>`;});
+    series.forEach((vals,si)=>{
+      const valid=vals.map((v,i)=>v!=null?{x:xP(i),y:yP(v)}:null);
+      const pts=valid.filter(Boolean);
+      if(!pts.length) return;
+      if(si===0&&pts.length>1){
+        const area=`M${xP(0).toFixed(1)},${(pad.t+ih).toFixed(1)} `+pts.map(p=>`L${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')+` L${xP(n-1).toFixed(1)},${(pad.t+ih).toFixed(1)} Z`;
+        o+=`<path d="${area}" fill="${colors[si]}" fill-opacity="0.1"/>`;
+      }
+      const segments=[];let cur=[];
+      vals.forEach((v,i)=>{if(v!=null){cur.push(`${i===0||!cur.length?'M':'L'}${xP(i).toFixed(1)},${yP(v).toFixed(1)}`);}else if(cur.length){segments.push(cur.join(' '));cur=[];}});
+      if(cur.length) segments.push(cur.join(' '));
+      segments.forEach(seg=>o+=`<path d="${seg}" fill="none" stroke="${colors[si]}" stroke-width="2" stroke-linejoin="round"/>`);
+      vals.forEach((v,i)=>{if(v!=null)o+=`<circle cx="${xP(i).toFixed(1)}" cy="${yP(v).toFixed(1)}" r="3" fill="${colors[si]}" stroke="white" stroke-width="1.5"/>`;});
+    });
+    return o;
   },
 
   // PM panel

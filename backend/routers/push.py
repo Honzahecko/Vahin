@@ -126,10 +126,11 @@ def sched_to_dict(s: NotificationSchedule) -> dict:
     }
 
 NOTIF_TEXTS = {
-    "pre_shift":  ("VAHIN – Před směnou", "Vyplňte prosím dotazník únava před začátkem noční směny."),
-    "post_shift": ("VAHIN – Po směně",    "Vyplňte prosím dotazník únava do 30 minut po skončení směny."),
-    "weekly":     ("VAHIN – Týdenní pohoda", "Čas na týdenní dotazník – jak jste se měl/a tento týden?"),
-    "reminder":   ("VAHIN – Připomínka",  "Připomínka od výzkumného týmu VAHIN."),
+    "pre_shift":   ("VAHIN – Před směnou",     "Vyplňte KSS před začátkem směny.",          "/?q=kss_pre"),
+    "post_shift":  ("VAHIN – Po směně",         "Vyplňte KSS a spánkový deník po směně.",    "/?q=kss_post"),
+    "stimulation": ("VAHIN – Čas na stimulaci", "Zahajte 30minutovou tAVNS stimulaci.",       "/?tab=home"),
+    "weekly":      ("VAHIN – Týdenní pohoda",   "Vyplňte týdenní dotazník pohody.",           "/?q=psd"),
+    "reminder":    ("VAHIN – Připomínka",        "Připomínka od výzkumného týmu VAHIN.",       "/"),
 }
 
 def check_and_send(db_session_factory):
@@ -151,10 +152,10 @@ def check_and_send(db_session_factory):
                 continue
             subs = db.query(PushSubscription).filter(
                 PushSubscription.user_id == sched.user_id).all()
-            title, body = NOTIF_TEXTS.get(sched.notif_type, ("VAHIN", "Připomínka"))
+            title, body, url = NOTIF_TEXTS.get(sched.notif_type, ("VAHIN", "Připomínka", "/"))
             if sched.custom_msg:
                 body = sched.custom_msg
             for sub in subs:
-                push_manager.send_push(sub.endpoint, sub.p256dh, sub.auth, title, body)
+                push_manager.send_push(sub.endpoint, sub.p256dh, sub.auth, title, body, url)
     finally:
         db.close()
