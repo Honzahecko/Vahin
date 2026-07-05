@@ -588,30 +588,42 @@
             <template x-for="r in liveResponses" :key="r.id">
               <div class="px-4 py-3 hover:bg-slate-50 transition-colors">
                 <!-- Main row -->
-                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 cursor-pointer" @click="expandedRow=(expandedRow===r.id?null:r.id)">
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 cursor-pointer" @click="expandedRow=(expandedRow===r.id?null:r.id)">
                   <span class="font-mono text-xs font-bold text-navy-900 w-24 flex-shrink-0" x-text="participantCode(r.user_id)"></span>
                   <span class="badge bg-blue-100 text-blue-800 text-xs" x-text="qTypeLabel(r.q_type)"></span>
-                  <span class="text-xs text-gray-400" x-text="phaseLabel(r.phase)"></span>
                   <span class="text-xs text-gray-400" x-text="formatDateTime(r.filled_at)"></span>
-                  <span x-show="r.answers.vas_fatigue!=null" class="font-bold text-sm ml-auto"
-                        :class="r.answers.vas_fatigue>70?'text-red-600':r.answers.vas_fatigue>40?'text-orange-500':'text-green-600'"
-                        x-text="'Únava: '+r.answers.vas_fatigue"></span>
-                  <span x-show="r.answers.vas_alertness!=null" class="font-bold text-sm text-blue-700"
-                        x-text="'Bdělost: '+r.answers.vas_alertness"></span>
+                  <!-- KSS -->
+                  <span x-show="r.answers.sleepiness_level!=null"
+                        class="font-bold text-sm px-2 py-0.5 rounded-lg"
+                        :class="r.answers.sleepiness_level>=7?'bg-red-100 text-red-700':r.answers.sleepiness_level>=5?'bg-orange-100 text-orange-700':'bg-green-100 text-green-700'"
+                        x-text="'KSS: '+r.answers.sleepiness_level+'/9'"></span>
+                  <!-- VAS únava -->
+                  <span x-show="r.answers.vas_fatigue!=null"
+                        class="font-bold text-sm px-2 py-0.5 rounded-lg"
+                        :class="r.answers.vas_fatigue>70?'bg-red-100 text-red-700':r.answers.vas_fatigue>40?'bg-orange-100 text-orange-700':'bg-green-100 text-green-700'"
+                        x-text="'Únava: '+r.answers.vas_fatigue+'%'"></span>
+                  <!-- VAS bdělost -->
+                  <span x-show="r.answers.vas_alertness!=null" class="font-bold text-sm text-blue-700 px-2 py-0.5 rounded-lg bg-blue-50"
+                        x-text="'Bdělost: '+r.answers.vas_alertness+'%'"></span>
+                  <!-- Počet klíčů pro ostatní dotazníky -->
+                  <span x-show="r.answers.sleepiness_level==null && r.answers.vas_fatigue==null" class="text-xs text-gray-500 italic"
+                        x-text="Object.keys(r.answers).length+' odpovědí'"></span>
                   <div class="flex gap-2 ml-auto flex-shrink-0">
-                    <button @click.stop="expandedRow=(expandedRow===r.id?null:r.id)" class="text-xs text-gray-400 hover:text-navy-900" x-text="expandedRow===r.id?'▲':'▼ Detail'"></button>
+                    <button @click.stop="expandedRow=(expandedRow===r.id?null:r.id)"
+                            class="text-xs font-semibold px-2 py-1 rounded-lg border border-gray-200 hover:bg-gray-100 text-gray-500"
+                            x-text="expandedRow===r.id?'▲ Skrýt':'▼ Odpovědi'"></button>
                     <button @click.stop="openEditModal(r)" class="text-xs text-blue-600 hover:underline">Upravit</button>
                     <button @click.stop="deleteResponse(r)" class="text-xs text-red-500 hover:underline">Smazat</button>
                   </div>
                 </div>
                 <!-- Expanded answers -->
-                <div x-show="expandedRow===r.id" x-transition class="mt-2 pt-2 border-t border-slate-100">
-                  <div class="flex flex-wrap gap-1.5">
+                <div x-show="expandedRow===r.id" x-transition class="mt-3 pt-3 border-t border-slate-100">
+                  <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
                     <template x-for="key in Object.keys(r.answers)" :key="key">
-                      <span class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs">
-                        <span class="text-gray-400" x-text="key+': '"></span>
-                        <span class="font-semibold text-navy-900" x-text="r.answers[key]"></span>
-                      </span>
+                      <div class="bg-slate-50 rounded-lg px-3 py-2">
+                        <div class="text-xs text-gray-400 mb-0.5" x-text="answerLabel(key)"></div>
+                        <div class="font-semibold text-navy-900 text-sm break-words" x-text="r.answers[key]!=null?r.answers[key]:'—'"></div>
+                      </div>
                     </template>
                   </div>
                 </div>
@@ -2798,12 +2810,24 @@ function app() { return {
     return '<span class="badge bg-yellow-100 text-yellow-700">'+Math.round(d)+' dní</span>';
   },
 
+  answerLabel(key){
+    const MAP={
+      sleepiness_level:'Ospalost (KSS)',vas_fatigue:'Únava VAS',vas_alertness:'Bdělost VAS',
+      sleep_duration:'Délka spánku (h)',sleep_quality:'Kvalita spánku',sleep_latency:'Usínání (min)',
+      wakeups:'Probuzení',feeling_rested:'Pocit odpočatku',
+      kss_score:'KSS skóre',total_score:'Celkové skóre',
+      nurosym_used:'Nurosym použit',nurosym_minutes:'Délka stimulace (min)',
+      notes:'Poznámka',side_effects:'Vedl. účinky',side_effects_desc:'Popis vedl. účinků',
+    };
+    return MAP[key]||key;
+  },
+
   chartKss(){
     const byDate={};
     this.liveResponses.filter(r=>r.q_type==='kss_pre'||r.q_type==='kss_post').forEach(r=>{
       const d=(r.filled_at||'').split('T')[0]; if(!d) return;
       if(!byDate[d]) byDate[d]={pre:[],post:[]};
-      const v=r.answers?.kss_score; if(v==null) return;
+      const v=r.answers?.sleepiness_level; if(v==null) return;
       byDate[d][r.q_type==='kss_pre'?'pre':'post'].push(+v);
     });
     const dates=Object.keys(byDate).sort().slice(-14);
@@ -2823,10 +2847,10 @@ function app() { return {
   },
 
   participantKss(userId, qtype, mode){
-    const rr=this.liveResponses.filter(x=>x.user_id===userId&&x.q_type===qtype&&x.answers?.kss_score!=null);
+    const rr=this.liveResponses.filter(x=>x.user_id===userId&&x.q_type===qtype&&x.answers?.sleepiness_level!=null);
     if(!rr.length) return '—';
-    if(mode==='last') return rr.sort((a,b)=>new Date(b.filled_at)-new Date(a.filled_at))[0].answers.kss_score;
-    return (rr.reduce((s,x)=>s+(+x.answers.kss_score),0)/rr.length).toFixed(1);
+    if(mode==='last') return rr.sort((a,b)=>new Date(b.filled_at)-new Date(a.filled_at))[0].answers.sleepiness_level;
+    return (rr.reduce((s,x)=>s+(+x.answers.sleepiness_level),0)/rr.length).toFixed(1);
   },
 
   svgLineChart(dates, series, colors, yMax){
