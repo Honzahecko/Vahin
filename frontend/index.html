@@ -265,8 +265,7 @@
         <!-- Přednastavené profily -->
         <div class="flex gap-1.5 mb-3">
           <button @click="applyNotifProfile('nocni')" class="flex-1 text-xs py-1.5 rounded-lg bg-gray-100 hover:bg-indigo-100 font-semibold text-gray-600 transition-colors">🌙 Noční</button>
-          <button @click="applyNotifProfile('ranni')" class="flex-1 text-xs py-1.5 rounded-lg bg-gray-100 hover:bg-indigo-100 font-semibold text-gray-600 transition-colors">🌅 Ranní</button>
-          <button @click="applyNotifProfile('volno')"  class="flex-1 text-xs py-1.5 rounded-lg bg-gray-100 hover:bg-indigo-100 font-semibold text-gray-600 transition-colors">☀️ Volno</button>
+          <button @click="applyNotifProfile('denni')" class="flex-1 text-xs py-1.5 rounded-lg bg-gray-100 hover:bg-indigo-100 font-semibold text-gray-600 transition-colors">☀️ Denní/Volno</button>
         </div>
         <div class="space-y-2">
           <template x-for="(s, i) in drawerSchedules" :key="s.notif_type">
@@ -1915,28 +1914,31 @@
               </div>
             </div>
 
-            <!-- Každá směna -->
-            <div class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Každá směna (dny 1–7)</div>
-            <div class="space-y-2">
+            <!-- Každá noční směna -->
+            <div class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">🌅 Každý den (dny 1–7)</div>
+            <div class="space-y-1.5 mb-3">
               <div class="flex items-start gap-3">
                 <span class="text-base">🌅</span>
-                <div><div class="text-sm font-semibold text-gray-800">PSD – Spánkový deník</div><div class="text-xs text-gray-500">Každé ráno — hodnocení předchozí noci</div></div>
-              </div>
-              <div class="flex items-start gap-3">
-                <span class="text-base">😴</span>
-                <div><div class="text-sm font-semibold text-gray-800">KSS – Ospalost</div><div class="text-xs text-gray-500">Před směnou a po směně (škála 1–9)</div></div>
-              </div>
-              <div class="flex items-start gap-3">
-                <span class="text-base">🎯</span>
-                <div><div class="text-sm font-semibold text-amber-700">Stimulace + Deník tAVNS</div><div class="text-xs text-gray-500">Zaznamenejte každou stimulaci v aplikaci (čas, délka, pocit)</div></div>
-              </div>
-              <div class="flex items-start gap-3">
-                <span class="text-base">⚡</span>
-                <div><div class="text-sm font-semibold text-cyan-700">PVT – Reakční test</div><div class="text-xs text-gray-500">Po každé směně — 5 pokusů, ~1 minuta</div></div>
+                <div><div class="text-sm font-semibold text-gray-800">PSD – Spánkový deník</div><div class="text-xs text-gray-500">Každé ráno po probuzení — hodnocení předchozí noci</div></div>
               </div>
               <div class="flex items-start gap-3">
                 <span class="text-base">⌚</span>
-                <div><div class="text-sm font-semibold text-green-700">Hodinky — nepřetržitě</div><div class="text-xs text-gray-500">Nosit celý týden, HRV a spánek se zaznamenávají automaticky</div></div>
+                <div><div class="text-sm font-semibold text-green-700">Hodinky — nepřetržitě</div><div class="text-xs text-gray-500">HRV a spánek se zaznamenávají automaticky, i při spánku</div></div>
+              </div>
+            </div>
+            <div class="text-xs font-bold text-indigo-600 uppercase tracking-wide mb-2">🌙 Každá noční směna (dny 1–7)</div>
+            <div class="space-y-1.5">
+              <div class="flex items-start gap-3">
+                <span class="text-base">😴</span>
+                <div><div class="text-sm font-semibold text-gray-800">KSS – Ospalost</div><div class="text-xs text-gray-500">Před noční směnou a ihned po ní (škála 1–9)</div></div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="text-base">🎯</span>
+                <div><div class="text-sm font-semibold text-amber-700">tAVNS Stimulace</div><div class="text-xs text-gray-500">Dle protokolu — na začátku, v pauzách a na konci noční směny</div></div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="text-base">⚡</span>
+                <div><div class="text-sm font-semibold text-cyan-700">PVT – Reakční test</div><div class="text-xs text-gray-500">Po každé noční směně — ~1 minuta</div></div>
               </div>
             </div>
           </div>
@@ -1983,10 +1985,14 @@
               </div>
             </div>
 
-            <div class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Každá směna (dny 15–21)</div>
-            <div class="space-y-2">
-              <div class="flex items-start gap-3"><span class="text-base">🌅</span><div><div class="text-sm font-semibold text-gray-800">PSD + KSS + Stimulace + PVT</div><div class="text-xs text-gray-500">Stejný rytmus jako v týdnu 1</div></div></div>
+            <div class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">🌅 Každý den (dny 15–21)</div>
+            <div class="space-y-1.5 mb-3">
+              <div class="flex items-start gap-3"><span class="text-base">🌅</span><div><div class="text-sm font-semibold text-gray-800">PSD – Spánkový deník</div><div class="text-xs text-gray-500">Každé ráno jako obvykle</div></div></div>
               <div class="flex items-start gap-3"><span class="text-base">⌚</span><div><div class="text-sm font-semibold text-green-700">Hodinky — nosit do konce</div><div class="text-xs text-gray-500">Odevzdat po posledním dni studie</div></div></div>
+            </div>
+            <div class="text-xs font-bold text-indigo-600 uppercase tracking-wide mb-2">🌙 Každá noční směna (dny 15–21)</div>
+            <div class="space-y-1.5">
+              <div class="flex items-start gap-3"><span class="text-base">😴</span><div><div class="text-sm font-semibold text-gray-800">KSS + tAVNS Stimulace + PVT</div><div class="text-xs text-gray-500">Stejný rytmus jako ve fázi 1</div></div></div>
             </div>
           </div>
 
@@ -2387,6 +2393,8 @@ function app() { return {
         reminder:          {h:9,  m:0,  en:false},
       },
     };
+    // denní = alias pro volno (bez stimulace)
+    P.denni = P.volno;
     const p = P[profile]; if (!p) return;
     this.drawerSchedules = this.drawerSchedules.map(s => {
       const c = p[s.notif_type]; if (!c) return s;
