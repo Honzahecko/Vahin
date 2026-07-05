@@ -2279,21 +2279,23 @@ function app() { return {
 
   async loadData(){
     this.activeTab='home';
-    if(this.isResearcher()) await this.loadParticipants();
-    else {
-      const [s, r, defs] = await Promise.all([
+    // Always load questionnaire definitions (needed for answer display in both roles)
+    const defs = await this.apiFetch('/api/questionnaires/definitions');
+    if(defs) {
+      this.rawDefs = defs;
+      const HIDDEN = new Set(['pvt','tavns_diary','tavns_adverse','tavns_satisfaction']);
+      this.allQDefs = Object.entries(defs).filter(([key]) => !HIDDEN.has(key)).map(([key, d]) => ({key, ...d}));
+    }
+    if(this.isResearcher()) {
+      await this.loadParticipants();
+    } else {
+      const [s, r] = await Promise.all([
         this.apiFetch('/api/shifts/my'),
         this.apiFetch('/api/questionnaires/my'),
-        this.apiFetch('/api/questionnaires/definitions'),
       ]);
       if(s) this.myShifts=s;
       if(r) this.myResponses=r;
-      if(defs) {
-        this.rawDefs = defs;
-        const HIDDEN = new Set(['pvt','tavns_diary','tavns_adverse','tavns_satisfaction']);
-        this.allQDefs = Object.entries(defs).filter(([key]) => !HIDDEN.has(key)).map(([key, d]) => ({key, ...d}));
-        this.buildGuideTasks();
-      }
+      if(defs) this.buildGuideTasks();
       this.loadShiftType();
       this.buildDayTasks();
       this.loadCortisol();
