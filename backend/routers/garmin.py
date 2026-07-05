@@ -260,6 +260,81 @@ def upload_garmin_json(
         return {"inserted": ins, "skipped": skp, "total": len(data)}
 
 
+@router.post("/admin-upload-zip/{user_id}", dependencies=[Depends(require_researcher)])
+def admin_upload_garmin_zip(
+    user_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """Admin: nahrát Garmin ZIP export za konkrétního účastníka."""
+    target = db.query(User).filter(User.id == user_id).first()
+    if not target:
+        raise HTTPException(404, "Účastník nenalezen")
+    raw = file.file.read()
+    try:
+        zf = zipfile.ZipFile(io.BytesIO(raw))
+    except zipfile.BadZipFile:
+        raise HTTPException(400, "Soubor není platný ZIP archiv")
+
+    uds_records = []
+    sleep_records = []
+    found_files = []
+
+    for name in zf.namelist():
+        lower = name.lower()
+        if "di-connect-aggregator" in lower and "udsfile" in lower and name.endswith(".json"):
+            data = json.loads(zf.read(name))
+            if isinstance(data, list):
+                uds_records.extend(data)
+                found_files.append(name.split("/")[-1])
+        elif "di-connect-wellness" in lower and "sleepdata" in lower and name.endswith(".json"):
+            data = json.loads(zf.read(name))
+            if isinstance(data, list):
+                sleep_records.extend(r for r in data if isinstance(r, dict) and len(r) > 2)
+                found_files.append(name.split("/")[-1])
+
+    if not uds_records and not sleep_records:
+        raise HTTPException(400, "ZIP neobsahuje žádná Garmin zdravotní data (UDSFile / sleepData)")
+
+    ins, skp = _parse_uds_records(uds_records, user_id, db)
+    upd = _parse_sleep_records(sleep_records, user_id, db) if sleep_records else 0
+
+    return {
+        "inserted": ins, "skipped": skp,
+        "sleep_updated": upd,
+        "files_found": found_files,
+    }
+
+
+@router.post("/admin-upload-json/{user_id}", dependencies=[Depends(require_researcher)])
+def admin_upload_garmin_json(
+    user_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """Admin: nahrát Garmin JSON/CSV soubor za konkrétního účastníka."""
+    target = db.query(User).filter(User.id == user_id).first()
+    if not target:
+        raise HTTPException(404, "Účastník nenalezen")
+    content = file.file.read().decode("utf-8-sig", errors="replace")
+    try:
+        data = json.loads(content)
+    except json.JSONDecodeError:
+        raise HTTPException(400, "Soubor není platný JSON")
+
+    if not isinstance(data, list):
+        raise HTTPException(400, "JSON musí být pole záznamů")
+
+    fname = (file.filename or "").lower()
+    if "sleep" in fname:
+        valid = [r for r in data if isinstance(r, dict) and len(r) > 2]
+        upd = _parse_sleep_records(valid, user_id, db)
+        return {"sleep_updated": upd, "total": len(data)}
+    else:
+        ins, skp = _parse_uds_records(data, user_id, db)
+        return {"inserted": ins, "skipped": skp, "total": len(data)}
+
+
 @router.get("/my")
 def my_garmin_data(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     records = db.query(GarminData).filter(GarminData.user_id == current_user.id)\

@@ -759,22 +759,48 @@
           <div class="card p-6">
             <div class="font-bold text-navy-900 mb-4">📤 Export do Excelu</div>
             <div class="space-y-3">
-              <a :href="apiBase+'/api/export/questionnaires.xlsx'" class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors group">
+              <button @click="downloadExport('/api/export/questionnaires.xlsx','VAHIN_dotazniky.xlsx')" class="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors text-left">
                 <span class="text-2xl">📋</span>
                 <div><div class="font-semibold text-sm text-navy-900">Dotazníky</div><div class="text-xs text-gray-500">VAS únava, PSQI spánek, pohoda</div></div>
                 <span class="ml-auto text-blue-600 text-xs font-semibold">Stáhnout →</span>
-              </a>
-              <a :href="apiBase+'/api/export/garmin.xlsx'" class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors group">
+              </button>
+              <button @click="downloadExport('/api/export/garmin.xlsx','VAHIN_garmin.xlsx')" class="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors text-left">
                 <span class="text-2xl">⌚</span>
                 <div><div class="font-semibold text-sm text-navy-900">Garmin data</div><div class="text-xs text-gray-500">HRV, spánek, stres, kroky</div></div>
                 <span class="ml-auto text-blue-600 text-xs font-semibold">Stáhnout →</span>
-              </a>
-              <a :href="apiBase+'/api/export/shifts.xlsx'" class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors group">
+              </button>
+              <button @click="downloadExport('/api/export/shifts.xlsx','VAHIN_smeny.xlsx')" class="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors text-left">
                 <span class="text-2xl">🌙</span>
                 <div><div class="font-semibold text-sm text-navy-900">Noční směny</div><div class="text-xs text-gray-500">Záznamy směn, Nurosym usage</div></div>
                 <span class="ml-auto text-blue-600 text-xs font-semibold">Stáhnout →</span>
-              </a>
+              </button>
             </div>
+          </div>
+          <div class="card p-6">
+            <div class="font-bold text-navy-900 mb-4">⌚ Nahrát Garmin data (za účastníka)</div>
+            <p class="text-sm text-gray-500 mb-3">ZIP export z Garmin Connect nebo jednotlivý JSON/CSV soubor. Nahrajte za konkrétního účastníka.</p>
+            <div class="mb-3">
+              <label class="text-xs font-semibold text-gray-500 block mb-1">Účastník</label>
+              <select x-model="adminGarminUserId" class="w-full text-sm">
+                <option value="">— vyberte účastníka —</option>
+                <template x-for="p in participants" :key="p.id">
+                  <option :value="p.id" x-text="p.participant_code + ' – ' + p.full_name"></option>
+                </template>
+              </select>
+            </div>
+            <div class="space-y-2">
+              <label class="flex items-center gap-2 cursor-pointer bg-indigo-50 hover:bg-indigo-100 rounded-lg px-3 py-2 transition-colors" :class="!adminGarminUserId?'opacity-40 pointer-events-none':''">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span class="text-xs font-semibold text-indigo-700">Nahrát ZIP soubor</span>
+                <input type="file" accept=".zip" class="hidden" @change="adminUploadGarminZip($event)" :disabled="!adminGarminUserId" />
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer bg-gray-50 hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors" :class="!adminGarminUserId?'opacity-40 pointer-events-none':''">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span class="text-xs font-semibold text-gray-600">Nahrát JSON / CSV</span>
+                <input type="file" accept=".csv,.json" class="hidden" @change="adminUploadGarmin($event)" :disabled="!adminGarminUserId" />
+              </label>
+            </div>
+            <div x-show="adminGarminMsg" class="mt-2 text-sm font-semibold" :class="adminGarminOk?'text-green-600':'text-red-600'" x-text="adminGarminMsg"></div>
           </div>
           <div class="card p-6">
             <div class="font-bold text-navy-900 mb-4">📊 API dokumentace</div>
@@ -2046,6 +2072,7 @@ function app() { return {
   loading: false, activeTab: 'home', apiBase: API,
   loginForm: {email:'',password:''}, loginError: '',
   myShifts: [], myResponses: [], garminMsg:'', garminOk:false,
+  adminGarminUserId: '', adminGarminMsg: '', adminGarminOk: false,
   guideTasks: [], allQDefs: [], rawDefs: {},
   todayShiftType: null,
   dayTasks: [],
@@ -2994,6 +3021,52 @@ function app() { return {
   },
 
   isResearcher(){ return this.currentUser?.role==='researcher'||this.currentUser?.role==='admin'; },
+
+  async downloadExport(path, filename) {
+    const tok = localStorage.getItem('vahin_token')||sessionStorage.getItem('vahin_token')||'';
+    try {
+      const resp = await fetch(API + path, { headers: { 'Authorization': 'Bearer ' + tok } });
+      if (!resp.ok) { alert('Export selhal: ' + resp.status); return; }
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch(e) { alert('Chyba exportu: ' + e.message); }
+  },
+
+  async adminUploadGarminZip(event) {
+    const file = event.target.files?.[0]; if (!file) return;
+    if (!this.adminGarminUserId) { this.adminGarminMsg='Vyberte účastníka'; this.adminGarminOk=false; return; }
+    this.adminGarminMsg='Nahrávám ZIP…'; this.adminGarminOk=false;
+    const tok = localStorage.getItem('vahin_token')||sessionStorage.getItem('vahin_token')||'';
+    const fd = new FormData(); fd.append('file', file);
+    try {
+      const resp = await fetch(API+'/api/garmin/admin-upload-zip/'+this.adminGarminUserId, {method:'POST', headers:{'Authorization':'Bearer '+tok}, body:fd});
+      const j = await resp.json();
+      if (!resp.ok) { this.adminGarminMsg='Chyba: '+(j.detail||resp.status); this.adminGarminOk=false; return; }
+      this.adminGarminOk=true;
+      this.adminGarminMsg='OK – vloženo: '+j.inserted+', přeskočeno: '+j.skipped+(j.sleep_updated?' spánek: '+j.sleep_updated:'');
+    } catch(e) { this.adminGarminMsg='Chyba: '+e.message; this.adminGarminOk=false; }
+    event.target.value='';
+  },
+
+  async adminUploadGarmin(event) {
+    const file = event.target.files?.[0]; if (!file) return;
+    if (!this.adminGarminUserId) { this.adminGarminMsg='Vyberte účastníka'; this.adminGarminOk=false; return; }
+    this.adminGarminMsg='Nahrávám soubor…'; this.adminGarminOk=false;
+    const tok = localStorage.getItem('vahin_token')||sessionStorage.getItem('vahin_token')||'';
+    const fd = new FormData(); fd.append('file', file);
+    try {
+      const resp = await fetch(API+'/api/garmin/admin-upload-json/'+this.adminGarminUserId, {method:'POST', headers:{'Authorization':'Bearer '+tok}, body:fd});
+      const j = await resp.json();
+      if (!resp.ok) { this.adminGarminMsg='Chyba: '+(j.detail||resp.status); this.adminGarminOk=false; return; }
+      this.adminGarminOk=true;
+      if (j.sleep_updated!=null) this.adminGarminMsg='OK – spánek aktualizován: '+j.sleep_updated;
+      else this.adminGarminMsg='OK – vloženo: '+j.inserted+', přeskočeno: '+j.skipped;
+    } catch(e) { this.adminGarminMsg='Chyba: '+e.message; this.adminGarminOk=false; }
+    event.target.value='';
+  },
 
   goQuestionnaire(type){ this.selectedQ=type; this.activeTab='questionnaire'; },
 
