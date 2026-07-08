@@ -348,8 +348,10 @@
   <aside class="hidden md:flex flex-col bg-navy-900 text-white w-56 min-h-screen fixed top-0 left-0 z-40 py-5 px-3">
     <!-- Logo + partner loga -->
     <div class="px-3 mb-5">
-      <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:white;line-height:1.1;letter-spacing:-.3px">VAHIN Pilot</div>
-      <div style="font-size:11px;letter-spacing:2px;color:#93c5fd;margin-top:4px;margin-bottom:14px;font-weight:500;text-transform:uppercase">INT2025002</div>
+      <a @click.prevent="activeTab='home'" href="#" style="display:block;cursor:pointer;margin-bottom:12px">
+        <img src="/app/img/vahin-logo.svg" alt="VAHIN Pilot" width="300" height="300"
+             style="width:100%;max-width:180px;height:auto;display:block;margin:0 auto;border-radius:50%;box-shadow:0 4px 20px rgba(59,130,246,.25)" />
+      </a>
       <div class="flex flex-col gap-3">
         <img src="/app/img/garmin.png" alt="Garmin" style="width:100%;height:30px;object-fit:contain;object-position:left;filter:invert(1);mix-blend-mode:screen;opacity:.9" />
         <img src="/app/img/nurosym.png" alt="Nurosym" style="width:100%;height:52px;object-fit:contain;object-position:left;filter:invert(1);mix-blend-mode:screen;opacity:.9" />

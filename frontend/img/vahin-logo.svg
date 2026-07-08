@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#1e3a5f"/>
+      <stop offset="100%" stop-color="#0a1e38"/>
+    </radialGradient>
+    <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3"/>
+      <stop offset="30%" stop-color="#60a5fa"/>
+      <stop offset="70%" stop-color="#93c5fd"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.3"/>
+    </linearGradient>
+    <linearGradient id="pulseGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.2"/>
+      <stop offset="40%" stop-color="#22d3ee"/>
+      <stop offset="60%" stop-color="#67e8f9"/>
+      <stop offset="100%" stop-color="#22d3ee" stop-opacity="0.2"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="circle">
+      <circle cx="150" cy="150" r="142"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="150" cy="150" r="148" fill="url(#bgGrad)"/>
+  <circle cx="150" cy="150" r="148" fill="none" stroke="#1d4ed8" stroke-width="1.5" opacity="0.4"/>
+  <circle cx="150" cy="150" r="140" fill="none" stroke="#1e40af" stroke-width="0.5" opacity="0.3"/>
+
+  <!-- Subtle grid lines -->
+  <g clip-path="url(#circle)" opacity="0.06">
+    <line x1="8" y1="80"  x2="292" y2="80"  stroke="#60a5fa" stroke-width="0.5"/>
+    <line x1="8" y1="110" x2="292" y2="110" stroke="#60a5fa" stroke-width="0.5"/>
+    <line x1="8" y1="140" x2="292" y2="140" stroke="#60a5fa" stroke-width="0.5"/>
+    <line x1="8" y1="170" x2="292" y2="170" stroke="#60a5fa" stroke-width="0.5"/>
+    <line x1="8" y1="200" x2="292" y2="200" stroke="#60a5fa" stroke-width="0.5"/>
+    <line x1="8" y1="230" x2="292" y2="230" stroke="#60a5fa" stroke-width="0.5"/>
+  </g>
+
+  <!-- Moon (night shift symbol) top right -->
+  <g opacity="0.55" filter="url(#softGlow)">
+    <path d="M228 52 a28 28 0 0 1-28 28 28 28 0 0 0 28-28z" fill="#93c5fd" opacity="0.6"/>
+    <circle cx="215" cy="65" r="18" fill="none" stroke="#bfdbfe" stroke-width="1.2" opacity="0.5"/>
+  </g>
+  <!-- Small stars -->
+  <circle cx="248" cy="44" r="1.5" fill="#e0f2fe" opacity="0.7"/>
+  <circle cx="238" cy="36" r="1" fill="#bfdbfe" opacity="0.6"/>
+  <circle cx="260" cy="58" r="1" fill="#e0f2fe" opacity="0.5"/>
+  <circle cx="72" cy="60" r="1.2" fill="#bfdbfe" opacity="0.4"/>
+  <circle cx="58" cy="48" r="0.8" fill="#e0f2fe" opacity="0.5"/>
+
+  <!-- EEG/HRV pulse waveform — center piece -->
+  <g clip-path="url(#circle)" filter="url(#glow)">
+    <!-- Background glow under waveform -->
+    <rect x="15" y="155" width="270" height="40" fill="#1e3a8a" opacity="0.2" rx="4"/>
+    <!-- Main waveform: flat → spike → flat → dip → flat -->
+    <polyline
+      points="15,175 60,175 72,175 80,155 88,195 96,148 104,200 112,175 130,175 148,175 155,175 162,163 169,187 176,175 210,175 240,175 285,175"
+      fill="none"
+      stroke="url(#waveGrad)"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      opacity="0.9"
+    />
+    <!-- Highlight on the main spike -->
+    <polyline
+      points="88,195 96,148 104,200"
+      fill="none"
+      stroke="#bfdbfe"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      opacity="0.7"
+    />
+  </g>
+
+  <!-- VAHIN text -->
+  <text
+    x="150" y="135"
+    font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif"
+    font-size="52"
+    font-weight="900"
+    fill="white"
+    text-anchor="middle"
+    letter-spacing="6"
+    filter="url(#softGlow)"
+  >VAHIN</text>
+
+  <!-- Thin separator line under VAHIN -->
+  <line x1="65" y1="142" x2="235" y2="142" stroke="#3b82f6" stroke-width="0.8" opacity="0.5"/>
+
+  <!-- PILOT label -->
+  <text
+    x="150" y="222"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="11.5"
+    font-weight="600"
+    fill="#93c5fd"
+    text-anchor="middle"
+    letter-spacing="5"
+  >PILOT STUDY</text>
+
+  <!-- INT code bottom -->
+  <text
+    x="150" y="243"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="9"
+    fill="#4b82c0"
+    text-anchor="middle"
+    letter-spacing="2"
+    opacity="0.8"
+  >INT2025002</text>
+
+  <!-- Small ear/VNS icon (stylized) bottom left -->
+  <g transform="translate(58, 218)" opacity="0.35">
+    <ellipse cx="12" cy="14" rx="9" ry="12" fill="none" stroke="#60a5fa" stroke-width="1.2"/>
+    <path d="M8 10 q4-5 8 0 q3 4 0 8 q-3 3-4 5" fill="none" stroke="#60a5fa" stroke-width="1"/>
+    <circle cx="12" cy="23" r="2" fill="#60a5fa" opacity="0.6"/>
+  </g>
+
+  <!-- Small heart/HRV icon bottom right -->
+  <g transform="translate(220, 215)" opacity="0.35">
+    <path d="M12 22 L3 13 a6.5 6.5 0 0 1 9.5-8.8 6.5 6.5 0 0 1 9.5 8.8 Z" fill="#60a5fa" opacity="0.7"/>
+  </g>
+
+  <!-- Outer ring accent -->
+  <circle cx="150" cy="150" r="148" fill="none" stroke="url(#waveGrad)" stroke-width="2" opacity="0.3"/>
+</svg>
