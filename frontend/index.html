@@ -107,6 +107,16 @@
           </div>
           <div x-show="!selectedP.garmin_user_id" class="text-xs text-gray-400">Nepropojeno</div>
         </div>
+        <template x-if="meqChronotype(selectedPResponses)">
+          <div class="col-span-2 rounded-lg p-3 flex items-center gap-3" :class="meqChronotype(selectedPResponses)?.cls">
+            <span class="text-xl leading-none" x-text="meqChronotype(selectedPResponses)?.emoji"></span>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-semibold opacity-70">Chronotyp (MEQ)</div>
+              <div class="font-bold text-sm" x-text="meqChronotype(selectedPResponses)?.label + ' – ' + meqChronotype(selectedPResponses)?.desc"></div>
+            </div>
+            <div class="text-xs font-mono font-bold opacity-60" x-text="meqChronotype(selectedPResponses)?.score + '/76'"></div>
+          </div>
+        </template>
       </div>
 
       <!-- Phase manager -->
@@ -2179,6 +2189,16 @@
                 <div class="text-xs text-gray-400 mb-0.5">Den studie</div>
                 <div class="font-bold text-navy-900" x-text="currentUser?.study_day ? currentUser.study_day+' / 21' : '—'"></div>
               </div>
+              <template x-if="meqChronotype()">
+                <div class="col-span-2 rounded-xl p-3 flex items-center gap-3" :class="meqChronotype()?.cls">
+                  <span class="text-2xl leading-none" x-text="meqChronotype()?.emoji"></span>
+                  <div>
+                    <div class="text-xs font-semibold opacity-70 mb-0.5">Chronotyp (MEQ)</div>
+                    <div class="font-bold text-sm" x-text="meqChronotype()?.label + ' – ' + meqChronotype()?.desc"></div>
+                    <div class="text-xs opacity-60" x-text="'Skóre: ' + meqChronotype()?.score + ' / 76'"></div>
+                  </div>
+                </div>
+              </template>
             </div>
           </div>
 
@@ -3684,6 +3704,22 @@ function app() { return {
     stim_done:'tAVNS stimulace ✓',
     cortizol_done:'Odběr kortizolu ✓',
   }[t]||t||'—';},
+
+  meqChronotype(responses){
+    const src = responses || this.myResponses || [];
+    const resp = src.find(r => r.q_type === 'meq');
+    if (!resp || !resp.answers) return null;
+    const map = {a:4, b:3, c:2, d:1};
+    let score = 0, count = 0;
+    for (let i = 1; i <= 19; i++) {
+      const v = resp.answers['meq_' + String(i).padStart(2,'0')];
+      if (v && map[v]) { score += map[v]; count++; }
+    }
+    if (count < 10) return null;
+    if (score >= 55) return {score, label:'Skřivan', emoji:'🌅', cls:'bg-amber-100 text-amber-800', desc:'Ranní typ'};
+    if (score >= 42) return {score, label:'Mezityp',  emoji:'☀️', cls:'bg-sky-100 text-sky-800',    desc:'Střední typ'};
+    return              {score, label:'Sova',     emoji:'🦉', cls:'bg-indigo-100 text-indigo-800', desc:'Večerní typ'};
+  },
 
   qtypeColor(qt){return {
     psd:'bg-blue-400',kss:'bg-indigo-400',kss_pre:'bg-indigo-400',kss_post:'bg-indigo-600',
