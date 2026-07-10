@@ -11,6 +11,7 @@ from database import create_tables, SessionLocal, User, UserRole, StudyPhase
 from auth import hash_password
 from routers import auth_router, participants, shifts, questionnaires, garmin, export, admin_notes, push
 from routers import cortisol as cortisol_router  # noqa: F401 – router needed for its API endpoints
+from routers import garmin_connect as garmin_connect_router
 
 app = FastAPI(
     title="VAHIN Pilot Study",
@@ -35,6 +36,7 @@ app.include_router(export.router)
 app.include_router(admin_notes.router)
 app.include_router(push.router)
 app.include_router(cortisol_router.router)
+app.include_router(garmin_connect_router.router)
 
 # ── Statické soubory (frontend) ─────────────────────────────────────────────
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
@@ -85,10 +87,13 @@ def _migrate_db():
             cur.execute(f"ALTER TABLE {table} ADD COLUMN {col} {typedef}")
             print(f"[VAHIN migrate] Přidán sloupec {table}.{col}")
 
-    add_col("users",                   "study_start_date",  "DATETIME")
-    add_col("users",                   "shift_schedule",    "TEXT")
-    add_col("cortisol_logs",           "timepoint",         "TEXT NOT NULL DEFAULT 't0'")
-    add_col("notification_schedules",  "study_days_mask",   "INTEGER DEFAULT 0")
+    add_col("users",                   "study_start_date",    "DATETIME")
+    add_col("users",                   "shift_schedule",      "TEXT")
+    add_col("users",                   "garmin_access_token", "TEXT")
+    add_col("users",                   "garmin_token_secret", "TEXT")
+    add_col("users",                   "garmin_user_id",      "TEXT")
+    add_col("cortisol_logs",           "timepoint",           "TEXT NOT NULL DEFAULT 't0'")
+    add_col("notification_schedules",  "study_days_mask",     "INTEGER DEFAULT 0")
 
     con.commit()
     con.close()

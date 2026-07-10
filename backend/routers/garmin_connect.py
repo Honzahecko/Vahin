@@ -1,0 +1,372 @@
+# -*- coding: utf-8 -*-
+"""
+Garmin Connect – OAuth 2.0 PKCE integration + Health API webhook receivers.
+
+Auth flow:
+  1. GET  /api/garmin/auth/start        → returns auth_url + code_verifier
+  2. User is redirected to Garmin → authorises → Garmin redirects to redirect_uri?code=...&state=...
+  3. Frontend catches code+state from URL, POSTs them with code_verifier to:
+     POST /api/garmin/auth/callback     → exchanges code for token, stores in DB
+
+Webhooks (Garmin POSTs here after each device sync):
+  POST /api/garmin/webhook/dailies
+  POST /api/garmin/webhook/sleep
+  POST /api/garmin/webhook/hrv
+  POST /api/garmin/webhook/stress
+"""
+import os, secrets, hashlib, base64
+from datetime import datetime
+from typing import Optional
+
+import requests as _requests
+from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from database import get_db, User, UserRole, GarminData, GarminDataSource
+from auth import get_current_user
+
+router = APIRouter(prefix="/api/garmin", tags=["garmin-connect"])
+
+# ── Config ─────────────────────────────────────────────────────────────────
+GARMIN_CLIENT_ID     = os.environ.get("GARMIN_CLIENT_ID", "")
+GARMIN_CLIENT_SECRET = os.environ.get("GARMIN_CLIENT_SECRET", "")
+GARMIN_REDIRECT_URI  = "https://vahin-production.up.railway.app/"
+GARMIN_AUTH_URL      = "https://apis.garmin.com/tools/oauth2/authorizeUser"
+GARMIN_TOKEN_URL     = "https://diauth.garmin.com/di-oauth2-service/oauth/token"
+
+# In-memory store for PKCE code_verifiers keyed by state.
+# State = str(user_id) + random suffix for uniqueness.
+_pkce_store: dict[str, str] = {}   # state → code_verifier
+
+# ── PKCE helpers ────────────────────────────────────────────────────────────
+
+def _b64url(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
+
+def _generate_pkce() -> tuple[str, str]:
+    """Returns (code_verifier, code_challenge)."""
+    code_verifier = _b64url(secrets.token_bytes(32))
+    digest = hashlib.sha256(code_verifier.encode()).digest()
+    code_challenge = _b64url(digest)
+    return code_verifier, code_challenge
+
+# ── Schemas ─────────────────────────────────────────────────────────────────
+
+class CallbackPayload(BaseModel):
+    code: str
+    state: str
+    code_verifier: str
+
+# ── Auth endpoints ──────────────────────────────────────────────────────────
+
+@router.get("/auth/start")
+def garmin_auth_start(current_user: User = Depends(get_current_user)):
+    """Generate PKCE parameters and return the Garmin authorisation URL."""
+    if current_user.role not in (UserRole.participant, UserRole.admin):
+        raise HTTPException(403, "Pouze pro účastníky")
+
+    if not GARMIN_CLIENT_ID:
+        raise HTTPException(503, "GARMIN_CLIENT_ID není nastaven na serveru")
+
+    code_verifier, code_challenge = _generate_pkce()
+    state = f"{current_user.id}-{secrets.token_urlsafe(8)}"
+    _pkce_store[state] = code_verifier
+
+    params = (
+        f"client_id={GARMIN_CLIENT_ID}"
+        f"&redirect_uri={GARMIN_REDIRECT_URI}"
+        f"&response_type=code"
+        f"&scope=HEALTH_API"
+        f"&state={state}"
+        f"&code_challenge={code_challenge}"
+        f"&code_challenge_method=S256"
+    )
+    auth_url = f"{GARMIN_AUTH_URL}?{params}"
+
+    return {
+        "auth_url": auth_url,
+        "code_verifier": code_verifier,
+        "state": state,
+    }
+
+
+@router.post("/auth/callback")
+def garmin_auth_callback(
+    payload: CallbackPayload,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Exchange the authorisation code for an access token and persist it."""
+    if not GARMIN_CLIENT_ID or not GARMIN_CLIENT_SECRET:
+        raise HTTPException(503, "Garmin credentials nejsou nastaveny na serveru")
+
+    # Accept code_verifier from request body (client stores it in localStorage)
+    code_verifier = payload.code_verifier
+    # Also clean up any server-side entry for this state (belt-and-suspenders)
+    _pkce_store.pop(payload.state, None)
+
+    try:
+        resp = _requests.post(
+            GARMIN_TOKEN_URL,
+            data={
+                "grant_type":    "authorization_code",
+                "code":          payload.code,
+                "redirect_uri":  GARMIN_REDIRECT_URI,
+                "client_id":     GARMIN_CLIENT_ID,
+                "client_secret": GARMIN_CLIENT_SECRET,
+                "code_verifier": code_verifier,
+            },
+            timeout=15,
+        )
+    except Exception as exc:
+        raise HTTPException(502, f"Chyba komunikace s Garmin: {exc}")
+
+    if not resp.ok:
+        raise HTTPException(400, f"Garmin token error {resp.status_code}: {resp.text[:300]}")
+
+    token_data = resp.json()
+    access_token = token_data.get("access_token")
+    if not access_token:
+        raise HTTPException(400, "Garmin nevrátil access_token")
+
+    # Persist token (and userId if provided)
+    user = db.query(User).filter(User.id == current_user.id).first()
+    user.garmin_access_token = access_token
+    user.garmin_token_secret = token_data.get("refresh_token") or token_data.get("token_secret")
+    garmin_uid = token_data.get("userId") or token_data.get("user_id")
+    if garmin_uid:
+        user.garmin_user_id = str(garmin_uid)
+    db.commit()
+
+    return {"ok": True}
+
+
+@router.get("/status")
+def garmin_status(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Return whether the current user has a Garmin connection."""
+    user = db.query(User).filter(User.id == current_user.id).first()
+    connected = bool(getattr(user, "garmin_access_token", None))
+    garmin_uid = getattr(user, "garmin_user_id", None)
+
+    # Find the most recent garmin_data record for a rough "last sync" timestamp
+    last_record = (
+        db.query(GarminData)
+        .filter(GarminData.user_id == current_user.id,
+                GarminData.source == GarminDataSource.api)
+        .order_by(GarminData.date.desc())
+        .first()
+    )
+    last_sync = last_record.date.strftime("%Y-%m-%d") if last_record else None
+
+    return {"connected": connected, "garmin_user_id": garmin_uid, "last_sync": last_sync}
+
+
+@router.delete("/disconnect")
+def garmin_disconnect(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Clear Garmin credentials for the current user."""
+    user = db.query(User).filter(User.id == current_user.id).first()
+    user.garmin_access_token = None
+    user.garmin_token_secret = None
+    user.garmin_user_id = None
+    db.commit()
+    return {"ok": True}
+
+# ── Webhook helpers ──────────────────────────────────────────────────────────
+
+def _find_user_by_token(token: str, db: Session) -> Optional[User]:
+    return db.query(User).filter(User.garmin_access_token == token).first()
+
+
+def _upsert_garmin(user_id: int, date_val: datetime, updates: dict, db: Session):
+    """Insert or update a GarminData row for (user_id, date)."""
+    record = (
+        db.query(GarminData)
+        .filter(GarminData.user_id == user_id, GarminData.date == date_val)
+        .first()
+    )
+    if not record:
+        record = GarminData(
+            user_id=user_id,
+            date=date_val,
+            source=GarminDataSource.api,
+        )
+        db.add(record)
+    else:
+        record.source = GarminDataSource.api
+
+    for field, value in updates.items():
+        if value is not None:
+            setattr(record, field, value)
+    db.commit()
+
+
+def _parse_date(date_str: str) -> Optional[datetime]:
+    try:
+        return datetime.strptime(date_str, "%Y-%m-%d")
+    except Exception:
+        return None
+
+
+def _store_garmin_user_id(user: User, item: dict, db: Session):
+    uid = item.get("userId")
+    if uid and not user.garmin_user_id:
+        user.garmin_user_id = str(uid)
+        db.commit()
+
+# ── Webhook endpoints ────────────────────────────────────────────────────────
+
+@router.post("/webhook/dailies")
+async def webhook_dailies(request: Request, db: Session = Depends(get_db)):
+    """Receive daily summary push from Garmin Health API."""
+    try:
+        body = await request.json()
+    except Exception:
+        return {"ok": True}
+
+    items = body.get("dailies", [])
+    if not isinstance(items, list):
+        items = []
+
+    for item in items:
+        token = item.get("userAccessToken")
+        if not token:
+            continue
+        user = _find_user_by_token(token, db)
+        if not user:
+            continue
+        _store_garmin_user_id(user, item, db)
+
+        date_val = _parse_date(item.get("calendarDate", ""))
+        if not date_val:
+            continue
+
+        updates = {
+            "steps":           item.get("steps"),
+            "resting_hr":      item.get("restingHeartRateInBeatsPerMinute"),
+            "spo2_avg":        item.get("averageSpO2"),
+            "respiration_avg": item.get("averageRespirationValue"),
+            "stress_avg":      item.get("averageStressLevel"),
+            "body_battery_high": item.get("bodyBatteryChargedValue"),
+            "body_battery_low":  item.get("bodyBatteryDrainedValue"),
+        }
+        _upsert_garmin(user.id, date_val, updates, db)
+
+    return {"ok": True}
+
+
+@router.post("/webhook/sleep")
+async def webhook_sleep(request: Request, db: Session = Depends(get_db)):
+    """Receive sleep summary push from Garmin Health API."""
+    try:
+        body = await request.json()
+    except Exception:
+        return {"ok": True}
+
+    items = body.get("sleeps", [])
+    if not isinstance(items, list):
+        items = []
+
+    for item in items:
+        token = item.get("userAccessToken")
+        if not token:
+            continue
+        user = _find_user_by_token(token, db)
+        if not user:
+            continue
+        _store_garmin_user_id(user, item, db)
+
+        date_val = _parse_date(item.get("calendarDate", ""))
+        if not date_val:
+            continue
+
+        duration_s = item.get("durationInSeconds")
+        deep_s     = item.get("deepSleepDurationInSeconds")
+        rem_s      = item.get("remSleepInSeconds")
+
+        updates = {
+            "sleep_hours":    round(duration_s / 3600, 2) if duration_s else None,
+            "sleep_score":    item.get("overallSleepScore"),
+            "deep_sleep_min": int(deep_s // 60) if deep_s else None,
+            "rem_sleep_min":  int(rem_s // 60) if rem_s else None,
+            "spo2_avg":       item.get("averageSpO2Value"),
+            "respiration_avg": item.get("averageRespirationValue"),
+        }
+        _upsert_garmin(user.id, date_val, updates, db)
+
+    return {"ok": True}
+
+
+@router.post("/webhook/hrv")
+async def webhook_hrv(request: Request, db: Session = Depends(get_db)):
+    """Receive HRV summary push from Garmin Health API."""
+    try:
+        body = await request.json()
+    except Exception:
+        return {"ok": True}
+
+    items = body.get("hrv", [])
+    if not isinstance(items, list):
+        items = []
+
+    for item in items:
+        token = item.get("userAccessToken")
+        if not token:
+            continue
+        user = _find_user_by_token(token, db)
+        if not user:
+            continue
+        _store_garmin_user_id(user, item, db)
+
+        date_val = _parse_date(item.get("calendarDate", ""))
+        if not date_val:
+            continue
+
+        updates = {
+            "hrv_rmssd":      item.get("lastNight"),
+            "hrv_weekly_avg": item.get("weeklyAverage"),
+        }
+        _upsert_garmin(user.id, date_val, updates, db)
+
+    return {"ok": True}
+
+
+@router.post("/webhook/stress")
+async def webhook_stress(request: Request, db: Session = Depends(get_db)):
+    """Receive stress detail push from Garmin Health API."""
+    try:
+        body = await request.json()
+    except Exception:
+        return {"ok": True}
+
+    items = body.get("stressDetails", [])
+    if not isinstance(items, list):
+        items = []
+
+    for item in items:
+        token = item.get("userAccessToken")
+        if not token:
+            continue
+        user = _find_user_by_token(token, db)
+        if not user:
+            continue
+        _store_garmin_user_id(user, item, db)
+
+        date_val = _parse_date(item.get("calendarDate", ""))
+        if not date_val:
+            continue
+
+        updates = {
+            "stress_avg":        item.get("averageStressLevel"),
+            "body_battery_high": item.get("bodyBatteryHighestValue"),
+            "body_battery_low":  item.get("bodyBatteryLowestValue"),
+        }
+        _upsert_garmin(user.id, date_val, updates, db)
+
+    return {"ok": True}

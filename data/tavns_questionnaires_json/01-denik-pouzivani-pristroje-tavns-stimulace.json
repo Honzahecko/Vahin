@@ -1,0 +1,163 @@
+{
+  "schema_version": "1.0.0",
+  "id": "tavns-device-use-diary",
+  "title": "Deník používání přístroje – taVNS stimulace",
+  "description": "Studie taVNS | Vyplňte po KAŽDÉ stimulaci. Zaznamenejte čas, délku a vaše vnímání stimulace.",
+  "language": "cs",
+  "source": {
+    "platform": "google_forms",
+    "form_id": "183xEWG1HrzdhePfss67ho3mmlmGRkiU-PZUzwKrBTew",
+    "edit_url": "https://docs.google.com/forms/d/183xEWG1HrzdhePfss67ho3mmlmGRkiU-PZUzwKrBTew/edit?usp=forms_home&ouid=117607941611883983758",
+    "view_url": "https://docs.google.com/forms/d/183xEWG1HrzdhePfss67ho3mmlmGRkiU-PZUzwKrBTew/viewform",
+    "embedded_url": "https://docs.google.com/forms/d/183xEWG1HrzdhePfss67ho3mmlmGRkiU-PZUzwKrBTew/viewform?embedded=true"
+  },
+  "fields": [
+    {
+      "id": "participant_id",
+      "label": "ID účastníka",
+      "type": "text",
+      "required": true,
+      "order": 1
+    },
+    {
+      "id": "stimulation_date",
+      "label": "Datum stimulace",
+      "type": "date",
+      "required": true,
+      "order": 2
+    },
+    {
+      "id": "stimulation_timing",
+      "label": "Kdy proběhla stimulace?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "Na začátku směny (15–30 min)",
+          "value": "shift_start"
+        },
+        {
+          "label": "Krátká stimulace v pauze (5–10 min)",
+          "value": "short_break"
+        },
+        {
+          "label": "Krátká stimulace při pocitu únavy (5–10 min)",
+          "value": "fatigue_short"
+        },
+        {
+          "label": "Na konci směny (15–30 min)",
+          "value": "shift_end"
+        },
+        {
+          "label": "Udržovací stimulace ve volném dni (15 min)",
+          "value": "maintenance_day_off"
+        }
+      ],
+      "order": 3
+    },
+    {
+      "id": "stimulation_start_time",
+      "label": "Čas zahájení stimulace",
+      "type": "time",
+      "required": true,
+      "help_text": "Formát: HH:MM",
+      "validation": {
+        "format": "HH:MM"
+      },
+      "order": 4
+    },
+    {
+      "id": "stimulation_duration_minutes",
+      "label": "Délka stimulace (v minutách)",
+      "type": "number",
+      "required": true,
+      "validation": {
+        "min": 0,
+        "integer": true
+      },
+      "unit": "minutes",
+      "order": 5
+    },
+    {
+      "id": "stimulation_perception",
+      "label": "Jak jste vnímal(a) stimulaci?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "1 – Vůbec jsem ji nevnímal(a)",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2 – Sotva znatelná",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3 – Mírně znatelná, příjemná",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4 – Zřetelně znatelná, příjemná",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Silná, ale stále příjemná",
+          "value": 5,
+          "score": 5
+        },
+        {
+          "label": "6 – Nepříjemná",
+          "value": 6,
+          "score": 6
+        }
+      ],
+      "order": 6
+    },
+    {
+      "id": "completed_as_planned",
+      "label": "Dokončil(a) jste stimulaci dle plánu?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "Ano, celou",
+          "value": "yes_full"
+        },
+        {
+          "label": "Ano, ale zkrátil(a) jsem ji",
+          "value": "yes_shortened"
+        },
+        {
+          "label": "Ne, přerušil(a) jsem ji",
+          "value": "no_interrupted"
+        }
+      ],
+      "order": 7
+    },
+    {
+      "id": "interruption_or_shortening_reason",
+      "label": "Pokud jste stimulaci přerušil(a) nebo zkrátil(a) – uveďte důvod",
+      "type": "textarea",
+      "required": false,
+      "order": 8
+    },
+    {
+      "id": "stimulation_notes",
+      "label": "Poznámky / jiné subjektivní pocity při stimulaci",
+      "type": "textarea",
+      "required": false,
+      "order": 9
+    }
+  ],
+  "order": 1,
+  "generated_at": "2026-06-23",
+  "notes": [
+    "Struktura byla převedena z veřejného náhledu Google Forms (viewform).",
+    "Neobsahuje interní Google Forms entry.* identifikátory pro přímé odesílání odpovědí zpět do Google Forms.",
+    "Typy polí jsou normalizované pro použití ve webové aplikaci: text, textarea, number, date, time, single_choice, linear_scale."
+  ]
+}

@@ -57,6 +57,7 @@ def participant_to_dict(u: User) -> dict:
         "study_day": study_day,
         "recommended_phase": recommended_phase,
         "notes": u.notes,
+        "garmin_user_id": getattr(u, "garmin_user_id", None),
         "created_at": u.created_at.isoformat() if u.created_at else None,
     }
 

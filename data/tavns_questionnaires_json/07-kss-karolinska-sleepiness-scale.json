@@ -1,0 +1,108 @@
+{
+  "schema_version": "1.0.0",
+  "id": "kss-karolinska-sleepiness-scale",
+  "title": "KSS – Karolinska Sleepiness Scale",
+  "description": "Studie taVNS | Vyplňte PŘED a PO každé směně. Přečtěte si každé tvrzení a vyberte číslo, které nejlépe popisuje, jak ospalý/ospalá se cítíte právě teď.",
+  "language": "cs",
+  "source": {
+    "platform": "google_forms",
+    "form_id": "19IUCSsjO0e4-THQ5hyzBzp28Q-KDo0Y_sIStY1QXv4I",
+    "edit_url": "https://docs.google.com/forms/d/19IUCSsjO0e4-THQ5hyzBzp28Q-KDo0Y_sIStY1QXv4I/edit?usp=forms_home&ouid=117607941611883983758",
+    "view_url": "https://docs.google.com/forms/d/19IUCSsjO0e4-THQ5hyzBzp28Q-KDo0Y_sIStY1QXv4I/viewform",
+    "embedded_url": "https://docs.google.com/forms/d/19IUCSsjO0e4-THQ5hyzBzp28Q-KDo0Y_sIStY1QXv4I/viewform?embedded=true"
+  },
+  "fields": [
+    {
+      "id": "participant_id",
+      "label": "ID účastníka",
+      "type": "text",
+      "required": true,
+      "order": 1
+    },
+    {
+      "id": "date",
+      "label": "Datum",
+      "type": "date",
+      "required": true,
+      "order": 2
+    },
+    {
+      "id": "timepoint",
+      "label": "Kdy vyplňujete?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "Před směnou",
+          "value": "before_shift"
+        },
+        {
+          "label": "Po směně",
+          "value": "after_shift"
+        }
+      ],
+      "order": 3
+    },
+    {
+      "id": "sleepiness_level",
+      "label": "Jak ospalý/á se právě teď cítíte?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "1 – Velmi bdělý/á",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2 – Bdělý/á",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3 – Ani bdělý/á, ani ospalý/á",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4 – Lehce ospalý/á",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Ospalý/á, ale bez potíží zůstat vzhůru",
+          "value": 5,
+          "score": 5
+        },
+        {
+          "label": "6 – Známky ospalosti, občasné zívání, snížená pozornost",
+          "value": 6,
+          "score": 6
+        },
+        {
+          "label": "7 – Ospalý/á, ale bez úsilí zůstávám vzhůru",
+          "value": 7,
+          "score": 7
+        },
+        {
+          "label": "8 – Velmi ospalý/á, mám problém zůstat vzhůru",
+          "value": 8,
+          "score": 8
+        },
+        {
+          "label": "9 – Velmi ospalý/á, téměř v mikrospánku, bojuji se zůstat vzhůru",
+          "value": 9,
+          "score": 9
+        }
+      ],
+      "order": 4
+    }
+  ],
+  "order": 7,
+  "generated_at": "2026-06-23",
+  "notes": [
+    "Struktura byla převedena z veřejného náhledu Google Forms (viewform).",
+    "Neobsahuje interní Google Forms entry.* identifikátory pro přímé odesílání odpovědí zpět do Google Forms.",
+    "Typy polí jsou normalizované pro použití ve webové aplikaci: text, textarea, number, date, time, single_choice, linear_scale."
+  ]
+}

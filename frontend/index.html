@@ -98,6 +98,15 @@
           <div class="text-xs text-gray-400">Stav</div>
           <div class="font-semibold text-sm" :class="selectedP.is_active?'text-green-600':'text-red-500'" x-text="selectedP.is_active?'Aktivní':'Neaktivní'"></div>
         </div>
+        <div class="bg-gray-50 rounded-lg p-3 col-span-2">
+          <div class="text-xs text-gray-400 mb-0.5">Garmin Connect</div>
+          <div x-show="selectedP.garmin_user_id" class="flex items-center gap-1.5 text-green-700 font-semibold text-xs">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Propojeno</span>
+            <span class="text-gray-400 font-normal" x-text="'· ' + selectedP.garmin_user_id"></span>
+          </div>
+          <div x-show="!selectedP.garmin_user_id" class="text-xs text-gray-400">Nepropojeno</div>
+        </div>
       </div>
 
       <!-- Phase manager -->
@@ -2095,6 +2104,29 @@
             </div>
           </template>
 
+          <!-- Garmin propojení -->
+          <div class="card p-4 mb-4">
+            <div class="flex items-center gap-3 mb-3">
+              <img src="/app/img/garmin.png" style="height:20px;object-fit:contain">
+              <div class="font-bold text-navy-900 text-sm">Garmin Connect</div>
+            </div>
+            <div x-show="!garminConnected">
+              <div class="text-xs text-gray-500 mb-3">Propojte svůj Garmin účet pro automatický přenos dat HRV, spánku a stresu.</div>
+              <button @click="connectGarmin()" :disabled="garminConnecting" class="w-full bg-indigo-600 text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-indigo-700 transition-colors">
+                <span x-show="!garminConnecting">Propojit s Garmin →</span>
+                <span x-show="garminConnecting">Přesměrovávám…</span>
+              </button>
+            </div>
+            <div x-show="garminConnected">
+              <div class="flex items-center gap-2 text-green-700 text-sm font-semibold mb-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Garmin propojeno
+              </div>
+              <div class="text-xs text-gray-400 mb-3">Data se přenáší automaticky po každé synchronizaci hodinek.</div>
+              <button @click="disconnectGarmin()" class="text-xs text-red-500 hover:text-red-700 underline">Odpojit Garmin</button>
+            </div>
+          </div>
+
           <!-- Změna hesla -->
           <div class="card p-5">
             <div class="font-semibold text-navy-900 mb-4">🔒 Změna hesla</div>
@@ -2210,6 +2242,7 @@ function app() { return {
   pmPanel:null, pmNotes:[], newPmNote:{type:'note',text:''},
   kanbanPhase:'preparation', pmAlerts:[],
   pushSupported: false, pushSubscribed: false, pushLoading: false,
+  garminConnected: false, garminConnecting: false,
   drawerSchedules:[], drawerSchedSaving:false, drawerSchedMsg:'',
   participantShiftSchedule: Array(21).fill('V'), shiftSchedSaving:false,
 
@@ -2225,6 +2258,7 @@ function app() { return {
 
   async init() {
     if (this.token) { await this.loadMe(); await this.loadData(); }
+    await this.checkGarminCallback();
     this.$watch('selectedQ', async q => {
       if (!q) return;
       this.qDef=null; this.qAnswers={};
@@ -2517,8 +2551,55 @@ function app() { return {
       this.loadShiftType();
       this.buildDayTasks();
       this.loadCortisol();
+      this.loadGarminStatus();
       this.$nextTick(() => this.tutorialCheck());
     }
+  },
+
+  // ── Garmin Connect OAuth ──────────────────────────────────────────────────
+
+  async connectGarmin() {
+    this.garminConnecting = true;
+    const r = await this.apiFetch('/api/garmin/auth/start');
+    if (r?.auth_url) {
+      localStorage.setItem('garmin_code_verifier', r.code_verifier);
+      localStorage.setItem('garmin_state', r.state);
+      window.location.href = r.auth_url;
+    }
+    this.garminConnecting = false;
+  },
+
+  async disconnectGarmin() {
+    await this.apiFetch('/api/garmin/disconnect', {method:'DELETE'});
+    this.garminConnected = false;
+  },
+
+  async checkGarminCallback() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const state = params.get('state');
+    if (code && state) {
+      const codeVerifier = localStorage.getItem('garmin_code_verifier');
+      localStorage.removeItem('garmin_code_verifier');
+      localStorage.removeItem('garmin_state');
+      window.history.replaceState({}, '', '/');
+      if (codeVerifier && this.token) {
+        const r = await this.apiFetch('/api/garmin/auth/callback', {
+          method: 'POST',
+          body: JSON.stringify({code, state, code_verifier: codeVerifier})
+        });
+        if (r?.ok) {
+          this.garminConnected = true;
+          alert('Garmin Connect úspěšně propojen!');
+        }
+      }
+    }
+  },
+
+  async loadGarminStatus() {
+    if (!this.token || this.isResearcher()) return;
+    const r = await this.apiFetch('/api/garmin/status');
+    if (r) this.garminConnected = r.connected;
   },
 
   // ── PVT game ──────────────────────────────────────────────────────────────

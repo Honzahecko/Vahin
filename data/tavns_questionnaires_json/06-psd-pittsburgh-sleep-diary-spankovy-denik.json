@@ -1,0 +1,137 @@
+{
+  "schema_version": "1.0.0",
+  "id": "psd-pittsburgh-sleep-diary",
+  "title": "PSD – Pittsburgh Sleep Diary (Spánkový deník)",
+  "description": "Studie taVNS | Vyplňte každý den ráno po probuzení. Týká se spánku z minulé noci.",
+  "language": "cs",
+  "source": {
+    "platform": "google_forms",
+    "form_id": "1KcK5Z9mHx4homy7PSqA1a_SGXqWr_ZevP8plJScpz9c",
+    "edit_url": "https://docs.google.com/forms/d/1KcK5Z9mHx4homy7PSqA1a_SGXqWr_ZevP8plJScpz9c/edit",
+    "view_url": "https://docs.google.com/forms/d/1KcK5Z9mHx4homy7PSqA1a_SGXqWr_ZevP8plJScpz9c/viewform",
+    "embedded_url": "https://docs.google.com/forms/d/1KcK5Z9mHx4homy7PSqA1a_SGXqWr_ZevP8plJScpz9c/viewform?embedded=true"
+  },
+  "fields": [
+    {
+      "id": "participant_id",
+      "label": "ID účastníka",
+      "type": "text",
+      "required": true,
+      "order": 1
+    },
+    {
+      "id": "wake_date",
+      "label": "Datum (dnešní den – den probuzení)",
+      "type": "date",
+      "required": true,
+      "order": 2
+    },
+    {
+      "id": "sleep_latency",
+      "label": "Jak dlouho vám trvalo usnout?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) Méně než 15 minut",
+          "value": "a"
+        },
+        {
+          "label": "b) 15–30 minut",
+          "value": "b"
+        },
+        {
+          "label": "c) 30–45 minut",
+          "value": "c"
+        },
+        {
+          "label": "d) Více než 45 minut",
+          "value": "d"
+        }
+      ],
+      "order": 3
+    },
+    {
+      "id": "total_sleep_time",
+      "label": "Kolik hodin jste celkem spal(a)?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) 8 a více hodin",
+          "value": "a"
+        },
+        {
+          "label": "b) 6–8 hodin",
+          "value": "b"
+        },
+        {
+          "label": "c) 4–6 hodin",
+          "value": "c"
+        },
+        {
+          "label": "d) Méně než 4 hodiny",
+          "value": "d"
+        }
+      ],
+      "order": 4
+    },
+    {
+      "id": "night_awakenings",
+      "label": "Jak často jste se během noci probudil(a)?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) Vůbec",
+          "value": "a"
+        },
+        {
+          "label": "b) 1–2×",
+          "value": "b"
+        },
+        {
+          "label": "c) 3–4×",
+          "value": "c"
+        },
+        {
+          "label": "d) Více než 4×",
+          "value": "d"
+        }
+      ],
+      "order": 5
+    },
+    {
+      "id": "sleep_quality",
+      "label": "Jak hodnotíte svůj spánek?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) Velmi dobrý",
+          "value": "a"
+        },
+        {
+          "label": "b) Dobrý",
+          "value": "b"
+        },
+        {
+          "label": "c) Špatný",
+          "value": "c"
+        },
+        {
+          "label": "d) Velmi špatný",
+          "value": "d"
+        }
+      ],
+      "order": 6
+    }
+  ],
+  "order": 6,
+  "generated_at": "2026-06-23",
+  "notes": [
+    "Struktura byla převedena z veřejného náhledu Google Forms (viewform).",
+    "Neobsahuje interní Google Forms entry.* identifikátory pro přímé odesílání odpovědí zpět do Google Forms.",
+    "Typy polí jsou normalizované pro použití ve webové aplikaci: text, textarea, number, date, time, single_choice, linear_scale."
+  ]
+}

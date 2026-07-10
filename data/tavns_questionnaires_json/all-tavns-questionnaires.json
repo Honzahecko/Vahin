@@ -1,0 +1,2953 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-06-23",
+  "collection_id": "tavns-questionnaires",
+  "title": "taVNS dotazníky – JSON schémata",
+  "forms_count": 8,
+  "forms": [
+    {
+      "schema_version": "1.0.0",
+      "id": "tavns-device-use-diary",
+      "title": "Deník používání přístroje – taVNS stimulace",
+      "description": "Studie taVNS | Vyplňte po KAŽDÉ stimulaci. Zaznamenejte čas, délku a vaše vnímání stimulace.",
+      "language": "cs",
+      "source": {
+        "platform": "google_forms",
+        "form_id": "183xEWG1HrzdhePfss67ho3mmlmGRkiU-PZUzwKrBTew",
+        "edit_url": "https://docs.google.com/forms/d/183xEWG1HrzdhePfss67ho3mmlmGRkiU-PZUzwKrBTew/edit?usp=forms_home&ouid=117607941611883983758",
+        "view_url": "https://docs.google.com/forms/d/183xEWG1HrzdhePfss67ho3mmlmGRkiU-PZUzwKrBTew/viewform",
+        "embedded_url": "https://docs.google.com/forms/d/183xEWG1HrzdhePfss67ho3mmlmGRkiU-PZUzwKrBTew/viewform?embedded=true"
+      },
+      "fields": [
+        {
+          "id": "participant_id",
+          "label": "ID účastníka",
+          "type": "text",
+          "required": true,
+          "order": 1
+        },
+        {
+          "id": "stimulation_date",
+          "label": "Datum stimulace",
+          "type": "date",
+          "required": true,
+          "order": 2
+        },
+        {
+          "id": "stimulation_timing",
+          "label": "Kdy proběhla stimulace?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "Na začátku směny (15–30 min)",
+              "value": "shift_start"
+            },
+            {
+              "label": "Krátká stimulace v pauze (5–10 min)",
+              "value": "short_break"
+            },
+            {
+              "label": "Krátká stimulace při pocitu únavy (5–10 min)",
+              "value": "fatigue_short"
+            },
+            {
+              "label": "Na konci směny (15–30 min)",
+              "value": "shift_end"
+            },
+            {
+              "label": "Udržovací stimulace ve volném dni (15 min)",
+              "value": "maintenance_day_off"
+            }
+          ],
+          "order": 3
+        },
+        {
+          "id": "stimulation_start_time",
+          "label": "Čas zahájení stimulace",
+          "type": "time",
+          "required": true,
+          "help_text": "Formát: HH:MM",
+          "validation": {
+            "format": "HH:MM"
+          },
+          "order": 4
+        },
+        {
+          "id": "stimulation_duration_minutes",
+          "label": "Délka stimulace (v minutách)",
+          "type": "number",
+          "required": true,
+          "validation": {
+            "min": 0,
+            "integer": true
+          },
+          "unit": "minutes",
+          "order": 5
+        },
+        {
+          "id": "stimulation_perception",
+          "label": "Jak jste vnímal(a) stimulaci?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "1 – Vůbec jsem ji nevnímal(a)",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2 – Sotva znatelná",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3 – Mírně znatelná, příjemná",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4 – Zřetelně znatelná, příjemná",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Silná, ale stále příjemná",
+              "value": 5,
+              "score": 5
+            },
+            {
+              "label": "6 – Nepříjemná",
+              "value": 6,
+              "score": 6
+            }
+          ],
+          "order": 6
+        },
+        {
+          "id": "completed_as_planned",
+          "label": "Dokončil(a) jste stimulaci dle plánu?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "Ano, celou",
+              "value": "yes_full"
+            },
+            {
+              "label": "Ano, ale zkrátil(a) jsem ji",
+              "value": "yes_shortened"
+            },
+            {
+              "label": "Ne, přerušil(a) jsem ji",
+              "value": "no_interrupted"
+            }
+          ],
+          "order": 7
+        },
+        {
+          "id": "interruption_or_shortening_reason",
+          "label": "Pokud jste stimulaci přerušil(a) nebo zkrátil(a) – uveďte důvod",
+          "type": "textarea",
+          "required": false,
+          "order": 8
+        },
+        {
+          "id": "stimulation_notes",
+          "label": "Poznámky / jiné subjektivní pocity při stimulaci",
+          "type": "textarea",
+          "required": false,
+          "order": 9
+        }
+      ],
+      "order": 1,
+      "generated_at": "2026-06-23",
+      "notes": [
+        "Struktura byla převedena z veřejného náhledu Google Forms (viewform).",
+        "Neobsahuje interní Google Forms entry.* identifikátory pro přímé odesílání odpovědí zpět do Google Forms.",
+        "Typy polí jsou normalizované pro použití ve webové aplikaci: text, textarea, number, date, time, single_choice, linear_scale."
+      ]
+    },
+    {
+      "schema_version": "1.0.0",
+      "id": "tavns-adverse-effects",
+      "title": "Dotazník nežádoucích účinků – taVNS",
+      "description": "Studie taVNS | Vyplňte 1× týdně. Uveďte, zda jste za uplynulý týden zaznamenal(a) jakékoliv nežádoucí účinky.",
+      "language": "cs",
+      "source": {
+        "platform": "google_forms",
+        "form_id": "1VCdDoBVAti6QuenjRUA4u5DeUEzX8dQpj1cbr-NWxu0",
+        "edit_url": "https://docs.google.com/forms/d/1VCdDoBVAti6QuenjRUA4u5DeUEzX8dQpj1cbr-NWxu0/edit?usp=forms_home&ouid=117607941611883983758",
+        "view_url": "https://docs.google.com/forms/d/1VCdDoBVAti6QuenjRUA4u5DeUEzX8dQpj1cbr-NWxu0/viewform",
+        "embedded_url": "https://docs.google.com/forms/d/1VCdDoBVAti6QuenjRUA4u5DeUEzX8dQpj1cbr-NWxu0/viewform?embedded=true"
+      },
+      "fields": [
+        {
+          "id": "participant_id",
+          "label": "ID účastníka",
+          "type": "text",
+          "required": true,
+          "order": 1
+        },
+        {
+          "id": "completion_date",
+          "label": "Datum vyplnění",
+          "type": "date",
+          "required": true,
+          "order": 2
+        },
+        {
+          "id": "study_week",
+          "label": "Týden studie č.",
+          "type": "number",
+          "required": true,
+          "validation": {
+            "min": 1,
+            "integer": true
+          },
+          "order": 3
+        },
+        {
+          "id": "local_reaction",
+          "label": "Lokální reakce v místě aplikace (zarudnutí, podráždění kůže, bolest)",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "Žádné",
+              "value": "none"
+            },
+            {
+              "label": "Mírné",
+              "value": "mild"
+            },
+            {
+              "label": "Střední",
+              "value": "moderate"
+            },
+            {
+              "label": "Závažné",
+              "value": "severe"
+            }
+          ],
+          "order": 4
+        },
+        {
+          "id": "local_reaction_description",
+          "label": "Popis: Lokální reakce v místě aplikace (zarudnutí, podráždění kůže, bolest) (pokud se vyskytly)",
+          "type": "textarea",
+          "required": false,
+          "order": 5
+        },
+        {
+          "id": "neurological_symptoms",
+          "label": "Neurologické symptomy (bolest hlavy, závratě, parestezie)",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "Žádné",
+              "value": "none"
+            },
+            {
+              "label": "Mírné",
+              "value": "mild"
+            },
+            {
+              "label": "Střední",
+              "value": "moderate"
+            },
+            {
+              "label": "Závažné",
+              "value": "severe"
+            }
+          ],
+          "order": 6
+        },
+        {
+          "id": "neurological_symptoms_description",
+          "label": "Popis: Neurologické symptomy (bolest hlavy, závratě, parestezie) (pokud se vyskytly)",
+          "type": "textarea",
+          "required": false,
+          "order": 7
+        },
+        {
+          "id": "cardiovascular_symptoms",
+          "label": "Kardiovaskulární symptomy (palpitace, arytmie, změny krevního tlaku)",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "Žádné",
+              "value": "none"
+            },
+            {
+              "label": "Mírné",
+              "value": "mild"
+            },
+            {
+              "label": "Střední",
+              "value": "moderate"
+            },
+            {
+              "label": "Závažné",
+              "value": "severe"
+            }
+          ],
+          "order": 8
+        },
+        {
+          "id": "cardiovascular_symptoms_description",
+          "label": "Popis: Kardiovaskulární symptomy (palpitace, arytmie, změny krevního tlaku) (pokud se vyskytly)",
+          "type": "textarea",
+          "required": false,
+          "order": 9
+        },
+        {
+          "id": "gastrointestinal_symptoms",
+          "label": "Gastrointestinální symptomy (nauzea, změny motility)",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "Žádné",
+              "value": "none"
+            },
+            {
+              "label": "Mírné",
+              "value": "mild"
+            },
+            {
+              "label": "Střední",
+              "value": "moderate"
+            },
+            {
+              "label": "Závažné",
+              "value": "severe"
+            }
+          ],
+          "order": 10
+        },
+        {
+          "id": "gastrointestinal_symptoms_description",
+          "label": "Popis: Gastrointestinální symptomy (nauzea, změny motility) (pokud se vyskytly)",
+          "type": "textarea",
+          "required": false,
+          "order": 11
+        },
+        {
+          "id": "non_specific_symptoms",
+          "label": "Nespecifické symptomy (únava, změny nálady)",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "Žádné",
+              "value": "none"
+            },
+            {
+              "label": "Mírné",
+              "value": "mild"
+            },
+            {
+              "label": "Střední",
+              "value": "moderate"
+            },
+            {
+              "label": "Závažné",
+              "value": "severe"
+            }
+          ],
+          "order": 12
+        },
+        {
+          "id": "non_specific_symptoms_description",
+          "label": "Popis: Nespecifické symptomy (únava, změny nálady) (pokud se vyskytly)",
+          "type": "textarea",
+          "required": false,
+          "order": 13
+        },
+        {
+          "id": "other_adverse_events",
+          "label": "Jiné nežádoucí účinky neuvedené výše",
+          "type": "textarea",
+          "required": false,
+          "order": 14
+        },
+        {
+          "id": "contacted_research_physician",
+          "label": "Kontaktoval(a) jste v uplynulém týdnu výzkumného lékaře kvůli nežádoucím účinkům?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "Ne",
+              "value": "no"
+            },
+            {
+              "label": "Ano",
+              "value": "yes"
+            }
+          ],
+          "order": 15
+        }
+      ],
+      "order": 2,
+      "generated_at": "2026-06-23",
+      "notes": [
+        "Struktura byla převedena z veřejného náhledu Google Forms (viewform).",
+        "Neobsahuje interní Google Forms entry.* identifikátory pro přímé odesílání odpovědí zpět do Google Forms.",
+        "Typy polí jsou normalizované pro použití ve webové aplikaci: text, textarea, number, date, time, single_choice, linear_scale."
+      ]
+    },
+    {
+      "schema_version": "1.0.0",
+      "id": "tavns-final-satisfaction",
+      "title": "Dotazník spokojenosti účastníků – taVNS (závěrečný)",
+      "description": "Studie taVNS | Vyplňte na KONCI studie. Vaše zpětná vazba nám pomůže zlepšit protokol pro budoucí studii.",
+      "language": "cs",
+      "source": {
+        "platform": "google_forms",
+        "form_id": "1Ug5A9WNFMvquCLywYv5SSKjvPAj5byQqj_bRaxjlAT4",
+        "edit_url": "https://docs.google.com/forms/d/1Ug5A9WNFMvquCLywYv5SSKjvPAj5byQqj_bRaxjlAT4/edit?usp=forms_home&ouid=117607941611883983758",
+        "view_url": "https://docs.google.com/forms/d/1Ug5A9WNFMvquCLywYv5SSKjvPAj5byQqj_bRaxjlAT4/viewform",
+        "embedded_url": "https://docs.google.com/forms/d/1Ug5A9WNFMvquCLywYv5SSKjvPAj5byQqj_bRaxjlAT4/viewform?embedded=true"
+      },
+      "fields": [
+        {
+          "id": "participant_id",
+          "label": "ID účastníka",
+          "type": "text",
+          "required": true,
+          "order": 1
+        },
+        {
+          "id": "completion_date",
+          "label": "Datum vyplnění",
+          "type": "date",
+          "required": true,
+          "order": 2
+        },
+        {
+          "id": "overall_experience",
+          "label": "Jak celkově hodnotíte vaši účast v této studii?",
+          "type": "linear_scale",
+          "required": true,
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Velmi negativně",
+            "3": "Neutrálně",
+            "5": "Velmi pozitivně"
+          },
+          "order": 3
+        },
+        {
+          "id": "work_life_acceptability",
+          "label": "Jak přijatelný byl protokol stimulace pro váš pracovní život?",
+          "type": "linear_scale",
+          "required": true,
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nepřijatelný",
+            "3": "Neutrální",
+            "5": "Zcela přijatelný"
+          },
+          "order": 4
+        },
+        {
+          "id": "device_usability",
+          "label": "Jak snadné bylo používání přístroje Nurosym?",
+          "type": "linear_scale",
+          "required": true,
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Velmi obtížné",
+            "3": "Neutrální",
+            "5": "Velmi snadné"
+          },
+          "order": 5
+        },
+        {
+          "id": "questionnaire_burden",
+          "label": "Jak hodnotíte zátěž spojenou s vyplňováním dotazníků?",
+          "type": "linear_scale",
+          "required": true,
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Velmi zatěžující",
+            "3": "Neutrální",
+            "5": "Velmi snadná"
+          },
+          "order": 6
+        },
+        {
+          "id": "fatigue_sleep_change",
+          "label": "Zaznamenal(a) jste subjektivní zlepšení únavy nebo spánku během studie?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "Výrazné zlepšení",
+              "value": "significant_improvement"
+            },
+            {
+              "label": "Mírné zlepšení",
+              "value": "mild_improvement"
+            },
+            {
+              "label": "Beze změny",
+              "value": "no_change"
+            },
+            {
+              "label": "Mírné zhoršení",
+              "value": "mild_worsening"
+            },
+            {
+              "label": "Výrazné zhoršení",
+              "value": "significant_worsening"
+            }
+          ],
+          "order": 7
+        },
+        {
+          "id": "recommend_to_colleagues",
+          "label": "Doporučil(a) byste účast v podobné studii kolegům?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "Rozhodně ano",
+              "value": "definitely_yes"
+            },
+            {
+              "label": "Spíše ano",
+              "value": "rather_yes"
+            },
+            {
+              "label": "Spíše ne",
+              "value": "rather_no"
+            },
+            {
+              "label": "Rozhodně ne",
+              "value": "definitely_no"
+            }
+          ],
+          "order": 8
+        },
+        {
+          "id": "continue_stimulation",
+          "label": "Pokud by to bylo možné, chtěl(a) byste pokračovat ve stimulaci i po studii?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "Rozhodně ano",
+              "value": "definitely_yes"
+            },
+            {
+              "label": "Spíše ano",
+              "value": "rather_yes"
+            },
+            {
+              "label": "Spíše ne",
+              "value": "rather_no"
+            },
+            {
+              "label": "Rozhodně ne",
+              "value": "definitely_no"
+            }
+          ],
+          "order": 9
+        },
+        {
+          "id": "liked_most",
+          "label": "Co se vám na studii líbilo nejvíce?",
+          "type": "textarea",
+          "required": false,
+          "order": 10
+        },
+        {
+          "id": "improvements",
+          "label": "Co by se dalo zlepšit?",
+          "type": "textarea",
+          "required": false,
+          "order": 11
+        },
+        {
+          "id": "additional_comments",
+          "label": "Jakékoliv další komentáře nebo připomínky",
+          "type": "textarea",
+          "required": false,
+          "order": 12
+        }
+      ],
+      "order": 3,
+      "generated_at": "2026-06-23",
+      "notes": [
+        "Struktura byla převedena z veřejného náhledu Google Forms (viewform).",
+        "Neobsahuje interní Google Forms entry.* identifikátory pro přímé odesílání odpovědí zpět do Google Forms.",
+        "Typy polí jsou normalizované pro použití ve webové aplikaci: text, textarea, number, date, time, single_choice, linear_scale."
+      ]
+    },
+    {
+      "schema_version": "1.0.0",
+      "id": "psqi-pittsburgh-sleep-quality-index",
+      "title": "PSQI – Pittsburgh Sleep Quality Index",
+      "description": "Studie taVNS | Vyplňte 1× týdně. Otázky se týkají vašich spánkových návyků ZA POSLEDNÍ TÝDEN.",
+      "language": "cs",
+      "source": {
+        "platform": "google_forms",
+        "form_id": "1CSd_jTTSYDlPtvZ5xn2kgR8xwVpqXdEKUHNaJ904qTw",
+        "edit_url": "https://docs.google.com/forms/d/1CSd_jTTSYDlPtvZ5xn2kgR8xwVpqXdEKUHNaJ904qTw/edit?usp=forms_home&ouid=117607941611883983758",
+        "view_url": "https://docs.google.com/forms/d/1CSd_jTTSYDlPtvZ5xn2kgR8xwVpqXdEKUHNaJ904qTw/viewform",
+        "embedded_url": "https://docs.google.com/forms/d/1CSd_jTTSYDlPtvZ5xn2kgR8xwVpqXdEKUHNaJ904qTw/viewform?embedded=true"
+      },
+      "fields": [
+        {
+          "id": "participant_id",
+          "label": "ID účastníka",
+          "type": "text",
+          "required": true,
+          "order": 1
+        },
+        {
+          "id": "completion_date",
+          "label": "Datum vyplnění",
+          "type": "date",
+          "required": true,
+          "order": 2
+        },
+        {
+          "id": "study_week",
+          "label": "Týden studie č.",
+          "type": "number",
+          "required": true,
+          "validation": {
+            "min": 1,
+            "integer": true
+          },
+          "order": 3
+        },
+        {
+          "id": "bed_time",
+          "label": "1. V kolik hodin obvykle chodíte spát?",
+          "type": "time",
+          "required": true,
+          "group": "Část A – Spánkové návyky",
+          "help_text": "Formát: HH:MM, např. 23:00",
+          "validation": {
+            "format": "HH:MM"
+          },
+          "order": 4
+        },
+        {
+          "id": "sleep_latency_category",
+          "label": "2. Kolik minut obvykle trvá, než usnete?",
+          "type": "single_choice",
+          "required": true,
+          "group": "Část A – Spánkové návyky",
+          "options": [
+            {
+              "label": "a) ≤15 minut",
+              "value": "a"
+            },
+            {
+              "label": "b) 16–30 minut",
+              "value": "b"
+            },
+            {
+              "label": "c) 31–60 minut",
+              "value": "c"
+            },
+            {
+              "label": "d) Více než 60 minut",
+              "value": "d"
+            }
+          ],
+          "order": 5
+        },
+        {
+          "id": "wake_time",
+          "label": "3. V kolik hodin obvykle vstáváte ráno?",
+          "type": "time",
+          "required": true,
+          "group": "Část A – Spánkové návyky",
+          "help_text": "Formát: HH:MM, např. 07:00",
+          "validation": {
+            "format": "HH:MM"
+          },
+          "order": 6
+        },
+        {
+          "id": "actual_sleep_duration_category",
+          "label": "4. Kolik hodin skutečně spíte za noc?",
+          "type": "single_choice",
+          "required": true,
+          "group": "Část A – Spánkové návyky",
+          "options": [
+            {
+              "label": "a) 7 a více hodin",
+              "value": "a"
+            },
+            {
+              "label": "b) 6–7 hodin",
+              "value": "b"
+            },
+            {
+              "label": "c) 5–6 hodin",
+              "value": "c"
+            },
+            {
+              "label": "d) Méně než 5 hodin",
+              "value": "d"
+            }
+          ],
+          "order": 7
+        },
+        {
+          "id": "cannot_sleep_30_min",
+          "label": "5. Nemůžete usnout do 30 minut",
+          "type": "single_choice",
+          "required": true,
+          "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+          "options": [
+            {
+              "label": "0 – Nikdy",
+              "value": 0,
+              "score": 0
+            },
+            {
+              "label": "1 – Méně než 1× týdně",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2 – 1–2× týdně",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3 – 3× a více týdně",
+              "value": 3,
+              "score": 3
+            }
+          ],
+          "order": 8
+        },
+        {
+          "id": "wake_middle_or_early",
+          "label": "6. Budíte se uprostřed noci nebo brzy ráno",
+          "type": "single_choice",
+          "required": true,
+          "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+          "options": [
+            {
+              "label": "0 – Nikdy",
+              "value": 0,
+              "score": 0
+            },
+            {
+              "label": "1 – Méně než 1× týdně",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2 – 1–2× týdně",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3 – 3× a více týdně",
+              "value": 3,
+              "score": 3
+            }
+          ],
+          "order": 9
+        },
+        {
+          "id": "need_bathroom",
+          "label": "7. Musíte vstávat na toaletu",
+          "type": "single_choice",
+          "required": true,
+          "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+          "options": [
+            {
+              "label": "0 – Nikdy",
+              "value": 0,
+              "score": 0
+            },
+            {
+              "label": "1 – Méně než 1× týdně",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2 – 1–2× týdně",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3 – 3× a více týdně",
+              "value": 3,
+              "score": 3
+            }
+          ],
+          "order": 10
+        },
+        {
+          "id": "breathing_discomfort",
+          "label": "8. Nemůžete dýchat pohodlně",
+          "type": "single_choice",
+          "required": true,
+          "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+          "options": [
+            {
+              "label": "0 – Nikdy",
+              "value": 0,
+              "score": 0
+            },
+            {
+              "label": "1 – Méně než 1× týdně",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2 – 1–2× týdně",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3 – 3× a více týdně",
+              "value": 3,
+              "score": 3
+            }
+          ],
+          "order": 11
+        },
+        {
+          "id": "cough_or_snore",
+          "label": "9. Kašlete nebo chrápete hlasitě",
+          "type": "single_choice",
+          "required": true,
+          "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+          "options": [
+            {
+              "label": "0 – Nikdy",
+              "value": 0,
+              "score": 0
+            },
+            {
+              "label": "1 – Méně než 1× týdně",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2 – 1–2× týdně",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3 – 3× a více týdně",
+              "value": 3,
+              "score": 3
+            }
+          ],
+          "order": 12
+        },
+        {
+          "id": "feel_cold",
+          "label": "10. Cítíte chlad",
+          "type": "single_choice",
+          "required": true,
+          "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+          "options": [
+            {
+              "label": "0 – Nikdy",
+              "value": 0,
+              "score": 0
+            },
+            {
+              "label": "1 – Méně než 1× týdně",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2 – 1–2× týdně",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3 – 3× a více týdně",
+              "value": 3,
+              "score": 3
+            }
+          ],
+          "order": 13
+        },
+        {
+          "id": "feel_hot",
+          "label": "11. Cítíte horko",
+          "type": "single_choice",
+          "required": true,
+          "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+          "options": [
+            {
+              "label": "0 – Nikdy",
+              "value": 0,
+              "score": 0
+            },
+            {
+              "label": "1 – Méně než 1× týdně",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2 – 1–2× týdně",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3 – 3× a více týdně",
+              "value": 3,
+              "score": 3
+            }
+          ],
+          "order": 14
+        },
+        {
+          "id": "bad_dreams",
+          "label": "12. Míváte nepříjemné sny",
+          "type": "single_choice",
+          "required": true,
+          "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+          "options": [
+            {
+              "label": "0 – Nikdy",
+              "value": 0,
+              "score": 0
+            },
+            {
+              "label": "1 – Méně než 1× týdně",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2 – 1–2× týdně",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3 – 3× a více týdně",
+              "value": 3,
+              "score": 3
+            }
+          ],
+          "order": 15
+        },
+        {
+          "id": "pain",
+          "label": "13. Pociťujete bolest",
+          "type": "single_choice",
+          "required": true,
+          "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+          "options": [
+            {
+              "label": "0 – Nikdy",
+              "value": 0,
+              "score": 0
+            },
+            {
+              "label": "1 – Méně než 1× týdně",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2 – 1–2× týdně",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3 – 3× a více týdně",
+              "value": 3,
+              "score": 3
+            }
+          ],
+          "order": 16
+        },
+        {
+          "id": "other_sleep_difficulty_reasons",
+          "label": "14. Jiné důvody obtíží se spánkem – uveďte jaké a jak často",
+          "type": "textarea",
+          "required": false,
+          "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+          "order": 17
+        },
+        {
+          "id": "sleep_medication",
+          "label": "15. Užíváte léky na spaní (předpis nebo volně prodejné)?",
+          "type": "single_choice",
+          "required": true,
+          "group": "Část C – Léky a denní fungování",
+          "options": [
+            {
+              "label": "0 – Nikdy",
+              "value": 0,
+              "score": 0
+            },
+            {
+              "label": "1 – Méně než 1× týdně",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2 – 1–2× týdně",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3 – 3× a více týdně",
+              "value": 3,
+              "score": 3
+            }
+          ],
+          "order": 18
+        },
+        {
+          "id": "daytime_stay_awake_problems",
+          "label": "16. Máte problémy s udržením bdělosti během denních aktivit (řízení, jídlo, společenské situace)?",
+          "type": "single_choice",
+          "required": true,
+          "group": "Část C – Léky a denní fungování",
+          "options": [
+            {
+              "label": "0 – Nikdy",
+              "value": 0,
+              "score": 0
+            },
+            {
+              "label": "1 – Méně než 1× týdně",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2 – 1–2× týdně",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3 – 3× a více týdně",
+              "value": 3,
+              "score": 3
+            }
+          ],
+          "order": 19
+        },
+        {
+          "id": "daytime_activity_attention_difficulty",
+          "label": "17. Máte pocit, že je pro vás během dne těžké být aktivní a udržet si pozornost?",
+          "type": "single_choice",
+          "required": true,
+          "group": "Část C – Léky a denní fungování",
+          "options": [
+            {
+              "label": "0 – Nikdy",
+              "value": 0,
+              "score": 0
+            },
+            {
+              "label": "1 – Méně než 1× týdně",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2 – 1–2× týdně",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3 – 3× a více týdně",
+              "value": 3,
+              "score": 3
+            }
+          ],
+          "order": 20
+        },
+        {
+          "id": "subjective_sleep_quality",
+          "label": "18. Jak byste celkově hodnotili kvalitu svého spánku za poslední týden?",
+          "type": "single_choice",
+          "required": true,
+          "group": "Část D – Subjektivní hodnocení spánku",
+          "options": [
+            {
+              "label": "0 – Velmi dobrá",
+              "value": 0,
+              "score": 0
+            },
+            {
+              "label": "1 – Dobrá",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2 – Špatná",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3 – Velmi špatná",
+              "value": 3,
+              "score": 3
+            }
+          ],
+          "order": 21
+        },
+        {
+          "id": "partner_loud_snoring",
+          "label": "19a. Hlasité chrápání",
+          "type": "single_choice",
+          "required": false,
+          "group": "Část E – Pozorování partnera / spolunocležníka (není bodováno)",
+          "options": [
+            {
+              "label": "Nevyskytlo se",
+              "value": "not_observed"
+            },
+            {
+              "label": "Méně než 1× týdně",
+              "value": "less_than_weekly"
+            },
+            {
+              "label": "1–2× týdně",
+              "value": "one_to_two_weekly"
+            },
+            {
+              "label": "3× a více týdně",
+              "value": "three_or_more_weekly"
+            },
+            {
+              "label": "Nemohu posoudit / spím sám/sama",
+              "value": "cannot_assess"
+            }
+          ],
+          "order": 22
+        },
+        {
+          "id": "partner_breath_pauses",
+          "label": "19b. Zástavy dechu",
+          "type": "single_choice",
+          "required": false,
+          "group": "Část E – Pozorování partnera / spolunocležníka (není bodováno)",
+          "options": [
+            {
+              "label": "Nevyskytlo se",
+              "value": "not_observed"
+            },
+            {
+              "label": "Méně než 1× týdně",
+              "value": "less_than_weekly"
+            },
+            {
+              "label": "1–2× týdně",
+              "value": "one_to_two_weekly"
+            },
+            {
+              "label": "3× a více týdně",
+              "value": "three_or_more_weekly"
+            },
+            {
+              "label": "Nemohu posoudit / spím sám/sama",
+              "value": "cannot_assess"
+            }
+          ],
+          "order": 23
+        },
+        {
+          "id": "partner_seizures",
+          "label": "19c. Záchvaty",
+          "type": "single_choice",
+          "required": false,
+          "group": "Část E – Pozorování partnera / spolunocležníka (není bodováno)",
+          "options": [
+            {
+              "label": "Nevyskytlo se",
+              "value": "not_observed"
+            },
+            {
+              "label": "Méně než 1× týdně",
+              "value": "less_than_weekly"
+            },
+            {
+              "label": "1–2× týdně",
+              "value": "one_to_two_weekly"
+            },
+            {
+              "label": "3× a více týdně",
+              "value": "three_or_more_weekly"
+            },
+            {
+              "label": "Nemohu posoudit / spím sám/sama",
+              "value": "cannot_assess"
+            }
+          ],
+          "order": 24
+        },
+        {
+          "id": "partner_restless_sleep_movements",
+          "label": "19d. Neklidný pohyb ve spánku",
+          "type": "single_choice",
+          "required": false,
+          "group": "Část E – Pozorování partnera / spolunocležníka (není bodováno)",
+          "options": [
+            {
+              "label": "Nevyskytlo se",
+              "value": "not_observed"
+            },
+            {
+              "label": "Méně než 1× týdně",
+              "value": "less_than_weekly"
+            },
+            {
+              "label": "1–2× týdně",
+              "value": "one_to_two_weekly"
+            },
+            {
+              "label": "3× a více týdně",
+              "value": "three_or_more_weekly"
+            },
+            {
+              "label": "Nemohu posoudit / spím sám/sama",
+              "value": "cannot_assess"
+            }
+          ],
+          "order": 25
+        }
+      ],
+      "order": 4,
+      "generated_at": "2026-06-23",
+      "notes": [
+        "Struktura byla převedena z veřejného náhledu Google Forms (viewform).",
+        "Neobsahuje interní Google Forms entry.* identifikátory pro přímé odesílání odpovědí zpět do Google Forms.",
+        "Typy polí jsou normalizované pro použití ve webové aplikaci: text, textarea, number, date, time, single_choice, linear_scale."
+      ]
+    },
+    {
+      "schema_version": "1.0.0",
+      "id": "mfi-20-multidimensional-fatigue-inventory",
+      "title": "MFI-20 – Multidimensional Fatigue Inventory",
+      "description": "Studie taVNS | Vyplňte 1× týdně. Každá položka se hodnotí na 5bodové škále: 1 = zcela nesouhlasím, 5 = zcela souhlasím.",
+      "language": "cs",
+      "source": {
+        "platform": "google_forms",
+        "form_id": "1BSN8eImzIbmyg34MWEcdmxgmbbeJAXwdQF9BX52-cEc",
+        "edit_url": "https://docs.google.com/forms/d/1BSN8eImzIbmyg34MWEcdmxgmbbeJAXwdQF9BX52-cEc/edit?usp=forms_home&ouid=117607941611883983758",
+        "view_url": "https://docs.google.com/forms/d/1BSN8eImzIbmyg34MWEcdmxgmbbeJAXwdQF9BX52-cEc/viewform",
+        "embedded_url": "https://docs.google.com/forms/d/1BSN8eImzIbmyg34MWEcdmxgmbbeJAXwdQF9BX52-cEc/viewform?embedded=true"
+      },
+      "fields": [
+        {
+          "id": "participant_id",
+          "label": "ID účastníka",
+          "type": "text",
+          "required": true,
+          "order": 1
+        },
+        {
+          "id": "completion_date",
+          "label": "Datum vyplnění",
+          "type": "date",
+          "required": true,
+          "order": 2
+        },
+        {
+          "id": "study_week",
+          "label": "Týden studie č.",
+          "type": "number",
+          "required": true,
+          "validation": {
+            "min": 1,
+            "integer": true
+          },
+          "order": 3
+        },
+        {
+          "id": "general_fatigue_feel_tired",
+          "label": "Cítím se unavený(á).",
+          "type": "linear_scale",
+          "required": true,
+          "group": "1. Všeobecná únava",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": false,
+          "order": 4
+        },
+        {
+          "id": "general_fatigue_not_fresh",
+          "label": "Celkově se necítím příliš svěže.",
+          "type": "linear_scale",
+          "required": true,
+          "group": "1. Všeobecná únava",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": false,
+          "order": 5
+        },
+        {
+          "id": "general_fatigue_feel_fresh",
+          "label": "Cítím se svěží. (reverzní)",
+          "type": "linear_scale",
+          "required": true,
+          "group": "1. Všeobecná únava",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": true,
+          "order": 6
+        },
+        {
+          "id": "general_fatigue_feel_fit",
+          "label": "Cítím se ve formě. (reverzní)",
+          "type": "linear_scale",
+          "required": true,
+          "group": "1. Všeobecná únava",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": true,
+          "order": 7
+        },
+        {
+          "id": "physical_fatigue_tired",
+          "label": "Fyzicky se cítím unavený(á).",
+          "type": "linear_scale",
+          "required": true,
+          "group": "2. Fyzická únava",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": false,
+          "order": 8
+        },
+        {
+          "id": "physical_fatigue_exhausted",
+          "label": "Fyzicky se cítím vyčerpaný(á).",
+          "type": "linear_scale",
+          "required": true,
+          "group": "2. Fyzická únava",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": false,
+          "order": 9
+        },
+        {
+          "id": "physical_fatigue_strong",
+          "label": "Cítím se silný(á). (reverzní)",
+          "type": "linear_scale",
+          "required": true,
+          "group": "2. Fyzická únava",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": true,
+          "order": 10
+        },
+        {
+          "id": "physical_fatigue_good_condition",
+          "label": "Cítím se ve fyzicky dobré kondici. (reverzní)",
+          "type": "linear_scale",
+          "required": true,
+          "group": "2. Fyzická únava",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": true,
+          "order": 11
+        },
+        {
+          "id": "reduced_activity_few_interests",
+          "label": "Mám málo zájmů.",
+          "type": "linear_scale",
+          "required": true,
+          "group": "3. Snížená aktivita",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": false,
+          "order": 12
+        },
+        {
+          "id": "reduced_activity_few_things",
+          "label": "Dělám jen málo věcí.",
+          "type": "linear_scale",
+          "required": true,
+          "group": "3. Snížená aktivita",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": false,
+          "order": 13
+        },
+        {
+          "id": "reduced_activity_many_things_capable",
+          "label": "Jsem schopen(na) vykonávat spoustu věcí. (reverzní)",
+          "type": "linear_scale",
+          "required": true,
+          "group": "3. Snížená aktivita",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": true,
+          "order": 14
+        },
+        {
+          "id": "reduced_activity_many_activities",
+          "label": "Provozuji mnoho činností. (reverzní)",
+          "type": "linear_scale",
+          "required": true,
+          "group": "3. Snížená aktivita",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": true,
+          "order": 15
+        },
+        {
+          "id": "reduced_motivation_not_motivated",
+          "label": "Nejsem příliš motivovaný(á).",
+          "type": "linear_scale",
+          "required": true,
+          "group": "4. Snížená motivace",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": false,
+          "order": 16
+        },
+        {
+          "id": "reduced_motivation_like_doing_things",
+          "label": "Rád(a) dělám věci. (reverzní)",
+          "type": "linear_scale",
+          "required": true,
+          "group": "4. Snížená motivace",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": true,
+          "order": 17
+        },
+        {
+          "id": "reduced_motivation_force_myself",
+          "label": "Musím se nutit k tomu, abych něco dělal(a).",
+          "type": "linear_scale",
+          "required": true,
+          "group": "4. Snížená motivace",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": false,
+          "order": 18
+        },
+        {
+          "id": "reduced_motivation_lack_motivation",
+          "label": "Chybí mi motivace.",
+          "type": "linear_scale",
+          "required": true,
+          "group": "4. Snížená motivace",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": false,
+          "order": 19
+        },
+        {
+          "id": "mental_fatigue_concentration_problems",
+          "label": "Mám potíže se soustředěním.",
+          "type": "linear_scale",
+          "required": true,
+          "group": "5. Duševní únava",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": false,
+          "order": 20
+        },
+        {
+          "id": "mental_fatigue_think_clearly_difficult",
+          "label": "Je pro mě obtížné myslet jasně.",
+          "type": "linear_scale",
+          "required": true,
+          "group": "5. Duševní únava",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": false,
+          "order": 21
+        },
+        {
+          "id": "mental_fatigue_mind_works",
+          "label": "Myslí mi to. (reverzní)",
+          "type": "linear_scale",
+          "required": true,
+          "group": "5. Duševní únava",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": true,
+          "order": 22
+        },
+        {
+          "id": "mental_fatigue_focus_difficult",
+          "label": "Je pro mě obtížné se soustředit.",
+          "type": "linear_scale",
+          "required": true,
+          "group": "5. Duševní únava",
+          "min": 1,
+          "max": 5,
+          "labels": {
+            "1": "Zcela nesouhlasím",
+            "5": "Zcela souhlasím"
+          },
+          "options": [
+            {
+              "label": "1 – Zcela nesouhlasím",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Zcela souhlasím",
+              "value": 5,
+              "score": 5
+            }
+          ],
+          "reverse_scored": false,
+          "order": 23
+        }
+      ],
+      "order": 5,
+      "generated_at": "2026-06-23",
+      "notes": [
+        "Struktura byla převedena z veřejného náhledu Google Forms (viewform).",
+        "Neobsahuje interní Google Forms entry.* identifikátory pro přímé odesílání odpovědí zpět do Google Forms.",
+        "Typy polí jsou normalizované pro použití ve webové aplikaci: text, textarea, number, date, time, single_choice, linear_scale."
+      ]
+    },
+    {
+      "schema_version": "1.0.0",
+      "id": "psd-pittsburgh-sleep-diary",
+      "title": "PSD – Pittsburgh Sleep Diary (Spánkový deník)",
+      "description": "Studie taVNS | Vyplňte každý den ráno po probuzení. Týká se spánku z minulé noci.",
+      "language": "cs",
+      "source": {
+        "platform": "google_forms",
+        "form_id": "1KcK5Z9mHx4homy7PSqA1a_SGXqWr_ZevP8plJScpz9c",
+        "edit_url": "https://docs.google.com/forms/d/1KcK5Z9mHx4homy7PSqA1a_SGXqWr_ZevP8plJScpz9c/edit",
+        "view_url": "https://docs.google.com/forms/d/1KcK5Z9mHx4homy7PSqA1a_SGXqWr_ZevP8plJScpz9c/viewform",
+        "embedded_url": "https://docs.google.com/forms/d/1KcK5Z9mHx4homy7PSqA1a_SGXqWr_ZevP8plJScpz9c/viewform?embedded=true"
+      },
+      "fields": [
+        {
+          "id": "participant_id",
+          "label": "ID účastníka",
+          "type": "text",
+          "required": true,
+          "order": 1
+        },
+        {
+          "id": "wake_date",
+          "label": "Datum (dnešní den – den probuzení)",
+          "type": "date",
+          "required": true,
+          "order": 2
+        },
+        {
+          "id": "sleep_latency",
+          "label": "Jak dlouho vám trvalo usnout?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) Méně než 15 minut",
+              "value": "a"
+            },
+            {
+              "label": "b) 15–30 minut",
+              "value": "b"
+            },
+            {
+              "label": "c) 30–45 minut",
+              "value": "c"
+            },
+            {
+              "label": "d) Více než 45 minut",
+              "value": "d"
+            }
+          ],
+          "order": 3
+        },
+        {
+          "id": "total_sleep_time",
+          "label": "Kolik hodin jste celkem spal(a)?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) 8 a více hodin",
+              "value": "a"
+            },
+            {
+              "label": "b) 6–8 hodin",
+              "value": "b"
+            },
+            {
+              "label": "c) 4–6 hodin",
+              "value": "c"
+            },
+            {
+              "label": "d) Méně než 4 hodiny",
+              "value": "d"
+            }
+          ],
+          "order": 4
+        },
+        {
+          "id": "night_awakenings",
+          "label": "Jak často jste se během noci probudil(a)?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) Vůbec",
+              "value": "a"
+            },
+            {
+              "label": "b) 1–2×",
+              "value": "b"
+            },
+            {
+              "label": "c) 3–4×",
+              "value": "c"
+            },
+            {
+              "label": "d) Více než 4×",
+              "value": "d"
+            }
+          ],
+          "order": 5
+        },
+        {
+          "id": "sleep_quality",
+          "label": "Jak hodnotíte svůj spánek?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) Velmi dobrý",
+              "value": "a"
+            },
+            {
+              "label": "b) Dobrý",
+              "value": "b"
+            },
+            {
+              "label": "c) Špatný",
+              "value": "c"
+            },
+            {
+              "label": "d) Velmi špatný",
+              "value": "d"
+            }
+          ],
+          "order": 6
+        }
+      ],
+      "order": 6,
+      "generated_at": "2026-06-23",
+      "notes": [
+        "Struktura byla převedena z veřejného náhledu Google Forms (viewform).",
+        "Neobsahuje interní Google Forms entry.* identifikátory pro přímé odesílání odpovědí zpět do Google Forms.",
+        "Typy polí jsou normalizované pro použití ve webové aplikaci: text, textarea, number, date, time, single_choice, linear_scale."
+      ]
+    },
+    {
+      "schema_version": "1.0.0",
+      "id": "kss-karolinska-sleepiness-scale",
+      "title": "KSS – Karolinska Sleepiness Scale",
+      "description": "Studie taVNS | Vyplňte PŘED a PO každé směně. Přečtěte si každé tvrzení a vyberte číslo, které nejlépe popisuje, jak ospalý/ospalá se cítíte právě teď.",
+      "language": "cs",
+      "source": {
+        "platform": "google_forms",
+        "form_id": "19IUCSsjO0e4-THQ5hyzBzp28Q-KDo0Y_sIStY1QXv4I",
+        "edit_url": "https://docs.google.com/forms/d/19IUCSsjO0e4-THQ5hyzBzp28Q-KDo0Y_sIStY1QXv4I/edit?usp=forms_home&ouid=117607941611883983758",
+        "view_url": "https://docs.google.com/forms/d/19IUCSsjO0e4-THQ5hyzBzp28Q-KDo0Y_sIStY1QXv4I/viewform",
+        "embedded_url": "https://docs.google.com/forms/d/19IUCSsjO0e4-THQ5hyzBzp28Q-KDo0Y_sIStY1QXv4I/viewform?embedded=true"
+      },
+      "fields": [
+        {
+          "id": "participant_id",
+          "label": "ID účastníka",
+          "type": "text",
+          "required": true,
+          "order": 1
+        },
+        {
+          "id": "date",
+          "label": "Datum",
+          "type": "date",
+          "required": true,
+          "order": 2
+        },
+        {
+          "id": "timepoint",
+          "label": "Kdy vyplňujete?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "Před směnou",
+              "value": "before_shift"
+            },
+            {
+              "label": "Po směně",
+              "value": "after_shift"
+            }
+          ],
+          "order": 3
+        },
+        {
+          "id": "sleepiness_level",
+          "label": "Jak ospalý/á se právě teď cítíte?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "1 – Velmi bdělý/á",
+              "value": 1,
+              "score": 1
+            },
+            {
+              "label": "2 – Bdělý/á",
+              "value": 2,
+              "score": 2
+            },
+            {
+              "label": "3 – Ani bdělý/á, ani ospalý/á",
+              "value": 3,
+              "score": 3
+            },
+            {
+              "label": "4 – Lehce ospalý/á",
+              "value": 4,
+              "score": 4
+            },
+            {
+              "label": "5 – Ospalý/á, ale bez potíží zůstat vzhůru",
+              "value": 5,
+              "score": 5
+            },
+            {
+              "label": "6 – Známky ospalosti, občasné zívání, snížená pozornost",
+              "value": 6,
+              "score": 6
+            },
+            {
+              "label": "7 – Ospalý/á, ale bez úsilí zůstávám vzhůru",
+              "value": 7,
+              "score": 7
+            },
+            {
+              "label": "8 – Velmi ospalý/á, mám problém zůstat vzhůru",
+              "value": 8,
+              "score": 8
+            },
+            {
+              "label": "9 – Velmi ospalý/á, téměř v mikrospánku, bojuji se zůstat vzhůru",
+              "value": 9,
+              "score": 9
+            }
+          ],
+          "order": 4
+        }
+      ],
+      "order": 7,
+      "generated_at": "2026-06-23",
+      "notes": [
+        "Struktura byla převedena z veřejného náhledu Google Forms (viewform).",
+        "Neobsahuje interní Google Forms entry.* identifikátory pro přímé odesílání odpovědí zpět do Google Forms.",
+        "Typy polí jsou normalizované pro použití ve webové aplikaci: text, textarea, number, date, time, single_choice, linear_scale."
+      ]
+    },
+    {
+      "schema_version": "1.0.0",
+      "id": "meq-morningness-eveningness-questionnaire",
+      "title": "MEQ – Dotazník ranních a večerních typů",
+      "description": "Studie taVNS | Vyplňte JEDNOU na začátku studie. Odpovězte na každou otázku výběrem odpovědi, která vás nejlépe vystihuje.",
+      "language": "cs",
+      "source": {
+        "platform": "google_forms",
+        "form_id": "1V9Ow4U1KceZwzpOqLZY7lArREzPr-lK0ftvSKOJuTJw",
+        "edit_url": "https://docs.google.com/forms/d/1V9Ow4U1KceZwzpOqLZY7lArREzPr-lK0ftvSKOJuTJw/edit?usp=forms_home&ouid=117607941611883983758",
+        "view_url": "https://docs.google.com/forms/d/1V9Ow4U1KceZwzpOqLZY7lArREzPr-lK0ftvSKOJuTJw/viewform",
+        "embedded_url": "https://docs.google.com/forms/d/1V9Ow4U1KceZwzpOqLZY7lArREzPr-lK0ftvSKOJuTJw/viewform?embedded=true"
+      },
+      "fields": [
+        {
+          "id": "participant_id",
+          "label": "ID účastníka",
+          "type": "text",
+          "required": true,
+          "order": 1
+        },
+        {
+          "id": "meq_01_free_wake_time",
+          "label": "1. Kdy byste ráno vstával(a), pokud byste se mohl(a) svobodně rozhodnout?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) 5:00–6:30",
+              "value": "5:00–6:30",
+              "code": "a"
+            },
+            {
+              "label": "b) 6:30–7:45",
+              "value": "6:30–7:45",
+              "code": "b"
+            },
+            {
+              "label": "c) 7:45–9:45",
+              "value": "7:45–9:45",
+              "code": "c"
+            },
+            {
+              "label": "d) po 9:45",
+              "value": "po 9:45",
+              "code": "d"
+            }
+          ],
+          "order": 2
+        },
+        {
+          "id": "meq_02_free_bed_time",
+          "label": "2. Kdybyste si večer mohl(a) svobodně vybrat čas ke spánku, kdy byste šel/šla spát?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) 20:00–21:00",
+              "value": "20:00–21:00",
+              "code": "a"
+            },
+            {
+              "label": "b) 21:00–22:15",
+              "value": "21:00–22:15",
+              "code": "b"
+            },
+            {
+              "label": "c) 22:15–0:30",
+              "value": "22:15–0:30",
+              "code": "c"
+            },
+            {
+              "label": "d) 0:30–2:00",
+              "value": "0:30–2:00",
+              "code": "d"
+            }
+          ],
+          "order": 3
+        },
+        {
+          "id": "meq_03_activity_after_waking",
+          "label": "3. Jak jste po probuzení v první půlhodině fyzicky aktivní?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) Velmi aktivní",
+              "value": "Velmi aktivní",
+              "code": "a"
+            },
+            {
+              "label": "b) Poměrně aktivní",
+              "value": "Poměrně aktivní",
+              "code": "b"
+            },
+            {
+              "label": "c) Spíše malá aktivita",
+              "value": "Spíše malá aktivita",
+              "code": "c"
+            },
+            {
+              "label": "d) Velmi málo aktivní",
+              "value": "Velmi málo aktivní",
+              "code": "d"
+            }
+          ],
+          "order": 4
+        },
+        {
+          "id": "meq_04_physical_performance_time",
+          "label": "4. Kdybyste měl(a) být fyzicky aktivní, kdy byste měl(a) největší výkonnost?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) 8:00–10:00",
+              "value": "8:00–10:00",
+              "code": "a"
+            },
+            {
+              "label": "b) 11:00–13:00",
+              "value": "11:00–13:00",
+              "code": "b"
+            },
+            {
+              "label": "c) 15:00–17:00",
+              "value": "15:00–17:00",
+              "code": "c"
+            },
+            {
+              "label": "d) 19:00–21:00",
+              "value": "19:00–21:00",
+              "code": "d"
+            }
+          ],
+          "order": 5
+        },
+        {
+          "id": "meq_05_evening_tired_time",
+          "label": "5. Kdy se večer obvykle cítíte unavený(á) a chcete jít spát?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) 21:00",
+              "value": "21:00",
+              "code": "a"
+            },
+            {
+              "label": "b) 22:15",
+              "value": "22:15",
+              "code": "b"
+            },
+            {
+              "label": "c) 23:30",
+              "value": "23:30",
+              "code": "c"
+            },
+            {
+              "label": "d) Po půlnoci",
+              "value": "Po půlnoci",
+              "code": "d"
+            }
+          ],
+          "order": 6
+        },
+        {
+          "id": "meq_06_morning_getting_up",
+          "label": "6. Jak snadno ráno vstáváte?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) Velmi snadno",
+              "value": "Velmi snadno",
+              "code": "a"
+            },
+            {
+              "label": "b) Snadno",
+              "value": "Snadno",
+              "code": "b"
+            },
+            {
+              "label": "c) Těžce",
+              "value": "Těžce",
+              "code": "c"
+            },
+            {
+              "label": "d) Velmi těžce",
+              "value": "Velmi těžce",
+              "code": "d"
+            }
+          ],
+          "order": 7
+        },
+        {
+          "id": "meq_07_feel_at_6am",
+          "label": "7. Pokud se ráno musíte vzbudit v 6:00, jak se cítíte?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) Čerstvě",
+              "value": "Čerstvě",
+              "code": "a"
+            },
+            {
+              "label": "b) Poměrně čerstvě",
+              "value": "Poměrně čerstvě",
+              "code": "b"
+            },
+            {
+              "label": "c) Poměrně unaveně",
+              "value": "Poměrně unaveně",
+              "code": "c"
+            },
+            {
+              "label": "d) Velmi unaveně",
+              "value": "Velmi unaveně",
+              "code": "d"
+            }
+          ],
+          "order": 8
+        },
+        {
+          "id": "meq_08_usual_wake_without_alarm",
+          "label": "8. Pokud se ráno probudíte bez budíku, v kolik obvykle vstáváte?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) Před 6:30",
+              "value": "Před 6:30",
+              "code": "a"
+            },
+            {
+              "label": "b) 6:30–7:45",
+              "value": "6:30–7:45",
+              "code": "b"
+            },
+            {
+              "label": "c) 7:45–9:45",
+              "value": "7:45–9:45",
+              "code": "c"
+            },
+            {
+              "label": "d) Po 9:45",
+              "value": "Po 9:45",
+              "code": "d"
+            }
+          ],
+          "order": 9
+        },
+        {
+          "id": "meq_09_like_early_rising",
+          "label": "9. Máte rádi brzké vstávání?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) Ano, velmi",
+              "value": "Ano, velmi",
+              "code": "a"
+            },
+            {
+              "label": "b) Poměrně ano",
+              "value": "Poměrně ano",
+              "code": "b"
+            },
+            {
+              "label": "c) Spíše ne",
+              "value": "Spíše ne",
+              "code": "c"
+            },
+            {
+              "label": "d) Vůbec ne",
+              "value": "Vůbec ne",
+              "code": "d"
+            }
+          ],
+          "order": 10
+        },
+        {
+          "id": "meq_10_appetite_after_waking",
+          "label": "10. Jakou máte chuť k jídlu v první půlhodině po probuzení?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) Velkou",
+              "value": "Velkou",
+              "code": "a"
+            },
+            {
+              "label": "b) Poměrně velkou",
+              "value": "Poměrně velkou",
+              "code": "b"
+            },
+            {
+              "label": "c) Malou",
+              "value": "Malou",
+              "code": "c"
+            },
+            {
+              "label": "d) Žádnou",
+              "value": "Žádnou",
+              "code": "d"
+            }
+          ],
+          "order": 11
+        },
+        {
+          "id": "meq_11_morning_activation_speed",
+          "label": "11. Rychle se ráno probouzíte a začnete fungovat?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) Ano, okamžitě",
+              "value": "Ano, okamžitě",
+              "code": "a"
+            },
+            {
+              "label": "b) Poměrně rychle",
+              "value": "Poměrně rychle",
+              "code": "b"
+            },
+            {
+              "label": "c) Spíše pomalu",
+              "value": "Spíše pomalu",
+              "code": "c"
+            },
+            {
+              "label": "d) Velmi pomalu",
+              "value": "Velmi pomalu",
+              "code": "d"
+            }
+          ],
+          "order": 12
+        },
+        {
+          "id": "meq_12_mental_performance_time",
+          "label": "12. Kdy byste byl(a) nejvíce duševně výkonný(á)?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) 8:00–10:00",
+              "value": "8:00–10:00",
+              "code": "a"
+            },
+            {
+              "label": "b) 11:00–13:00",
+              "value": "11:00–13:00",
+              "code": "b"
+            },
+            {
+              "label": "c) 15:00–17:00",
+              "value": "15:00–17:00",
+              "code": "c"
+            },
+            {
+              "label": "d) 19:00–21:00",
+              "value": "19:00–21:00",
+              "code": "d"
+            }
+          ],
+          "order": 13
+        },
+        {
+          "id": "meq_13_active_23_to_01",
+          "label": "13. Pokud byste musel(a) být aktivní mezi 23:00 a 1:00, jak byste se cítil(a)?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) Velmi špatně",
+              "value": "Velmi špatně",
+              "code": "a"
+            },
+            {
+              "label": "b) Poměrně špatně",
+              "value": "Poměrně špatně",
+              "code": "b"
+            },
+            {
+              "label": "c) Poměrně dobře",
+              "value": "Poměrně dobře",
+              "code": "c"
+            },
+            {
+              "label": "d) Velmi dobře",
+              "value": "Velmi dobře",
+              "code": "d"
+            }
+          ],
+          "order": 14
+        },
+        {
+          "id": "meq_14_sleep_at_1am_next_morning",
+          "label": "14. Pokud byste šel/šla spát ve 1:00, jak byste se cítil(a) následující ráno?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) Velmi unaveně",
+              "value": "Velmi unaveně",
+              "code": "a"
+            },
+            {
+              "label": "b) Poměrně unaveně",
+              "value": "Poměrně unaveně",
+              "code": "b"
+            },
+            {
+              "label": "c) Poměrně čerstvě",
+              "value": "Poměrně čerstvě",
+              "code": "c"
+            },
+            {
+              "label": "d) Velmi čerstvě",
+              "value": "Velmi čerstvě",
+              "code": "d"
+            }
+          ],
+          "order": 15
+        },
+        {
+          "id": "meq_15_preferred_two_hours_work",
+          "label": "15. Pokud byste měl(a) 2 hodiny intenzivní práce (tělesné nebo duševní), kdy byste je nejraději vykonával(a)?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) 8:00–10:00",
+              "value": "8:00–10:00",
+              "code": "a"
+            },
+            {
+              "label": "b) 11:00–13:00",
+              "value": "11:00–13:00",
+              "code": "b"
+            },
+            {
+              "label": "c) 15:00–17:00",
+              "value": "15:00–17:00",
+              "code": "c"
+            },
+            {
+              "label": "d) 19:00–21:00",
+              "value": "19:00–21:00",
+              "code": "d"
+            }
+          ],
+          "order": 16
+        },
+        {
+          "id": "meq_16_exam_7am_readiness",
+          "label": "16. Pokud byste měl(a) důležitou zkoušku v 7:00 ráno, jak byste byl(a) připraven(a)?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) Velmi dobře",
+              "value": "Velmi dobře",
+              "code": "a"
+            },
+            {
+              "label": "b) Poměrně dobře",
+              "value": "Poměrně dobře",
+              "code": "b"
+            },
+            {
+              "label": "c) Poměrně špatně",
+              "value": "Poměrně špatně",
+              "code": "c"
+            },
+            {
+              "label": "d) Velmi špatně",
+              "value": "Velmi špatně",
+              "code": "d"
+            }
+          ],
+          "order": 17
+        },
+        {
+          "id": "meq_17_wake_before_alarm",
+          "label": "17. Pokud musíte vstát v určitou hodinu, jak často se budíte před budíkem?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) Skoro vždy",
+              "value": "Skoro vždy",
+              "code": "a"
+            },
+            {
+              "label": "b) Často",
+              "value": "Často",
+              "code": "b"
+            },
+            {
+              "label": "c) Občas",
+              "value": "Občas",
+              "code": "c"
+            },
+            {
+              "label": "d) Zřídka",
+              "value": "Zřídka",
+              "code": "d"
+            }
+          ],
+          "order": 18
+        },
+        {
+          "id": "meq_18_morning_evening_type",
+          "label": "18. Jste obecně spíše ranní nebo večerní typ?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) Výrazně ranní",
+              "value": "Výrazně ranní",
+              "code": "a"
+            },
+            {
+              "label": "b) Ranní",
+              "value": "Ranní",
+              "code": "b"
+            },
+            {
+              "label": "c) Večerní",
+              "value": "Večerní",
+              "code": "c"
+            },
+            {
+              "label": "d) Výrazně večerní",
+              "value": "Výrazně večerní",
+              "code": "d"
+            }
+          ],
+          "order": 19
+        },
+        {
+          "id": "meq_19_important_task_time",
+          "label": "19. Kdybyste si měl(a) vybrat jen jeden denní čas pro důležitý úkol vyžadující soustředění a výkonnost, který byste si vybral(a)?",
+          "type": "single_choice",
+          "required": true,
+          "options": [
+            {
+              "label": "a) 8:00–10:00",
+              "value": "8:00–10:00",
+              "code": "a"
+            },
+            {
+              "label": "b) 11:00–13:00",
+              "value": "11:00–13:00",
+              "code": "b"
+            },
+            {
+              "label": "c) 15:00–17:00",
+              "value": "15:00–17:00",
+              "code": "c"
+            },
+            {
+              "label": "d) 19:00–21:00",
+              "value": "19:00–21:00",
+              "code": "d"
+            }
+          ],
+          "order": 20
+        }
+      ],
+      "order": 8,
+      "generated_at": "2026-06-23",
+      "notes": [
+        "Struktura byla převedena z veřejného náhledu Google Forms (viewform).",
+        "Neobsahuje interní Google Forms entry.* identifikátory pro přímé odesílání odpovědí zpět do Google Forms.",
+        "Typy polí jsou normalizované pro použití ve webové aplikaci: text, textarea, number, date, time, single_choice, linear_scale."
+      ]
+    }
+  ]
+}

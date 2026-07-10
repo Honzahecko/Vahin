@@ -1,0 +1,193 @@
+{
+  "schema_version": "1.0.0",
+  "id": "tavns-final-satisfaction",
+  "title": "Dotazník spokojenosti účastníků – taVNS (závěrečný)",
+  "description": "Studie taVNS | Vyplňte na KONCI studie. Vaše zpětná vazba nám pomůže zlepšit protokol pro budoucí studii.",
+  "language": "cs",
+  "source": {
+    "platform": "google_forms",
+    "form_id": "1Ug5A9WNFMvquCLywYv5SSKjvPAj5byQqj_bRaxjlAT4",
+    "edit_url": "https://docs.google.com/forms/d/1Ug5A9WNFMvquCLywYv5SSKjvPAj5byQqj_bRaxjlAT4/edit?usp=forms_home&ouid=117607941611883983758",
+    "view_url": "https://docs.google.com/forms/d/1Ug5A9WNFMvquCLywYv5SSKjvPAj5byQqj_bRaxjlAT4/viewform",
+    "embedded_url": "https://docs.google.com/forms/d/1Ug5A9WNFMvquCLywYv5SSKjvPAj5byQqj_bRaxjlAT4/viewform?embedded=true"
+  },
+  "fields": [
+    {
+      "id": "participant_id",
+      "label": "ID účastníka",
+      "type": "text",
+      "required": true,
+      "order": 1
+    },
+    {
+      "id": "completion_date",
+      "label": "Datum vyplnění",
+      "type": "date",
+      "required": true,
+      "order": 2
+    },
+    {
+      "id": "overall_experience",
+      "label": "Jak celkově hodnotíte vaši účast v této studii?",
+      "type": "linear_scale",
+      "required": true,
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Velmi negativně",
+        "3": "Neutrálně",
+        "5": "Velmi pozitivně"
+      },
+      "order": 3
+    },
+    {
+      "id": "work_life_acceptability",
+      "label": "Jak přijatelný byl protokol stimulace pro váš pracovní život?",
+      "type": "linear_scale",
+      "required": true,
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nepřijatelný",
+        "3": "Neutrální",
+        "5": "Zcela přijatelný"
+      },
+      "order": 4
+    },
+    {
+      "id": "device_usability",
+      "label": "Jak snadné bylo používání přístroje Nurosym?",
+      "type": "linear_scale",
+      "required": true,
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Velmi obtížné",
+        "3": "Neutrální",
+        "5": "Velmi snadné"
+      },
+      "order": 5
+    },
+    {
+      "id": "questionnaire_burden",
+      "label": "Jak hodnotíte zátěž spojenou s vyplňováním dotazníků?",
+      "type": "linear_scale",
+      "required": true,
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Velmi zatěžující",
+        "3": "Neutrální",
+        "5": "Velmi snadná"
+      },
+      "order": 6
+    },
+    {
+      "id": "fatigue_sleep_change",
+      "label": "Zaznamenal(a) jste subjektivní zlepšení únavy nebo spánku během studie?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "Výrazné zlepšení",
+          "value": "significant_improvement"
+        },
+        {
+          "label": "Mírné zlepšení",
+          "value": "mild_improvement"
+        },
+        {
+          "label": "Beze změny",
+          "value": "no_change"
+        },
+        {
+          "label": "Mírné zhoršení",
+          "value": "mild_worsening"
+        },
+        {
+          "label": "Výrazné zhoršení",
+          "value": "significant_worsening"
+        }
+      ],
+      "order": 7
+    },
+    {
+      "id": "recommend_to_colleagues",
+      "label": "Doporučil(a) byste účast v podobné studii kolegům?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "Rozhodně ano",
+          "value": "definitely_yes"
+        },
+        {
+          "label": "Spíše ano",
+          "value": "rather_yes"
+        },
+        {
+          "label": "Spíše ne",
+          "value": "rather_no"
+        },
+        {
+          "label": "Rozhodně ne",
+          "value": "definitely_no"
+        }
+      ],
+      "order": 8
+    },
+    {
+      "id": "continue_stimulation",
+      "label": "Pokud by to bylo možné, chtěl(a) byste pokračovat ve stimulaci i po studii?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "Rozhodně ano",
+          "value": "definitely_yes"
+        },
+        {
+          "label": "Spíše ano",
+          "value": "rather_yes"
+        },
+        {
+          "label": "Spíše ne",
+          "value": "rather_no"
+        },
+        {
+          "label": "Rozhodně ne",
+          "value": "definitely_no"
+        }
+      ],
+      "order": 9
+    },
+    {
+      "id": "liked_most",
+      "label": "Co se vám na studii líbilo nejvíce?",
+      "type": "textarea",
+      "required": false,
+      "order": 10
+    },
+    {
+      "id": "improvements",
+      "label": "Co by se dalo zlepšit?",
+      "type": "textarea",
+      "required": false,
+      "order": 11
+    },
+    {
+      "id": "additional_comments",
+      "label": "Jakékoliv další komentáře nebo připomínky",
+      "type": "textarea",
+      "required": false,
+      "order": 12
+    }
+  ],
+  "order": 3,
+  "generated_at": "2026-06-23",
+  "notes": [
+    "Struktura byla převedena z veřejného náhledu Google Forms (viewform).",
+    "Neobsahuje interní Google Forms entry.* identifikátory pro přímé odesílání odpovědí zpět do Google Forms.",
+    "Typy polí jsou normalizované pro použití ve webové aplikaci: text, textarea, number, date, time, single_choice, linear_scale."
+  ]
+}

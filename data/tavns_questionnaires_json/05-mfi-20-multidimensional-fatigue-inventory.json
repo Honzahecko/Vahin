@@ -1,0 +1,888 @@
+{
+  "schema_version": "1.0.0",
+  "id": "mfi-20-multidimensional-fatigue-inventory",
+  "title": "MFI-20 – Multidimensional Fatigue Inventory",
+  "description": "Studie taVNS | Vyplňte 1× týdně. Každá položka se hodnotí na 5bodové škále: 1 = zcela nesouhlasím, 5 = zcela souhlasím.",
+  "language": "cs",
+  "source": {
+    "platform": "google_forms",
+    "form_id": "1BSN8eImzIbmyg34MWEcdmxgmbbeJAXwdQF9BX52-cEc",
+    "edit_url": "https://docs.google.com/forms/d/1BSN8eImzIbmyg34MWEcdmxgmbbeJAXwdQF9BX52-cEc/edit?usp=forms_home&ouid=117607941611883983758",
+    "view_url": "https://docs.google.com/forms/d/1BSN8eImzIbmyg34MWEcdmxgmbbeJAXwdQF9BX52-cEc/viewform",
+    "embedded_url": "https://docs.google.com/forms/d/1BSN8eImzIbmyg34MWEcdmxgmbbeJAXwdQF9BX52-cEc/viewform?embedded=true"
+  },
+  "fields": [
+    {
+      "id": "participant_id",
+      "label": "ID účastníka",
+      "type": "text",
+      "required": true,
+      "order": 1
+    },
+    {
+      "id": "completion_date",
+      "label": "Datum vyplnění",
+      "type": "date",
+      "required": true,
+      "order": 2
+    },
+    {
+      "id": "study_week",
+      "label": "Týden studie č.",
+      "type": "number",
+      "required": true,
+      "validation": {
+        "min": 1,
+        "integer": true
+      },
+      "order": 3
+    },
+    {
+      "id": "general_fatigue_feel_tired",
+      "label": "Cítím se unavený(á).",
+      "type": "linear_scale",
+      "required": true,
+      "group": "1. Všeobecná únava",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": false,
+      "order": 4
+    },
+    {
+      "id": "general_fatigue_not_fresh",
+      "label": "Celkově se necítím příliš svěže.",
+      "type": "linear_scale",
+      "required": true,
+      "group": "1. Všeobecná únava",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": false,
+      "order": 5
+    },
+    {
+      "id": "general_fatigue_feel_fresh",
+      "label": "Cítím se svěží. (reverzní)",
+      "type": "linear_scale",
+      "required": true,
+      "group": "1. Všeobecná únava",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": true,
+      "order": 6
+    },
+    {
+      "id": "general_fatigue_feel_fit",
+      "label": "Cítím se ve formě. (reverzní)",
+      "type": "linear_scale",
+      "required": true,
+      "group": "1. Všeobecná únava",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": true,
+      "order": 7
+    },
+    {
+      "id": "physical_fatigue_tired",
+      "label": "Fyzicky se cítím unavený(á).",
+      "type": "linear_scale",
+      "required": true,
+      "group": "2. Fyzická únava",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": false,
+      "order": 8
+    },
+    {
+      "id": "physical_fatigue_exhausted",
+      "label": "Fyzicky se cítím vyčerpaný(á).",
+      "type": "linear_scale",
+      "required": true,
+      "group": "2. Fyzická únava",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": false,
+      "order": 9
+    },
+    {
+      "id": "physical_fatigue_strong",
+      "label": "Cítím se silný(á). (reverzní)",
+      "type": "linear_scale",
+      "required": true,
+      "group": "2. Fyzická únava",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": true,
+      "order": 10
+    },
+    {
+      "id": "physical_fatigue_good_condition",
+      "label": "Cítím se ve fyzicky dobré kondici. (reverzní)",
+      "type": "linear_scale",
+      "required": true,
+      "group": "2. Fyzická únava",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": true,
+      "order": 11
+    },
+    {
+      "id": "reduced_activity_few_interests",
+      "label": "Mám málo zájmů.",
+      "type": "linear_scale",
+      "required": true,
+      "group": "3. Snížená aktivita",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": false,
+      "order": 12
+    },
+    {
+      "id": "reduced_activity_few_things",
+      "label": "Dělám jen málo věcí.",
+      "type": "linear_scale",
+      "required": true,
+      "group": "3. Snížená aktivita",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": false,
+      "order": 13
+    },
+    {
+      "id": "reduced_activity_many_things_capable",
+      "label": "Jsem schopen(na) vykonávat spoustu věcí. (reverzní)",
+      "type": "linear_scale",
+      "required": true,
+      "group": "3. Snížená aktivita",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": true,
+      "order": 14
+    },
+    {
+      "id": "reduced_activity_many_activities",
+      "label": "Provozuji mnoho činností. (reverzní)",
+      "type": "linear_scale",
+      "required": true,
+      "group": "3. Snížená aktivita",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": true,
+      "order": 15
+    },
+    {
+      "id": "reduced_motivation_not_motivated",
+      "label": "Nejsem příliš motivovaný(á).",
+      "type": "linear_scale",
+      "required": true,
+      "group": "4. Snížená motivace",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": false,
+      "order": 16
+    },
+    {
+      "id": "reduced_motivation_like_doing_things",
+      "label": "Rád(a) dělám věci. (reverzní)",
+      "type": "linear_scale",
+      "required": true,
+      "group": "4. Snížená motivace",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": true,
+      "order": 17
+    },
+    {
+      "id": "reduced_motivation_force_myself",
+      "label": "Musím se nutit k tomu, abych něco dělal(a).",
+      "type": "linear_scale",
+      "required": true,
+      "group": "4. Snížená motivace",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": false,
+      "order": 18
+    },
+    {
+      "id": "reduced_motivation_lack_motivation",
+      "label": "Chybí mi motivace.",
+      "type": "linear_scale",
+      "required": true,
+      "group": "4. Snížená motivace",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": false,
+      "order": 19
+    },
+    {
+      "id": "mental_fatigue_concentration_problems",
+      "label": "Mám potíže se soustředěním.",
+      "type": "linear_scale",
+      "required": true,
+      "group": "5. Duševní únava",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": false,
+      "order": 20
+    },
+    {
+      "id": "mental_fatigue_think_clearly_difficult",
+      "label": "Je pro mě obtížné myslet jasně.",
+      "type": "linear_scale",
+      "required": true,
+      "group": "5. Duševní únava",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": false,
+      "order": 21
+    },
+    {
+      "id": "mental_fatigue_mind_works",
+      "label": "Myslí mi to. (reverzní)",
+      "type": "linear_scale",
+      "required": true,
+      "group": "5. Duševní únava",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": true,
+      "order": 22
+    },
+    {
+      "id": "mental_fatigue_focus_difficult",
+      "label": "Je pro mě obtížné se soustředit.",
+      "type": "linear_scale",
+      "required": true,
+      "group": "5. Duševní únava",
+      "min": 1,
+      "max": 5,
+      "labels": {
+        "1": "Zcela nesouhlasím",
+        "5": "Zcela souhlasím"
+      },
+      "options": [
+        {
+          "label": "1 – Zcela nesouhlasím",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3",
+          "value": 3,
+          "score": 3
+        },
+        {
+          "label": "4",
+          "value": 4,
+          "score": 4
+        },
+        {
+          "label": "5 – Zcela souhlasím",
+          "value": 5,
+          "score": 5
+        }
+      ],
+      "reverse_scored": false,
+      "order": 23
+    }
+  ],
+  "order": 5,
+  "generated_at": "2026-06-23",
+  "notes": [
+    "Struktura byla převedena z veřejného náhledu Google Forms (viewform).",
+    "Neobsahuje interní Google Forms entry.* identifikátory pro přímé odesílání odpovědí zpět do Google Forms.",
+    "Typy polí jsou normalizované pro použití ve webové aplikaci: text, textarea, number, date, time, single_choice, linear_scale."
+  ]
+}

@@ -1,0 +1,581 @@
+{
+  "schema_version": "1.0.0",
+  "id": "meq-morningness-eveningness-questionnaire",
+  "title": "MEQ – Dotazník ranních a večerních typů",
+  "description": "Studie taVNS | Vyplňte JEDNOU na začátku studie. Odpovězte na každou otázku výběrem odpovědi, která vás nejlépe vystihuje.",
+  "language": "cs",
+  "source": {
+    "platform": "google_forms",
+    "form_id": "1V9Ow4U1KceZwzpOqLZY7lArREzPr-lK0ftvSKOJuTJw",
+    "edit_url": "https://docs.google.com/forms/d/1V9Ow4U1KceZwzpOqLZY7lArREzPr-lK0ftvSKOJuTJw/edit?usp=forms_home&ouid=117607941611883983758",
+    "view_url": "https://docs.google.com/forms/d/1V9Ow4U1KceZwzpOqLZY7lArREzPr-lK0ftvSKOJuTJw/viewform",
+    "embedded_url": "https://docs.google.com/forms/d/1V9Ow4U1KceZwzpOqLZY7lArREzPr-lK0ftvSKOJuTJw/viewform?embedded=true"
+  },
+  "fields": [
+    {
+      "id": "participant_id",
+      "label": "ID účastníka",
+      "type": "text",
+      "required": true,
+      "order": 1
+    },
+    {
+      "id": "meq_01_free_wake_time",
+      "label": "1. Kdy byste ráno vstával(a), pokud byste se mohl(a) svobodně rozhodnout?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) 5:00–6:30",
+          "value": "5:00–6:30",
+          "code": "a"
+        },
+        {
+          "label": "b) 6:30–7:45",
+          "value": "6:30–7:45",
+          "code": "b"
+        },
+        {
+          "label": "c) 7:45–9:45",
+          "value": "7:45–9:45",
+          "code": "c"
+        },
+        {
+          "label": "d) po 9:45",
+          "value": "po 9:45",
+          "code": "d"
+        }
+      ],
+      "order": 2
+    },
+    {
+      "id": "meq_02_free_bed_time",
+      "label": "2. Kdybyste si večer mohl(a) svobodně vybrat čas ke spánku, kdy byste šel/šla spát?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) 20:00–21:00",
+          "value": "20:00–21:00",
+          "code": "a"
+        },
+        {
+          "label": "b) 21:00–22:15",
+          "value": "21:00–22:15",
+          "code": "b"
+        },
+        {
+          "label": "c) 22:15–0:30",
+          "value": "22:15–0:30",
+          "code": "c"
+        },
+        {
+          "label": "d) 0:30–2:00",
+          "value": "0:30–2:00",
+          "code": "d"
+        }
+      ],
+      "order": 3
+    },
+    {
+      "id": "meq_03_activity_after_waking",
+      "label": "3. Jak jste po probuzení v první půlhodině fyzicky aktivní?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) Velmi aktivní",
+          "value": "Velmi aktivní",
+          "code": "a"
+        },
+        {
+          "label": "b) Poměrně aktivní",
+          "value": "Poměrně aktivní",
+          "code": "b"
+        },
+        {
+          "label": "c) Spíše malá aktivita",
+          "value": "Spíše malá aktivita",
+          "code": "c"
+        },
+        {
+          "label": "d) Velmi málo aktivní",
+          "value": "Velmi málo aktivní",
+          "code": "d"
+        }
+      ],
+      "order": 4
+    },
+    {
+      "id": "meq_04_physical_performance_time",
+      "label": "4. Kdybyste měl(a) být fyzicky aktivní, kdy byste měl(a) největší výkonnost?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) 8:00–10:00",
+          "value": "8:00–10:00",
+          "code": "a"
+        },
+        {
+          "label": "b) 11:00–13:00",
+          "value": "11:00–13:00",
+          "code": "b"
+        },
+        {
+          "label": "c) 15:00–17:00",
+          "value": "15:00–17:00",
+          "code": "c"
+        },
+        {
+          "label": "d) 19:00–21:00",
+          "value": "19:00–21:00",
+          "code": "d"
+        }
+      ],
+      "order": 5
+    },
+    {
+      "id": "meq_05_evening_tired_time",
+      "label": "5. Kdy se večer obvykle cítíte unavený(á) a chcete jít spát?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) 21:00",
+          "value": "21:00",
+          "code": "a"
+        },
+        {
+          "label": "b) 22:15",
+          "value": "22:15",
+          "code": "b"
+        },
+        {
+          "label": "c) 23:30",
+          "value": "23:30",
+          "code": "c"
+        },
+        {
+          "label": "d) Po půlnoci",
+          "value": "Po půlnoci",
+          "code": "d"
+        }
+      ],
+      "order": 6
+    },
+    {
+      "id": "meq_06_morning_getting_up",
+      "label": "6. Jak snadno ráno vstáváte?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) Velmi snadno",
+          "value": "Velmi snadno",
+          "code": "a"
+        },
+        {
+          "label": "b) Snadno",
+          "value": "Snadno",
+          "code": "b"
+        },
+        {
+          "label": "c) Těžce",
+          "value": "Těžce",
+          "code": "c"
+        },
+        {
+          "label": "d) Velmi těžce",
+          "value": "Velmi těžce",
+          "code": "d"
+        }
+      ],
+      "order": 7
+    },
+    {
+      "id": "meq_07_feel_at_6am",
+      "label": "7. Pokud se ráno musíte vzbudit v 6:00, jak se cítíte?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) Čerstvě",
+          "value": "Čerstvě",
+          "code": "a"
+        },
+        {
+          "label": "b) Poměrně čerstvě",
+          "value": "Poměrně čerstvě",
+          "code": "b"
+        },
+        {
+          "label": "c) Poměrně unaveně",
+          "value": "Poměrně unaveně",
+          "code": "c"
+        },
+        {
+          "label": "d) Velmi unaveně",
+          "value": "Velmi unaveně",
+          "code": "d"
+        }
+      ],
+      "order": 8
+    },
+    {
+      "id": "meq_08_usual_wake_without_alarm",
+      "label": "8. Pokud se ráno probudíte bez budíku, v kolik obvykle vstáváte?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) Před 6:30",
+          "value": "Před 6:30",
+          "code": "a"
+        },
+        {
+          "label": "b) 6:30–7:45",
+          "value": "6:30–7:45",
+          "code": "b"
+        },
+        {
+          "label": "c) 7:45–9:45",
+          "value": "7:45–9:45",
+          "code": "c"
+        },
+        {
+          "label": "d) Po 9:45",
+          "value": "Po 9:45",
+          "code": "d"
+        }
+      ],
+      "order": 9
+    },
+    {
+      "id": "meq_09_like_early_rising",
+      "label": "9. Máte rádi brzké vstávání?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) Ano, velmi",
+          "value": "Ano, velmi",
+          "code": "a"
+        },
+        {
+          "label": "b) Poměrně ano",
+          "value": "Poměrně ano",
+          "code": "b"
+        },
+        {
+          "label": "c) Spíše ne",
+          "value": "Spíše ne",
+          "code": "c"
+        },
+        {
+          "label": "d) Vůbec ne",
+          "value": "Vůbec ne",
+          "code": "d"
+        }
+      ],
+      "order": 10
+    },
+    {
+      "id": "meq_10_appetite_after_waking",
+      "label": "10. Jakou máte chuť k jídlu v první půlhodině po probuzení?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) Velkou",
+          "value": "Velkou",
+          "code": "a"
+        },
+        {
+          "label": "b) Poměrně velkou",
+          "value": "Poměrně velkou",
+          "code": "b"
+        },
+        {
+          "label": "c) Malou",
+          "value": "Malou",
+          "code": "c"
+        },
+        {
+          "label": "d) Žádnou",
+          "value": "Žádnou",
+          "code": "d"
+        }
+      ],
+      "order": 11
+    },
+    {
+      "id": "meq_11_morning_activation_speed",
+      "label": "11. Rychle se ráno probouzíte a začnete fungovat?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) Ano, okamžitě",
+          "value": "Ano, okamžitě",
+          "code": "a"
+        },
+        {
+          "label": "b) Poměrně rychle",
+          "value": "Poměrně rychle",
+          "code": "b"
+        },
+        {
+          "label": "c) Spíše pomalu",
+          "value": "Spíše pomalu",
+          "code": "c"
+        },
+        {
+          "label": "d) Velmi pomalu",
+          "value": "Velmi pomalu",
+          "code": "d"
+        }
+      ],
+      "order": 12
+    },
+    {
+      "id": "meq_12_mental_performance_time",
+      "label": "12. Kdy byste byl(a) nejvíce duševně výkonný(á)?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) 8:00–10:00",
+          "value": "8:00–10:00",
+          "code": "a"
+        },
+        {
+          "label": "b) 11:00–13:00",
+          "value": "11:00–13:00",
+          "code": "b"
+        },
+        {
+          "label": "c) 15:00–17:00",
+          "value": "15:00–17:00",
+          "code": "c"
+        },
+        {
+          "label": "d) 19:00–21:00",
+          "value": "19:00–21:00",
+          "code": "d"
+        }
+      ],
+      "order": 13
+    },
+    {
+      "id": "meq_13_active_23_to_01",
+      "label": "13. Pokud byste musel(a) být aktivní mezi 23:00 a 1:00, jak byste se cítil(a)?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) Velmi špatně",
+          "value": "Velmi špatně",
+          "code": "a"
+        },
+        {
+          "label": "b) Poměrně špatně",
+          "value": "Poměrně špatně",
+          "code": "b"
+        },
+        {
+          "label": "c) Poměrně dobře",
+          "value": "Poměrně dobře",
+          "code": "c"
+        },
+        {
+          "label": "d) Velmi dobře",
+          "value": "Velmi dobře",
+          "code": "d"
+        }
+      ],
+      "order": 14
+    },
+    {
+      "id": "meq_14_sleep_at_1am_next_morning",
+      "label": "14. Pokud byste šel/šla spát ve 1:00, jak byste se cítil(a) následující ráno?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) Velmi unaveně",
+          "value": "Velmi unaveně",
+          "code": "a"
+        },
+        {
+          "label": "b) Poměrně unaveně",
+          "value": "Poměrně unaveně",
+          "code": "b"
+        },
+        {
+          "label": "c) Poměrně čerstvě",
+          "value": "Poměrně čerstvě",
+          "code": "c"
+        },
+        {
+          "label": "d) Velmi čerstvě",
+          "value": "Velmi čerstvě",
+          "code": "d"
+        }
+      ],
+      "order": 15
+    },
+    {
+      "id": "meq_15_preferred_two_hours_work",
+      "label": "15. Pokud byste měl(a) 2 hodiny intenzivní práce (tělesné nebo duševní), kdy byste je nejraději vykonával(a)?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) 8:00–10:00",
+          "value": "8:00–10:00",
+          "code": "a"
+        },
+        {
+          "label": "b) 11:00–13:00",
+          "value": "11:00–13:00",
+          "code": "b"
+        },
+        {
+          "label": "c) 15:00–17:00",
+          "value": "15:00–17:00",
+          "code": "c"
+        },
+        {
+          "label": "d) 19:00–21:00",
+          "value": "19:00–21:00",
+          "code": "d"
+        }
+      ],
+      "order": 16
+    },
+    {
+      "id": "meq_16_exam_7am_readiness",
+      "label": "16. Pokud byste měl(a) důležitou zkoušku v 7:00 ráno, jak byste byl(a) připraven(a)?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) Velmi dobře",
+          "value": "Velmi dobře",
+          "code": "a"
+        },
+        {
+          "label": "b) Poměrně dobře",
+          "value": "Poměrně dobře",
+          "code": "b"
+        },
+        {
+          "label": "c) Poměrně špatně",
+          "value": "Poměrně špatně",
+          "code": "c"
+        },
+        {
+          "label": "d) Velmi špatně",
+          "value": "Velmi špatně",
+          "code": "d"
+        }
+      ],
+      "order": 17
+    },
+    {
+      "id": "meq_17_wake_before_alarm",
+      "label": "17. Pokud musíte vstát v určitou hodinu, jak často se budíte před budíkem?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) Skoro vždy",
+          "value": "Skoro vždy",
+          "code": "a"
+        },
+        {
+          "label": "b) Často",
+          "value": "Často",
+          "code": "b"
+        },
+        {
+          "label": "c) Občas",
+          "value": "Občas",
+          "code": "c"
+        },
+        {
+          "label": "d) Zřídka",
+          "value": "Zřídka",
+          "code": "d"
+        }
+      ],
+      "order": 18
+    },
+    {
+      "id": "meq_18_morning_evening_type",
+      "label": "18. Jste obecně spíše ranní nebo večerní typ?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) Výrazně ranní",
+          "value": "Výrazně ranní",
+          "code": "a"
+        },
+        {
+          "label": "b) Ranní",
+          "value": "Ranní",
+          "code": "b"
+        },
+        {
+          "label": "c) Večerní",
+          "value": "Večerní",
+          "code": "c"
+        },
+        {
+          "label": "d) Výrazně večerní",
+          "value": "Výrazně večerní",
+          "code": "d"
+        }
+      ],
+      "order": 19
+    },
+    {
+      "id": "meq_19_important_task_time",
+      "label": "19. Kdybyste si měl(a) vybrat jen jeden denní čas pro důležitý úkol vyžadující soustředění a výkonnost, který byste si vybral(a)?",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "label": "a) 8:00–10:00",
+          "value": "8:00–10:00",
+          "code": "a"
+        },
+        {
+          "label": "b) 11:00–13:00",
+          "value": "11:00–13:00",
+          "code": "b"
+        },
+        {
+          "label": "c) 15:00–17:00",
+          "value": "15:00–17:00",
+          "code": "c"
+        },
+        {
+          "label": "d) 19:00–21:00",
+          "value": "19:00–21:00",
+          "code": "d"
+        }
+      ],
+      "order": 20
+    }
+  ],
+  "order": 8,
+  "generated_at": "2026-06-23",
+  "notes": [
+    "Struktura byla převedena z veřejného náhledu Google Forms (viewform).",
+    "Neobsahuje interní Google Forms entry.* identifikátory pro přímé odesílání odpovědí zpět do Google Forms.",
+    "Typy polí jsou normalizované pro použití ve webové aplikaci: text, textarea, number, date, time, single_choice, linear_scale."
+  ]
+}

@@ -59,6 +59,9 @@ class User(Base):
     study_start_date = Column(DateTime, nullable=True)  # den 1 studie — od první noční směny
     shift_schedule   = Column(String(21), nullable=True)  # 21 znaků N/D/V pro každý den studie
     notes          = Column(Text, nullable=True)
+    garmin_access_token  = Column(String, nullable=True)
+    garmin_token_secret  = Column(String, nullable=True)
+    garmin_user_id       = Column(String, nullable=True)
 
     shifts       = relationship("NightShift",   back_populates="user")
     responses    = relationship("QuestionnaireResponse", back_populates="user")

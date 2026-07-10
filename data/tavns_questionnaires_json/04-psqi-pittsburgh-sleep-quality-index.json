@@ -1,0 +1,642 @@
+{
+  "schema_version": "1.0.0",
+  "id": "psqi-pittsburgh-sleep-quality-index",
+  "title": "PSQI – Pittsburgh Sleep Quality Index",
+  "description": "Studie taVNS | Vyplňte 1× týdně. Otázky se týkají vašich spánkových návyků ZA POSLEDNÍ TÝDEN.",
+  "language": "cs",
+  "source": {
+    "platform": "google_forms",
+    "form_id": "1CSd_jTTSYDlPtvZ5xn2kgR8xwVpqXdEKUHNaJ904qTw",
+    "edit_url": "https://docs.google.com/forms/d/1CSd_jTTSYDlPtvZ5xn2kgR8xwVpqXdEKUHNaJ904qTw/edit?usp=forms_home&ouid=117607941611883983758",
+    "view_url": "https://docs.google.com/forms/d/1CSd_jTTSYDlPtvZ5xn2kgR8xwVpqXdEKUHNaJ904qTw/viewform",
+    "embedded_url": "https://docs.google.com/forms/d/1CSd_jTTSYDlPtvZ5xn2kgR8xwVpqXdEKUHNaJ904qTw/viewform?embedded=true"
+  },
+  "fields": [
+    {
+      "id": "participant_id",
+      "label": "ID účastníka",
+      "type": "text",
+      "required": true,
+      "order": 1
+    },
+    {
+      "id": "completion_date",
+      "label": "Datum vyplnění",
+      "type": "date",
+      "required": true,
+      "order": 2
+    },
+    {
+      "id": "study_week",
+      "label": "Týden studie č.",
+      "type": "number",
+      "required": true,
+      "validation": {
+        "min": 1,
+        "integer": true
+      },
+      "order": 3
+    },
+    {
+      "id": "bed_time",
+      "label": "1. V kolik hodin obvykle chodíte spát?",
+      "type": "time",
+      "required": true,
+      "group": "Část A – Spánkové návyky",
+      "help_text": "Formát: HH:MM, např. 23:00",
+      "validation": {
+        "format": "HH:MM"
+      },
+      "order": 4
+    },
+    {
+      "id": "sleep_latency_category",
+      "label": "2. Kolik minut obvykle trvá, než usnete?",
+      "type": "single_choice",
+      "required": true,
+      "group": "Část A – Spánkové návyky",
+      "options": [
+        {
+          "label": "a) ≤15 minut",
+          "value": "a"
+        },
+        {
+          "label": "b) 16–30 minut",
+          "value": "b"
+        },
+        {
+          "label": "c) 31–60 minut",
+          "value": "c"
+        },
+        {
+          "label": "d) Více než 60 minut",
+          "value": "d"
+        }
+      ],
+      "order": 5
+    },
+    {
+      "id": "wake_time",
+      "label": "3. V kolik hodin obvykle vstáváte ráno?",
+      "type": "time",
+      "required": true,
+      "group": "Část A – Spánkové návyky",
+      "help_text": "Formát: HH:MM, např. 07:00",
+      "validation": {
+        "format": "HH:MM"
+      },
+      "order": 6
+    },
+    {
+      "id": "actual_sleep_duration_category",
+      "label": "4. Kolik hodin skutečně spíte za noc?",
+      "type": "single_choice",
+      "required": true,
+      "group": "Část A – Spánkové návyky",
+      "options": [
+        {
+          "label": "a) 7 a více hodin",
+          "value": "a"
+        },
+        {
+          "label": "b) 6–7 hodin",
+          "value": "b"
+        },
+        {
+          "label": "c) 5–6 hodin",
+          "value": "c"
+        },
+        {
+          "label": "d) Méně než 5 hodin",
+          "value": "d"
+        }
+      ],
+      "order": 7
+    },
+    {
+      "id": "cannot_sleep_30_min",
+      "label": "5. Nemůžete usnout do 30 minut",
+      "type": "single_choice",
+      "required": true,
+      "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+      "options": [
+        {
+          "label": "0 – Nikdy",
+          "value": 0,
+          "score": 0
+        },
+        {
+          "label": "1 – Méně než 1× týdně",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2 – 1–2× týdně",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3 – 3× a více týdně",
+          "value": 3,
+          "score": 3
+        }
+      ],
+      "order": 8
+    },
+    {
+      "id": "wake_middle_or_early",
+      "label": "6. Budíte se uprostřed noci nebo brzy ráno",
+      "type": "single_choice",
+      "required": true,
+      "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+      "options": [
+        {
+          "label": "0 – Nikdy",
+          "value": 0,
+          "score": 0
+        },
+        {
+          "label": "1 – Méně než 1× týdně",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2 – 1–2× týdně",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3 – 3× a více týdně",
+          "value": 3,
+          "score": 3
+        }
+      ],
+      "order": 9
+    },
+    {
+      "id": "need_bathroom",
+      "label": "7. Musíte vstávat na toaletu",
+      "type": "single_choice",
+      "required": true,
+      "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+      "options": [
+        {
+          "label": "0 – Nikdy",
+          "value": 0,
+          "score": 0
+        },
+        {
+          "label": "1 – Méně než 1× týdně",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2 – 1–2× týdně",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3 – 3× a více týdně",
+          "value": 3,
+          "score": 3
+        }
+      ],
+      "order": 10
+    },
+    {
+      "id": "breathing_discomfort",
+      "label": "8. Nemůžete dýchat pohodlně",
+      "type": "single_choice",
+      "required": true,
+      "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+      "options": [
+        {
+          "label": "0 – Nikdy",
+          "value": 0,
+          "score": 0
+        },
+        {
+          "label": "1 – Méně než 1× týdně",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2 – 1–2× týdně",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3 – 3× a více týdně",
+          "value": 3,
+          "score": 3
+        }
+      ],
+      "order": 11
+    },
+    {
+      "id": "cough_or_snore",
+      "label": "9. Kašlete nebo chrápete hlasitě",
+      "type": "single_choice",
+      "required": true,
+      "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+      "options": [
+        {
+          "label": "0 – Nikdy",
+          "value": 0,
+          "score": 0
+        },
+        {
+          "label": "1 – Méně než 1× týdně",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2 – 1–2× týdně",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3 – 3× a více týdně",
+          "value": 3,
+          "score": 3
+        }
+      ],
+      "order": 12
+    },
+    {
+      "id": "feel_cold",
+      "label": "10. Cítíte chlad",
+      "type": "single_choice",
+      "required": true,
+      "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+      "options": [
+        {
+          "label": "0 – Nikdy",
+          "value": 0,
+          "score": 0
+        },
+        {
+          "label": "1 – Méně než 1× týdně",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2 – 1–2× týdně",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3 – 3× a více týdně",
+          "value": 3,
+          "score": 3
+        }
+      ],
+      "order": 13
+    },
+    {
+      "id": "feel_hot",
+      "label": "11. Cítíte horko",
+      "type": "single_choice",
+      "required": true,
+      "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+      "options": [
+        {
+          "label": "0 – Nikdy",
+          "value": 0,
+          "score": 0
+        },
+        {
+          "label": "1 – Méně než 1× týdně",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2 – 1–2× týdně",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3 – 3× a více týdně",
+          "value": 3,
+          "score": 3
+        }
+      ],
+      "order": 14
+    },
+    {
+      "id": "bad_dreams",
+      "label": "12. Míváte nepříjemné sny",
+      "type": "single_choice",
+      "required": true,
+      "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+      "options": [
+        {
+          "label": "0 – Nikdy",
+          "value": 0,
+          "score": 0
+        },
+        {
+          "label": "1 – Méně než 1× týdně",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2 – 1–2× týdně",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3 – 3× a více týdně",
+          "value": 3,
+          "score": 3
+        }
+      ],
+      "order": 15
+    },
+    {
+      "id": "pain",
+      "label": "13. Pociťujete bolest",
+      "type": "single_choice",
+      "required": true,
+      "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+      "options": [
+        {
+          "label": "0 – Nikdy",
+          "value": 0,
+          "score": 0
+        },
+        {
+          "label": "1 – Méně než 1× týdně",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2 – 1–2× týdně",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3 – 3× a více týdně",
+          "value": 3,
+          "score": 3
+        }
+      ],
+      "order": 16
+    },
+    {
+      "id": "other_sleep_difficulty_reasons",
+      "label": "14. Jiné důvody obtíží se spánkem – uveďte jaké a jak často",
+      "type": "textarea",
+      "required": false,
+      "group": "Část B – Obtíže se spánkem (četnost za poslední týden)",
+      "order": 17
+    },
+    {
+      "id": "sleep_medication",
+      "label": "15. Užíváte léky na spaní (předpis nebo volně prodejné)?",
+      "type": "single_choice",
+      "required": true,
+      "group": "Část C – Léky a denní fungování",
+      "options": [
+        {
+          "label": "0 – Nikdy",
+          "value": 0,
+          "score": 0
+        },
+        {
+          "label": "1 – Méně než 1× týdně",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2 – 1–2× týdně",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3 – 3× a více týdně",
+          "value": 3,
+          "score": 3
+        }
+      ],
+      "order": 18
+    },
+    {
+      "id": "daytime_stay_awake_problems",
+      "label": "16. Máte problémy s udržením bdělosti během denních aktivit (řízení, jídlo, společenské situace)?",
+      "type": "single_choice",
+      "required": true,
+      "group": "Část C – Léky a denní fungování",
+      "options": [
+        {
+          "label": "0 – Nikdy",
+          "value": 0,
+          "score": 0
+        },
+        {
+          "label": "1 – Méně než 1× týdně",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2 – 1–2× týdně",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3 – 3× a více týdně",
+          "value": 3,
+          "score": 3
+        }
+      ],
+      "order": 19
+    },
+    {
+      "id": "daytime_activity_attention_difficulty",
+      "label": "17. Máte pocit, že je pro vás během dne těžké být aktivní a udržet si pozornost?",
+      "type": "single_choice",
+      "required": true,
+      "group": "Část C – Léky a denní fungování",
+      "options": [
+        {
+          "label": "0 – Nikdy",
+          "value": 0,
+          "score": 0
+        },
+        {
+          "label": "1 – Méně než 1× týdně",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2 – 1–2× týdně",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3 – 3× a více týdně",
+          "value": 3,
+          "score": 3
+        }
+      ],
+      "order": 20
+    },
+    {
+      "id": "subjective_sleep_quality",
+      "label": "18. Jak byste celkově hodnotili kvalitu svého spánku za poslední týden?",
+      "type": "single_choice",
+      "required": true,
+      "group": "Část D – Subjektivní hodnocení spánku",
+      "options": [
+        {
+          "label": "0 – Velmi dobrá",
+          "value": 0,
+          "score": 0
+        },
+        {
+          "label": "1 – Dobrá",
+          "value": 1,
+          "score": 1
+        },
+        {
+          "label": "2 – Špatná",
+          "value": 2,
+          "score": 2
+        },
+        {
+          "label": "3 – Velmi špatná",
+          "value": 3,
+          "score": 3
+        }
+      ],
+      "order": 21
+    },
+    {
+      "id": "partner_loud_snoring",
+      "label": "19a. Hlasité chrápání",
+      "type": "single_choice",
+      "required": false,
+      "group": "Část E – Pozorování partnera / spolunocležníka (není bodováno)",
+      "options": [
+        {
+          "label": "Nevyskytlo se",
+          "value": "not_observed"
+        },
+        {
+          "label": "Méně než 1× týdně",
+          "value": "less_than_weekly"
+        },
+        {
+          "label": "1–2× týdně",
+          "value": "one_to_two_weekly"
+        },
+        {
+          "label": "3× a více týdně",
+          "value": "three_or_more_weekly"
+        },
+        {
+          "label": "Nemohu posoudit / spím sám/sama",
+          "value": "cannot_assess"
+        }
+      ],
+      "order": 22
+    },
+    {
+      "id": "partner_breath_pauses",
+      "label": "19b. Zástavy dechu",
+      "type": "single_choice",
+      "required": false,
+      "group": "Část E – Pozorování partnera / spolunocležníka (není bodováno)",
+      "options": [
+        {
+          "label": "Nevyskytlo se",
+          "value": "not_observed"
+        },
+        {
+          "label": "Méně než 1× týdně",
+          "value": "less_than_weekly"
+        },
+        {
+          "label": "1–2× týdně",
+          "value": "one_to_two_weekly"
+        },
+        {
+          "label": "3× a více týdně",
+          "value": "three_or_more_weekly"
+        },
+        {
+          "label": "Nemohu posoudit / spím sám/sama",
+          "value": "cannot_assess"
+        }
+      ],
+      "order": 23
+    },
+    {
+      "id": "partner_seizures",
+      "label": "19c. Záchvaty",
+      "type": "single_choice",
+      "required": false,
+      "group": "Část E – Pozorování partnera / spolunocležníka (není bodováno)",
+      "options": [
+        {
+          "label": "Nevyskytlo se",
+          "value": "not_observed"
+        },
+        {
+          "label": "Méně než 1× týdně",
+          "value": "less_than_weekly"
+        },
+        {
+          "label": "1–2× týdně",
+          "value": "one_to_two_weekly"
+        },
+        {
+          "label": "3× a více týdně",
+          "value": "three_or_more_weekly"
+        },
+        {
+          "label": "Nemohu posoudit / spím sám/sama",
+          "value": "cannot_assess"
+        }
+      ],
+      "order": 24
+    },
+    {
+      "id": "partner_restless_sleep_movements",
+      "label": "19d. Neklidný pohyb ve spánku",
+      "type": "single_choice",
+      "required": false,
+      "group": "Část E – Pozorování partnera / spolunocležníka (není bodováno)",
+      "options": [
+        {
+          "label": "Nevyskytlo se",
+          "value": "not_observed"
+        },
+        {
+          "label": "Méně než 1× týdně",
+          "value": "less_than_weekly"
+        },
+        {
+          "label": "1–2× týdně",
+          "value": "one_to_two_weekly"
+        },
+        {
+          "label": "3× a více týdně",
+          "value": "three_or_more_weekly"
+        },
+        {
+          "label": "Nemohu posoudit / spím sám/sama",
+          "value": "cannot_assess"
+        }
+      ],
+      "order": 25
+    }
+  ],
+  "order": 4,
+  "generated_at": "2026-06-23",
+  "notes": [
+    "Struktura byla převedena z veřejného náhledu Google Forms (viewform).",
+    "Neobsahuje interní Google Forms entry.* identifikátory pro přímé odesílání odpovědí zpět do Google Forms.",
+    "Typy polí jsou normalizované pro použití ve webové aplikaci: text, textarea, number, date, time, single_choice, linear_scale."
+  ]
+}
