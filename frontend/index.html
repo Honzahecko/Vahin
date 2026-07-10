@@ -2492,7 +2492,7 @@ function app() { return {
         {notif_type:'post_shift',        hour:5,  minute:30, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
         {notif_type:'psd_morning',       hour:8,  minute:0,  enabled:false, days_mask:127, study_days_mask:(1<<21)-1, custom_msg:''},
         {notif_type:'pvt_post',          hour:5,  minute:30, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
-        {notif_type:'weekly',            hour:10, minute:0,  enabled:false, days_mask:127, study_days_mask:(1<<6)|(1<<13)|(1<<20), custom_msg:''},
+        {notif_type:'weekly',            hour:10, minute:0,  enabled:false, days_mask:127, study_days_mask:(1<<0)|(1<<6)|(1<<14)|(1<<20), custom_msg:''},
         // -- Stimulace (noční) --
         {notif_type:'stimulation_start', hour:18, minute:15, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
         {notif_type:'stimulation_p1',    hour:21, minute:0,  enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
@@ -2640,7 +2640,7 @@ function app() { return {
       if (sch[d] === 'V') maskVolno |= (1 << d);
     }
     const cortisolMask  = (1<<0)|(1<<6)|(1<<14)|(1<<20);
-    const weeklyMask    = (1<<6)|(1<<13)|(1<<20);
+    const weeklyMask    = (1<<0)|(1<<6)|(1<<14)|(1<<20); // dny 1,7,15,21 = stejně jako kortizol
     const allMask       = (1<<21)-1;
     // Stimulační protokol jen v týdnu 1 (dny 1–7) a týdnu 3 (dny 15–21), ne ve washout
     const weeks1and3    = ((1<<7)-1) | (((1<<7)-1) << 14);
