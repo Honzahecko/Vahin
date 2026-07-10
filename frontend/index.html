@@ -1305,7 +1305,7 @@
           <div class="card p-6 w-full max-w-xs text-center" style="border-radius:20px">
             <div class="text-3xl mb-3">⚡</div>
             <div class="font-bold text-lg text-gray-900 mb-1">Stimulace dokončena?</div>
-            <div class="text-sm text-gray-500 mb-5">Byla provedena dnešní udržovací tAVNS stimulace (15 min)?</div>
+            <div class="text-sm text-gray-500 mb-5">Byla provedena dnešní tAVNS stimulace (15 min)?</div>
             <div class="flex gap-3">
               <button @click="confirmStim(false)"
                 class="flex-1 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-colors">
@@ -1313,6 +1313,26 @@
               </button>
               <button @click="confirmStim(true)"
                 class="flex-1 py-2.5 rounded-xl bg-violet-600 text-white font-semibold text-sm hover:bg-violet-700 transition-colors">
+                Ano ✓
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ KORTIZOL CONFIRM MODAL ══ -->
+        <div x-show="cortizolConfirmVisible" x-cloak
+             style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);padding:20px">
+          <div class="card p-6 w-full max-w-xs text-center" style="border-radius:20px">
+            <div class="text-3xl mb-3">🧪</div>
+            <div class="font-bold text-lg text-gray-900 mb-1">Odběr kortizolu</div>
+            <div class="text-sm text-gray-500 mb-5">Byly dnes odebrány vzorky slin (kortizol)?</div>
+            <div class="flex gap-3">
+              <button @click="confirmCortizol(false)"
+                class="flex-1 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-colors">
+                Ne
+              </button>
+              <button @click="confirmCortizol(true)"
+                class="flex-1 py-2.5 rounded-xl bg-purple-600 text-white font-semibold text-sm hover:bg-purple-700 transition-colors">
                 Ano ✓
               </button>
             </div>
@@ -1444,7 +1464,7 @@
                 <div class="divide-y divide-gray-50">
                   <template x-for="task in dayTasks.filter(t=>t.group==='morning')" :key="task.id">
                     <button
-                      @click="!task.done && (task.action==='stim_confirm' ? openStimConfirm() : task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : null)"
+                      @click="!task.done && (task.action==='stim_confirm' ? openStimConfirm() : task.action==='cortizol_confirm' ? openCortizolConfirm() : task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : null)"
                       class="flex items-center gap-3 px-4 py-3 w-full text-left transition-colors"
                       :class="task.done ? 'bg-green-50 cursor-default' : 'hover:bg-gray-50 cursor-pointer'">
                       <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors"
@@ -1473,7 +1493,7 @@
                 <div class="divide-y divide-gray-50">
                   <template x-for="task in dayTasks.filter(t=>t.group==='pre_shift')" :key="task.id">
                     <button
-                      @click="!task.done && (task.action==='stim_confirm' ? openStimConfirm() : task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : null)"
+                      @click="!task.done && (task.action==='stim_confirm' ? openStimConfirm() : task.action==='cortizol_confirm' ? openCortizolConfirm() : task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : null)"
                       class="flex items-center gap-3 px-4 py-3 w-full text-left transition-colors"
                       :class="task.done ? 'bg-green-50 cursor-default' : 'hover:bg-gray-50 cursor-pointer'">
                       <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors"
@@ -1502,7 +1522,7 @@
                 <div class="divide-y divide-gray-50">
                   <template x-for="task in dayTasks.filter(t=>t.group==='post_shift')" :key="task.id">
                     <button
-                      @click="!task.done && (task.action==='stim_confirm' ? openStimConfirm() : task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : null)"
+                      @click="!task.done && (task.action==='stim_confirm' ? openStimConfirm() : task.action==='cortizol_confirm' ? openCortizolConfirm() : task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : null)"
                       class="flex items-center gap-3 px-4 py-3 w-full text-left transition-colors"
                       :class="task.done ? 'bg-green-50 cursor-default' : 'hover:bg-gray-50 cursor-pointer'">
                       <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors"
@@ -2321,6 +2341,7 @@ function app() { return {
   pushSupported: false, pushSubscribed: false, pushLoading: false,
   garminConnected: false, garminConnecting: false,
   stimConfirmVisible: false,
+  cortizolConfirmVisible: false,
   drawerSchedules:[], drawerSchedSaving:false, drawerSchedMsg:'',
   participantShiftSchedule: Array(21).fill('V'), shiftSchedSaving:false,
 
@@ -2653,6 +2674,18 @@ function app() { return {
   },
 
   openStimConfirm() { this.stimConfirmVisible = true; },
+  openCortizolConfirm() { this.cortizolConfirmVisible = true; },
+
+  async confirmCortizol(confirmed) {
+    this.cortizolConfirmVisible = false;
+    if (!confirmed) return;
+    await this.apiFetch('/api/questionnaires/', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({q_type:'cortizol_done', answers:{done:true}})
+    });
+    await this.loadMyResponses();
+  },
 
   async confirmStim(confirmed) {
     this.stimConfirmVisible = false;
@@ -2920,17 +2953,29 @@ function app() { return {
       bgClass:'bg-violet-100', tagClass:'bg-violet-100 text-violet-700', tag:'Stimulace',
       required:true, urgent:false,
     };
+    const STIM_NOCNI = {...STIM, id:'stim_nocni', when:'Stimulace během noční směny', group:'pre_shift'};
+    const CORTIZOL = {
+      id:'cortizol', title:'Odběr kortizolu', when:'Kortizolový den · 3 vzorky slin',
+      action:'cortizol_confirm', qtype:'cortizol_done', group:'morning',
+      icon:'<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>', stroke:'#7c3aed',
+      bgClass:'bg-purple-100', tagClass:'bg-purple-100 text-purple-700', tag:'Kortizol',
+      required:true, urgent:true,
+    };
     const PLANS = {
-      nocni: [PSD, KSSp, KSSpo, PVT],
+      nocni: [PSD, STIM_NOCNI, KSSp, KSSpo, PVT],
       denni: [PSD, STIM],
       volno: [PSD, STIM],
     };
 
-    // Nastav done pro každý úkol (kss a stim mohou být vyplněny vícekrát — bereme "alespoň 1x dnes")
+    // Nastav done pro každý úkol
     const plan = (PLANS[this.todayShiftType] || []).map(t => ({
       ...t,
       done: filledToday(t.qtype)
     }));
+    // Kortizol jen v kortizolové dny
+    if (this.cortisolData?.is_cortisol_day && this.currentUser?.phase !== 'preparation') {
+      plan.unshift({...CORTIZOL, done: filledToday('cortizol_done')});
+    }
     this.dayTasks = plan;
   },
 
@@ -3637,6 +3682,7 @@ function app() { return {
     mfi20:'MFI-20 – Únava',tavns_adverse:'Nežádoucí účinky',
     meq:'MEQ – Chronotyp',tavns_satisfaction:'Dotazník spokojenosti',
     stim_done:'tAVNS stimulace ✓',
+    cortizol_done:'Odběr kortizolu ✓',
   }[t]||t||'—';},
 
   qtypeColor(qt){return {

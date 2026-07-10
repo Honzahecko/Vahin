@@ -391,6 +391,14 @@ QUESTIONNAIRE_DEFINITIONS = {
         "color": "violet",
         "questions": []
     },
+    "cortizol_done": {
+        "title": "Odběr kortizolu proveden",
+        "description": "Potvrzení odběru kortizolu (slin) v kortizolový den studie.",
+        "frequency": "daily",
+        "icon": "droplet",
+        "color": "purple",
+        "questions": []
+    },
 }
 
 class ResponseCreate(BaseModel):
