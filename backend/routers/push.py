@@ -152,7 +152,11 @@ def sync_phase_for_user(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(404, "Účastník nenalezen")
 
     if not user.study_start_date:
-        raise HTTPException(400, "Účastník nemá nastavené datum zahájení studie")
+        # Bez data zahájení – vypni vše, zůstaň v předrandomizaci
+        for s in db.query(NotificationSchedule).filter(NotificationSchedule.user_id == user_id).all():
+            s.enabled = False
+        db.commit()
+        return {"ok": True, "phase": user.phase or "prerandomizace", "study_day": None}
 
     study_day = (now.date() - user.study_start_date.date()).days + 1
 
