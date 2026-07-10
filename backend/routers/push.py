@@ -195,8 +195,56 @@ STIM_TYPES = {
     'stimulation_end', 'stimulation_volno', 'stimulation',
 }
 
+def _build_notif_schedules(user_id: int, shift_schedule: str) -> list:
+    """Sestaví seznam NotificationSchedule záznamů z rozvrhu N/D/V."""
+    sch = (shift_schedule or 'V' * 21).ljust(21, 'V')
+    mask_n = mask_d = mask_v = 0
+    for d in range(21):
+        c = sch[d]
+        if c == 'N':   mask_n |= (1 << d)
+        elif c == 'D': mask_d |= (1 << d)
+        else:          mask_v |= (1 << d)
+
+    cortisol_mask = (1<<0)|(1<<6)|(1<<14)|(1<<20)
+    weekly_mask   = (1<<0)|(1<<6)|(1<<14)|(1<<20)
+    all_mask      = (1<<21) - 1
+    weeks1and3    = ((1<<7)-1) | (((1<<7)-1) << 14)
+    stim_nocni    = mask_n & weeks1and3
+    stim_volno    = (mask_v | mask_d) & weeks1and3
+
+    # (notif_type, study_days_mask, hour, minute)
+    entries = [
+        ('pre_shift',         mask_n,       18, 15),
+        ('stimulation_start', stim_nocni,   18, 15),
+        ('stimulation_p1',    stim_nocni,   21,  0),
+        ('stimulation_p2',    stim_nocni,    0,  0),
+        ('stimulation_p3',    stim_nocni,    3,  0),
+        ('stimulation_end',   stim_nocni,    5, 30),
+        ('post_shift',        mask_n,        5, 30),
+        ('pvt_post',          mask_n,        5, 30),
+        ('stimulation_volno', stim_volno,    8,  0),
+        ('psd_morning',       all_mask,      8,  0),
+        ('cortisol_am',       cortisol_mask, 7, 30),
+        ('cortisol_pm',       cortisol_mask,14,  0),
+        ('cortisol_eve',      cortisol_mask,21,  0),
+        ('weekly',            weekly_mask,  10,  0),
+        ('reminder',          0,             9,  0),
+    ]
+    return [
+        NotificationSchedule(
+            user_id=user_id,
+            notif_type=t,
+            hour=h,
+            minute=m,
+            days_mask=127,
+            study_days_mask=mask,
+            enabled=mask > 0,
+        )
+        for t, mask, h, m in entries
+    ]
+
 def sync_phase_notifications(db_session_factory):
-    """Každý den v 00:05 zkontroluje fázi každého účastníka a podle toho zapne/vypne stimulační notifikace."""
+    """Každý den v 00:05: přepíná fáze a aktualizuje notifikace podle aktuálního study_day."""
     from sqlalchemy.orm import Session as DBSession
     now = datetime.now(_PRAGUE) if _PRAGUE else datetime.now()
     db: DBSession = db_session_factory()
@@ -204,15 +252,34 @@ def sync_phase_notifications(db_session_factory):
         users = db.query(User).filter(User.study_start_date != None).all()
         for user in users:
             study_day = (now.date() - user.study_start_date.date()).days + 1
-            if study_day < 1 or study_day > 21:
-                continue
-            in_washout = 8 <= study_day <= 14
-            scheds = db.query(NotificationSchedule).filter(
-                NotificationSchedule.user_id == user.id,
-                NotificationSchedule.notif_type.in_(STIM_TYPES),
-            ).all()
-            for s in scheds:
-                s.enabled = not in_washout
+
+            # Den 1: přepni fázi a nastavení notifikací z rozvrhu
+            if study_day == 1 and user.phase == 'prerandomizace':
+                user.phase = 'phase1'
+                db.query(NotificationSchedule).filter(NotificationSchedule.user_id == user.id).delete()
+                for s in _build_notif_schedules(user.id, user.shift_schedule):
+                    db.add(s)
+
+            # Den 8: washout – vypni stimulace, přepni fázi
+            elif study_day == 8 and user.phase == 'phase1':
+                user.phase = 'washout'
+                scheds = db.query(NotificationSchedule).filter(
+                    NotificationSchedule.user_id == user.id,
+                    NotificationSchedule.notif_type.in_(STIM_TYPES),
+                ).all()
+                for s in scheds:
+                    s.enabled = False
+
+            # Den 15: fáze 3 – zapni stimulace zpět
+            elif study_day == 15 and user.phase == 'washout':
+                user.phase = 'phase2'
+                scheds = db.query(NotificationSchedule).filter(
+                    NotificationSchedule.user_id == user.id,
+                    NotificationSchedule.notif_type.in_(STIM_TYPES),
+                ).all()
+                for s in scheds:
+                    s.enabled = True
+
         db.commit()
     finally:
         db.close()
