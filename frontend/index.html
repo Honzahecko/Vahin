@@ -309,6 +309,46 @@
         </template>
       </div>
 
+      <!-- ═══ Garmin data účastníka ═══ -->
+      <div class="border-t border-gray-100 pt-4 mb-4">
+        <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">⌚ Garmin data</div>
+        <template x-if="selectedPGarmin.length===0">
+          <div class="text-sm text-gray-400 text-center py-2">Žádná data z hodinek</div>
+        </template>
+        <template x-if="selectedPGarmin.length>0">
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+              <thead>
+                <tr class="text-left text-gray-400 border-b border-gray-100">
+                  <th class="pb-1 pr-2">Datum</th>
+                  <th class="pb-1 pr-2">HRV</th>
+                  <th class="pb-1 pr-2">Spánek h</th>
+                  <th class="pb-1 pr-2">Sp.sk.</th>
+                  <th class="pb-1 pr-2">Stres</th>
+                  <th class="pb-1 pr-2">Kroky</th>
+                  <th class="pb-1 pr-2">TF kl.</th>
+                  <th class="pb-1">Bat.</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="g in selectedPGarmin.slice(0,30)" :key="g.id">
+                  <tr class="border-b border-gray-50 hover:bg-gray-50">
+                    <td class="py-0.5 pr-2 font-mono" x-text="g.date"></td>
+                    <td class="pr-2 font-semibold" :class="g.hrv_rmssd&&g.hrv_rmssd<30?'text-red-500':g.hrv_rmssd&&g.hrv_rmssd>50?'text-green-600':''" x-text="g.hrv_rmssd??'—'"></td>
+                    <td class="pr-2" x-text="g.sleep_hours??'—'"></td>
+                    <td class="pr-2"><span x-show="g.sleep_score" :class="g.sleep_score>=80?'text-green-600':g.sleep_score>=60?'text-yellow-600':'text-red-500'" class="font-semibold" x-text="g.sleep_score"></span><span x-show="!g.sleep_score" class="text-gray-300">—</span></td>
+                    <td class="pr-2" x-text="g.stress_avg??'—'"></td>
+                    <td class="pr-2" x-text="g.steps?g.steps.toLocaleString('cs-CZ'):'—'"></td>
+                    <td class="pr-2" x-text="g.resting_hr??'—'"></td>
+                    <td x-text="(g.body_battery_low??'—')+'/'+(g.body_battery_high??'—')"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </template>
+      </div>
+
       <!-- ═══ Rozvrh směn (N/D/V pro každý den studie) ═══ -->
       <div class="border-t border-gray-100 pt-4 mb-4">
         <div class="flex items-center justify-between mb-2">
@@ -2447,7 +2487,7 @@ function app() { return {
   participants:[], stats:{total:0,active:0,consent:0,groupA:0,groupB:0},
   showAddP:false, newP:{full_name:'',email:'',password:'',profession:'',group:''},
   addMsg:'', addOk:false, actionMsg:'', actionOk:false,
-  detailPanel:false, selectedP:null, selectedPShifts:[], selectedPResponses:[], selectedPCortisol:[],
+  detailPanel:false, selectedP:null, selectedPShifts:[], selectedPResponses:[], selectedPCortisol:[], selectedPGarmin:[],
   drawerMsg:'', drawerOk:false,
   liveResponses:[], liveShifts:[], liveGarmin:[], dataTab:'live', expandedRow:null,
   editModal:false, editTarget:null, editMsg:'', editOk:false,
@@ -3792,18 +3832,20 @@ function app() { return {
 
   async openParticipant(p){
     this.selectedP=p; this.detailPanel=true; this.drawerMsg='';
-    this.selectedPShifts=[]; this.selectedPResponses=[]; this.selectedPCortisol=[]; this.drawerSchedules=[];
+    this.selectedPShifts=[]; this.selectedPResponses=[]; this.selectedPCortisol=[]; this.selectedPGarmin=[]; this.drawerSchedules=[];
     this.participantShiftSchedule = Array(21).fill('V');
-    const [shifts, responses, sched, cortisol] = await Promise.all([
+    const [shifts, responses, sched, cortisol, garmin] = await Promise.all([
       this.apiFetch('/api/shifts/user/'+p.id),
       this.apiFetch('/api/questionnaires/user/'+p.id),
       this.apiFetch('/api/push/shift-schedule/'+p.id),
       this.apiFetch('/api/cortisol/participant/'+p.id),
+      this.apiFetch('/api/garmin/user/'+p.id),
     ]);
     if(shifts) this.selectedPShifts=shifts;
     if(responses) this.selectedPResponses=responses;
     if(sched) this.participantShiftSchedule = (sched.schedule || 'V'.repeat(21)).split('');
     if(cortisol) this.selectedPCortisol=cortisol;
+    if(garmin) this.selectedPGarmin=garmin;
     await this.loadDrawerSchedules(p.id);
   },
 
