@@ -138,10 +138,59 @@ def save_shift_schedule(user_id: int, data: ShiftScheduleIn, db: Session = Depen
 
 @router.post("/sync-phase", dependencies=[Depends(require_researcher)])
 def trigger_phase_sync():
-    """Ruční spuštění fázové synchronizace notifikací (normálně běží v 00:05)."""
+    """Noční automatická synchronizace všech účastníků."""
     from database import SessionLocal
     sync_phase_notifications(SessionLocal)
     return {"ok": True, "msg": "Fázová synchronizace proběhla."}
+
+@router.post("/sync-phase/{user_id}", dependencies=[Depends(require_researcher)])
+def sync_phase_for_user(user_id: int, db: Session = Depends(get_db)):
+    """Okamžitý sync pro konkrétního účastníka – přepočítá fázi a nastaví notifikace z rozvrhu."""
+    now = datetime.now(_PRAGUE) if _PRAGUE else datetime.utcnow()
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "Účastník nenalezen")
+
+    if not user.study_start_date:
+        raise HTTPException(400, "Účastník nemá nastavené datum zahájení studie")
+
+    study_day = (now.date() - user.study_start_date.date()).days + 1
+
+    if study_day < 1:
+        # Studie ještě nezačala – vypni všechny notifikace
+        for s in db.query(NotificationSchedule).filter(NotificationSchedule.user_id == user_id).all():
+            s.enabled = False
+        # Fáze zůstává prerandomizace
+        if user.phase not in (None, 'prerandomizace'):
+            user.phase = 'prerandomizace'
+    else:
+        # Studie běží – přebuduj notifikace z rozvrhu
+        capped_day = min(study_day, 21)
+        if capped_day <= 7:
+            new_phase = 'phase1'
+        elif capped_day <= 14:
+            new_phase = 'washout'
+        else:
+            new_phase = 'phase2'
+
+        user.phase = new_phase
+
+        # Smaž staré a vybuduj nové z rozvrhu
+        for s in db.query(NotificationSchedule).filter(NotificationSchedule.user_id == user_id).all():
+            db.delete(s)
+        db.flush()
+        for s in _build_notif_schedules(user_id, user.shift_schedule):
+            db.add(s)
+        db.flush()
+
+        # Pokud washout – vypni stimulace
+        if new_phase == 'washout':
+            for s in db.query(NotificationSchedule).filter(NotificationSchedule.user_id == user_id).all():
+                if s.notif_type in STIM_TYPES:
+                    s.enabled = False
+
+    db.commit()
+    return {"ok": True, "phase": user.phase, "study_day": study_day}
 
 @router.post("/test", dependencies=[Depends(require_researcher)])
 def send_test_push(data: TestPushIn, db: Session = Depends(get_db)):

@@ -2670,7 +2670,7 @@ function app() { return {
   },
 
   async syncPhaseNotifs() {
-    const r = await this.apiFetch('/api/push/sync-phase', {method:'POST'});
+    const r = await this.apiFetch('/api/push/sync-phase/'+this.selectedP.id, {method:'POST'});
     if (r?.ok) {
       // Načti aktuální stav účastníka (fáze se mohla změnit)
       const participants = await this.apiFetch('/api/participants');
