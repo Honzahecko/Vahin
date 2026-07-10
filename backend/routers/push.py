@@ -136,6 +136,13 @@ def save_shift_schedule(user_id: int, data: ShiftScheduleIn, db: Session = Depen
     db.commit()
     return {"ok": True, "schedule": schedule}
 
+@router.post("/sync-phase", dependencies=[Depends(require_researcher)])
+def trigger_phase_sync():
+    """Ruční spuštění fázové synchronizace notifikací (normálně běží v 00:05)."""
+    from database import SessionLocal
+    sync_phase_notifications(SessionLocal)
+    return {"ok": True, "msg": "Fázová synchronizace proběhla."}
+
 @router.post("/test", dependencies=[Depends(require_researcher)])
 def send_test_push(data: TestPushIn, db: Session = Depends(get_db)):
     subs = db.query(PushSubscription).filter(PushSubscription.user_id == data.user_id).all()
