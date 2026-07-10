@@ -105,6 +105,19 @@ def set_schedules(user_id: int, schedules: List[ScheduleIn], db: Session = Depen
     db.commit()
     return {"ok": True, "count": len(schedules)}
 
+@router.get("/shift-schedule/me")
+def get_my_shift_schedule(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Return current user's 21-day schedule and today's computed shift type."""
+    schedule = current_user.shift_schedule or 'V' * 21
+    schedule_set = any(c != 'V' for c in schedule)
+    today_type = None
+    if current_user.study_start_date:
+        study_day = (datetime.utcnow().date() - current_user.study_start_date.date()).days + 1
+        if 1 <= study_day <= 21:
+            char = schedule[study_day - 1] if (study_day - 1) < len(schedule) else 'V'
+            today_type = {'N': 'nocni', 'D': 'denni', 'V': 'volno'}.get(char, 'volno')
+    return {"schedule": schedule, "today_type": today_type, "schedule_set": schedule_set}
+
 @router.get("/shift-schedule/{user_id}", dependencies=[Depends(require_researcher)])
 def get_shift_schedule(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
