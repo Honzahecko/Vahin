@@ -1243,6 +1243,26 @@
       <!-- ━━━ PARTICIPANT HOME ━━━ -->
       <div x-show="!isResearcher() && activeTab==='home'">
 
+        <!-- ══ STIM CONFIRM MODAL ══ -->
+        <div x-show="stimConfirmVisible" x-cloak
+             style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);padding:20px">
+          <div class="card p-6 w-full max-w-xs text-center" style="border-radius:20px">
+            <div class="text-3xl mb-3">⚡</div>
+            <div class="font-bold text-lg text-gray-900 mb-1">Stimulace dokončena?</div>
+            <div class="text-sm text-gray-500 mb-5">Byla provedena dnešní udržovací tAVNS stimulace (15 min)?</div>
+            <div class="flex gap-3">
+              <button @click="confirmStim(false)"
+                class="flex-1 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-colors">
+                Ne
+              </button>
+              <button @click="confirmStim(true)"
+                class="flex-1 py-2.5 rounded-xl bg-violet-600 text-white font-semibold text-sm hover:bg-violet-700 transition-colors">
+                Ano ✓
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- ══ GREETING ══ -->
         <div class="card p-4 mb-4 flex flex-col md:flex-row md:items-center gap-3">
           <div class="flex-1">
@@ -1368,7 +1388,7 @@
                 <div class="divide-y divide-gray-50">
                   <template x-for="task in dayTasks.filter(t=>t.group==='morning')" :key="task.id">
                     <button
-                      @click="!task.done && (task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : null)"
+                      @click="!task.done && (task.action==='stim_confirm' ? openStimConfirm() : task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : null)"
                       class="flex items-center gap-3 px-4 py-3 w-full text-left transition-colors"
                       :class="task.done ? 'bg-green-50 cursor-default' : 'hover:bg-gray-50 cursor-pointer'">
                       <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors"
@@ -1397,7 +1417,7 @@
                 <div class="divide-y divide-gray-50">
                   <template x-for="task in dayTasks.filter(t=>t.group==='pre_shift')" :key="task.id">
                     <button
-                      @click="!task.done && (task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : null)"
+                      @click="!task.done && (task.action==='stim_confirm' ? openStimConfirm() : task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : null)"
                       class="flex items-center gap-3 px-4 py-3 w-full text-left transition-colors"
                       :class="task.done ? 'bg-green-50 cursor-default' : 'hover:bg-gray-50 cursor-pointer'">
                       <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors"
@@ -1426,7 +1446,7 @@
                 <div class="divide-y divide-gray-50">
                   <template x-for="task in dayTasks.filter(t=>t.group==='post_shift')" :key="task.id">
                     <button
-                      @click="!task.done && (task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : null)"
+                      @click="!task.done && (task.action==='stim_confirm' ? openStimConfirm() : task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : null)"
                       class="flex items-center gap-3 px-4 py-3 w-full text-left transition-colors"
                       :class="task.done ? 'bg-green-50 cursor-default' : 'hover:bg-gray-50 cursor-pointer'">
                       <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors"
@@ -2244,6 +2264,7 @@ function app() { return {
   kanbanPhase:'preparation', pmAlerts:[],
   pushSupported: false, pushSubscribed: false, pushLoading: false,
   garminConnected: false, garminConnecting: false,
+  stimConfirmVisible: false,
   drawerSchedules:[], drawerSchedSaving:false, drawerSchedMsg:'',
   participantShiftSchedule: Array(21).fill('V'), shiftSchedSaving:false,
 
@@ -2575,6 +2596,19 @@ function app() { return {
     this.garminConnected = false;
   },
 
+  openStimConfirm() { this.stimConfirmVisible = true; },
+
+  async confirmStim(confirmed) {
+    this.stimConfirmVisible = false;
+    if (!confirmed) return;
+    await this.apiFetch('/api/questionnaires/', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({q_type:'stim_done', answers:{done:true}})
+    });
+    await this.loadMyResponses();
+  },
+
   async checkGarminCallback() {
     const params = new URLSearchParams(window.location.search);
     const code = params.get('code');
@@ -2825,7 +2859,7 @@ function app() { return {
 
     const STIM = {
       id:'stim_volno', title:'tAVNS stimulace', when:'Udržovací stimulace · 15 minut',
-      action:'questionnaire', qtype:'tavns_diary', group:'morning',
+      action:'stim_confirm', qtype:'stim_done', group:'morning',
       icon:'<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>', stroke:'#7c3aed',
       bgClass:'bg-violet-100', tagClass:'bg-violet-100 text-violet-700', tag:'Stimulace',
       required:true, urgent:false,

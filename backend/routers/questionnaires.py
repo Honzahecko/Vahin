@@ -383,6 +383,14 @@ QUESTIONNAIRE_DEFINITIONS = {
             {"id": "trials",      "type": "text",   "label": "Surová data (JSON pole ms)", "optional": True},
         ]
     },
+    "stim_done": {
+        "title": "tAVNS stimulace provedena",
+        "description": "Potvrzení provedené udržovací stimulace.",
+        "frequency": "daily",
+        "icon": "zap",
+        "color": "violet",
+        "questions": []
+    },
 }
 
 class ResponseCreate(BaseModel):
