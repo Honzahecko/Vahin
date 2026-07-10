@@ -24,7 +24,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from database import get_db, User, UserRole, GarminData, GarminDataSource
-from auth import get_current_user
+from auth import get_current_user, require_researcher
 
 router = APIRouter(prefix="/api/garmin", tags=["garmin-connect"])
 
@@ -177,10 +177,65 @@ def garmin_disconnect(
     db.commit()
     return {"ok": True}
 
+@router.get("/admin/status/{user_id}", dependencies=[Depends(require_researcher)])
+def garmin_admin_status(user_id: int, db: Session = Depends(get_db)):
+    """Admin: diagnostika Garmin připojení konkrétního účastníka."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "Účastník nenalezen")
+
+    token = getattr(user, "garmin_access_token", None)
+    token_preview = (token[:8] + "…") if token else None
+
+    records = (
+        db.query(GarminData)
+        .filter(GarminData.user_id == user_id)
+        .order_by(GarminData.date.desc())
+        .limit(5)
+        .all()
+    )
+    api_records = [r for r in records if r.source == GarminDataSource.api]
+    total_count = db.query(GarminData).filter(GarminData.user_id == user_id).count()
+
+    return {
+        "user_id": user_id,
+        "participant_code": user.participant_code,
+        "garmin_connected": bool(token),
+        "garmin_access_token_preview": token_preview,
+        "garmin_user_id": getattr(user, "garmin_user_id", None),
+        "garmin_refresh_token_set": bool(getattr(user, "garmin_token_secret", None)),
+        "total_garmin_records": total_count,
+        "recent_records": [
+            {"date": r.date.strftime("%Y-%m-%d"), "source": r.source,
+             "hrv": r.hrv_rmssd, "sleep_score": r.sleep_score, "steps": r.steps}
+            for r in records
+        ],
+        "api_records_count": len(api_records),
+    }
+
+
+@router.post("/admin/relink/{user_id}", dependencies=[Depends(require_researcher)])
+def garmin_admin_relink(user_id: int, db: Session = Depends(get_db)):
+    """Admin: smaž Garmin token účastníka, aby mohl provést nové párování."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "Účastník nenalezen")
+    user.garmin_access_token = None
+    user.garmin_token_secret = None
+    db.commit()
+    return {"ok": True, "message": "Garmin token smazán – účastník musí provést nové párování"}
+
+
 # ── Webhook helpers ──────────────────────────────────────────────────────────
 
 def _find_user_by_token(token: str, db: Session) -> Optional[User]:
-    return db.query(User).filter(User.garmin_access_token == token).first()
+    user = db.query(User).filter(User.garmin_access_token == token).first()
+    if user:
+        return user
+    # Fallback: Garmin sometimes refreshes tokens; if userAccessToken changed,
+    # we can't match by token anymore. Log for debugging but can't recover here.
+    # garmin_user_id would need to be in the webhook payload for fallback.
+    return None
 
 
 def _upsert_garmin(user_id: int, date_val: datetime, updates: dict, db: Session):
@@ -239,7 +294,9 @@ async def webhook_dailies(request: Request, db: Session = Depends(get_db)):
             continue
         user = _find_user_by_token(token, db)
         if not user:
+            print(f"[Garmin webhook/dailies] UNKNOWN token {token[:8]}… – žádný účastník nenalezen")
             continue
+        print(f"[Garmin webhook/dailies] Data pro {user.participant_code} ({item.get('calendarDate')})")
         _store_garmin_user_id(user, item, db)
 
         date_val = _parse_date(item.get("calendarDate", ""))
@@ -278,7 +335,9 @@ async def webhook_sleep(request: Request, db: Session = Depends(get_db)):
             continue
         user = _find_user_by_token(token, db)
         if not user:
+            print(f"[Garmin webhook/sleep] UNKNOWN token {token[:8]}… – žádný účastník nenalezen")
             continue
+        print(f"[Garmin webhook/sleep] Data pro {user.participant_code} ({item.get('calendarDate')})")
         _store_garmin_user_id(user, item, db)
 
         date_val = _parse_date(item.get("calendarDate", ""))
@@ -320,7 +379,9 @@ async def webhook_hrv(request: Request, db: Session = Depends(get_db)):
             continue
         user = _find_user_by_token(token, db)
         if not user:
+            print(f"[Garmin webhook/hrv] UNKNOWN token {token[:8]}… – žádný účastník nenalezen")
             continue
+        print(f"[Garmin webhook/hrv] Data pro {user.participant_code} ({item.get('calendarDate')})")
         _store_garmin_user_id(user, item, db)
 
         date_val = _parse_date(item.get("calendarDate", ""))

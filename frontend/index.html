@@ -99,13 +99,35 @@
           <div class="font-semibold text-sm" :class="selectedP.is_active?'text-green-600':'text-red-500'" x-text="selectedP.is_active?'Aktivní':'Neaktivní'"></div>
         </div>
         <div class="bg-gray-50 rounded-lg p-3 col-span-2">
-          <div class="text-xs text-gray-400 mb-0.5">Garmin Connect</div>
+          <div class="flex items-center justify-between mb-0.5">
+            <div class="text-xs text-gray-400">Garmin Connect</div>
+            <button @click="checkGarminAdminStatus(selectedP.id)" class="text-xs text-indigo-500 hover:text-indigo-700 underline">Diagnostika</button>
+          </div>
           <div x-show="selectedP.garmin_user_id" class="flex items-center gap-1.5 text-green-700 font-semibold text-xs">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
             <span>Propojeno</span>
             <span class="text-gray-400 font-normal" x-text="'· ' + selectedP.garmin_user_id"></span>
           </div>
           <div x-show="!selectedP.garmin_user_id" class="text-xs text-gray-400">Nepropojeno</div>
+          <!-- Garmin diagnostika -->
+          <template x-if="garminDiag && garminDiag.user_id === selectedP.id">
+            <div class="mt-2 text-xs bg-white border border-gray-200 rounded-lg p-2 space-y-0.5">
+              <div class="flex justify-between"><span class="text-gray-400">Token uložen:</span> <span :class="garminDiag.garmin_connected?'text-green-600':'text-red-500'" x-text="garminDiag.garmin_connected ? 'Ano ('+garminDiag.garmin_access_token_preview+')' : 'NE'"></span></div>
+              <div class="flex justify-between"><span class="text-gray-400">Garmin User ID:</span> <span class="font-mono" x-text="garminDiag.garmin_user_id || '–'"></span></div>
+              <div class="flex justify-between"><span class="text-gray-400">Refresh token:</span> <span x-text="garminDiag.garmin_refresh_token_set ? 'Ano' : 'NE'"></span></div>
+              <div class="flex justify-between"><span class="text-gray-400">Celkem záznamů:</span> <span x-text="garminDiag.total_garmin_records"></span></div>
+              <div class="flex justify-between"><span class="text-gray-400">API záznamy:</span> <span x-text="garminDiag.api_records_count"></span></div>
+              <template x-if="garminDiag.recent_records.length">
+                <div class="mt-1 pt-1 border-t border-gray-100">
+                  <div class="text-gray-400 mb-0.5">Poslední záznamy:</div>
+                  <template x-for="rec in garminDiag.recent_records" :key="rec.date">
+                    <div class="flex gap-2 text-gray-600"><span x-text="rec.date"></span><span class="text-gray-400" x-text="rec.source"></span><span x-text="rec.hrv?'HRV '+rec.hrv:''"></span><span x-text="rec.steps?'kroky '+rec.steps:''"></span></div>
+                  </template>
+                </div>
+              </template>
+              <button @click="garminAdminRelink(selectedP.id)" class="mt-1 text-xs text-red-500 hover:text-red-700 underline">Smazat token (nové párování)</button>
+            </div>
+          </template>
         </div>
         <!-- Protokol fáze (crossover: A = tAVNS→SHAM, B = SHAM→tAVNS) -->
         <template x-if="selectedP.group">
@@ -2384,6 +2406,7 @@ function app() { return {
   loginForm: {email:'',password:''}, loginError: '',
   myShifts: [], myResponses: [], garminMsg:'', garminOk:false,
   adminGarminUserId: '', adminGarminMsg: '', adminGarminOk: false,
+  garminDiag: null,
   guideTasks: [], allQDefs: [], rawDefs: {},
   todayShiftType: null,
   stimConfirmQtype: 'stim_done',
@@ -2871,6 +2894,22 @@ function app() { return {
     if (!this.token || this.isResearcher()) return;
     const r = await this.apiFetch('/api/garmin/status');
     if (r) this.garminConnected = r.connected;
+  },
+
+  async checkGarminAdminStatus(userId) {
+    const r = await this.apiFetch(`/api/garmin/admin/status/${userId}`);
+    if (r) this.garminDiag = r;
+    else alert('Chyba při načítání Garmin diagnostiky');
+  },
+
+  async garminAdminRelink(userId) {
+    if (!confirm('Opravdu smazat Garmin token? Účastník bude muset provést nové párování.')) return;
+    const r = await this.apiFetch(`/api/garmin/admin/relink/${userId}`, {method:'POST'});
+    if (r?.ok) {
+      this.garminDiag = null;
+      alert('Token smazán. Účastník může provést nové párování.');
+      await this.loadParticipants();
+    }
   },
 
   // ── PVT game ──────────────────────────────────────────────────────────────
