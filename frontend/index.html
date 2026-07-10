@@ -51,7 +51,7 @@
     /* Scrollbar */
     ::-webkit-scrollbar{width:6px} ::-webkit-scrollbar-track{background:#f1f5f9} ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
     /* Detail drawer */
-    .drawer{position:fixed;top:0;right:0;height:100vh;width:480px;max-width:100vw;background:white;box-shadow:-4px 0 24px rgba(0,0,0,.12);z-index:100;transform:translateX(100%);transition:transform .25s ease;overflow-y:auto}
+    .drawer{position:fixed;top:0;right:0;height:100vh;width:min(740px,100vw);max-width:100vw;background:white;box-shadow:-4px 0 32px rgba(0,0,0,.14);z-index:100;transform:translateX(100%);transition:transform .25s ease;overflow-y:auto}
     .drawer.open{transform:translateX(0)}
     .drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:99;opacity:0;pointer-events:none;transition:opacity .25s}
     .drawer-overlay.open{opacity:1;pointer-events:auto}
@@ -161,23 +161,52 @@
              class="mt-2 text-xs text-green-600 font-semibold">✓ Fáze odpovídá harmonogramu</div>
       </div>
 
-      <!-- Recent responses -->
-      <div class="mb-4">
-        <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Poslední dotazníky</div>
+      <!-- Recent responses — 7-day activity chart + list -->
+      <div class="mb-2">
+        <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Aktivita – posledních 7 dní</div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;align-items:end">
+          <template x-for="day in drawerDayGrid()" :key="day.date">
+            <div class="flex flex-col items-center gap-0.5">
+              <div class="flex items-end justify-center w-full" style="height:32px">
+                <div :style="`height:${day.count?Math.min(32,day.count*9)+'px':'2px'};background:${day.isToday?'#7c3aed':day.count?'#4f46e5':'#e5e7eb'};border-radius:3px 3px 0 0;width:78%;transition:height .2s`"></div>
+              </div>
+              <div style="font-size:10px;font-weight:700;line-height:1" :class="day.isToday?'text-violet-600':day.count?'text-indigo-600':'text-gray-300'" x-text="day.count"></div>
+              <div :class="day.isToday?'text-violet-500 font-semibold':'text-gray-400'" style="font-size:9px;line-height:1.2;text-align:center" x-text="day.label"></div>
+              <div class="flex flex-wrap justify-center gap-0.5" style="min-height:6px;margin-top:1px">
+                <template x-for="qt in day.qtypes" :key="qt">
+                  <div class="rounded-full" :class="qtypeColor(qt)" style="width:5px;height:5px"></div>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+        <div class="flex flex-wrap gap-x-3 gap-y-0.5 mt-2.5 pb-3 border-b border-gray-100" style="font-size:9px">
+          <span class="flex items-center gap-1 text-gray-400"><span class="rounded-full bg-blue-400 inline-block" style="width:6px;height:6px"></span>Spánkový deník</span>
+          <span class="flex items-center gap-1 text-gray-400"><span class="rounded-full bg-indigo-400 inline-block" style="width:6px;height:6px"></span>KSS</span>
+          <span class="flex items-center gap-1 text-gray-400"><span class="rounded-full bg-cyan-400 inline-block" style="width:6px;height:6px"></span>PVT</span>
+          <span class="flex items-center gap-1 text-gray-400"><span class="rounded-full bg-violet-500 inline-block" style="width:6px;height:6px"></span>Stimulace</span>
+          <span class="flex items-center gap-1 text-gray-400"><span class="rounded-full bg-orange-400 inline-block" style="width:6px;height:6px"></span>MFI/PSQI</span>
+        </div>
+      </div>
+
+      <div class="mb-5">
+        <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2 mt-3">Poslední záznamy</div>
         <template x-if="selectedPResponses.length===0">
           <div class="text-sm text-gray-400 text-center py-3">Zatím žádné záznamy</div>
         </template>
-        <template x-for="r in selectedPResponses.slice(0,6)" :key="r.id">
-          <div class="flex justify-between items-start py-2 border-b border-gray-50 last:border-0">
-            <div>
-              <div class="text-sm font-semibold" x-text="qTypeLabel(r.q_type)"></div>
+        <template x-for="r in selectedPResponses.slice(0,8)" :key="r.id">
+          <div class="flex items-center gap-2.5 py-2 border-b border-gray-50 last:border-0">
+            <div class="rounded-full flex-shrink-0" :class="qtypeColor(r.q_type)" style="width:7px;height:7px"></div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-semibold leading-tight" x-text="qTypeLabel(r.q_type)"></div>
               <div class="text-xs text-gray-400" x-text="formatDateTime(r.filled_at)"></div>
             </div>
-            <div class="text-xs text-right">
-              <template x-if="r.answers.vas_fatigue!==undefined">
-                <span class="badge bg-blue-100 text-blue-800" x-text="'Únava: '+r.answers.vas_fatigue"></span>
-              </template>
-            </div>
+            <template x-if="r.answers && r.answers.vas_fatigue!==undefined">
+              <span class="badge bg-blue-100 text-blue-800 text-xs flex-shrink-0" x-text="'Únava: '+r.answers.vas_fatigue"></span>
+            </template>
+            <template x-if="r.answers && r.answers.sleepiness_level!==undefined">
+              <span class="badge bg-indigo-100 text-indigo-800 text-xs flex-shrink-0" x-text="'KSS: '+r.answers.sleepiness_level"></span>
+            </template>
           </div>
         </template>
       </div>
@@ -276,6 +305,33 @@
           <button @click="applyNotifProfile('nocni')" class="flex-1 text-xs py-1.5 rounded-lg bg-gray-100 hover:bg-indigo-100 font-semibold text-gray-600 transition-colors">🌙 Noční</button>
           <button @click="applyNotifProfile('denni')" class="flex-1 text-xs py-1.5 rounded-lg bg-gray-100 hover:bg-indigo-100 font-semibold text-gray-600 transition-colors">☀️ Denní/Volno</button>
         </div>
+
+        <!-- Graf dne – časová osa 0–24h -->
+        <div class="bg-gray-50 rounded-xl p-3 mb-3">
+          <div class="text-xs font-semibold text-gray-400 mb-3">Graf dne – časy notifikací</div>
+          <div style="position:relative;height:38px">
+            <div style="position:absolute;left:0;right:0;top:15px;height:2px;background:#e5e7eb;border-radius:1px"></div>
+            <template x-for="h in [0,6,12,18,24]" :key="h">
+              <div :style="`position:absolute;left:${h/24*100}%;top:11px`">
+                <div style="width:1px;height:8px;background:#d1d5db;margin:0 auto"></div>
+                <div style="font-size:8px;color:#9ca3af;transform:translateX(-50%);white-space:nowrap;margin-top:2px" x-text="h+':00'"></div>
+              </div>
+            </template>
+            <template x-for="s in drawerSchedules.filter(s=>s.enabled&&s.time)" :key="s.notif_type">
+              <div :style="`position:absolute;left:${timeToPercent(s.time)}%;top:7px;transform:translateX(-50%)`"
+                   :title="s.time">
+                <div style="width:6px;height:18px;background:#4f46e5;border-radius:3px;opacity:0.75"></div>
+              </div>
+            </template>
+          </div>
+          <div style="height:14px"></div>
+          <div class="flex flex-wrap gap-1 mt-1" style="font-size:9px">
+            <template x-for="s in drawerSchedules.filter(s=>s.enabled&&s.time)" :key="s.notif_type">
+              <span class="bg-indigo-100 text-indigo-700 rounded px-1.5 py-0.5 font-mono font-semibold" x-text="s.time"></span>
+            </template>
+          </div>
+        </div>
+
         <div class="space-y-2">
           <template x-for="(s, i) in drawerSchedules" :key="s.notif_type">
             <div class="bg-gray-50 rounded-lg px-3 py-2">
@@ -3575,11 +3631,41 @@ function app() { return {
   qTypeLabel(t){return {
     pre_shift_fatigue:'Před směnou',post_shift_fatigue:'Po směně',
     sleep_quality:'Spánek (týdenní)',weekly_wellbeing:'Týdenní pohoda',
-    kss:'KSS – Karolinska',psd:'Spánkový deník',
+    kss:'KSS – Karolinska',kss_pre:'KSS – před směnou',kss_post:'KSS – po směně',
+    psd:'Spánkový deník',pvt:'PVT – Reakční test',
     tavns_diary:'Deník tAVNS',psqi:'PSQI – Pittsburgh',
     mfi20:'MFI-20 – Únava',tavns_adverse:'Nežádoucí účinky',
     meq:'MEQ – Chronotyp',tavns_satisfaction:'Dotazník spokojenosti',
+    stim_done:'tAVNS stimulace ✓',
   }[t]||t||'—';},
+
+  qtypeColor(qt){return {
+    psd:'bg-blue-400',kss:'bg-indigo-400',kss_pre:'bg-indigo-400',kss_post:'bg-indigo-600',
+    pvt:'bg-cyan-400',stim_done:'bg-violet-500',tavns_diary:'bg-fuchsia-400',
+    mfi20:'bg-orange-400',psqi:'bg-orange-300',meq:'bg-green-400',
+    pre_shift_fatigue:'bg-sky-400',post_shift_fatigue:'bg-amber-400',
+  }[qt]||'bg-gray-400';},
+
+  drawerDayGrid(){
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const days = [];
+    for(let i=6;i>=0;i--){
+      const d = new Date(today); d.setDate(d.getDate()-i);
+      const dateStr = d.toISOString().split('T')[0];
+      const responses = this.selectedPResponses.filter(r=>r.filled_at&&r.filled_at.startsWith(dateStr));
+      const label = i===0?'Dnes':d.toLocaleDateString('cs-CZ',{weekday:'short'}).replace('.','');
+      days.push({date:dateStr,label,count:responses.length,isToday:dateStr===todayStr,
+                 qtypes:[...new Set(responses.map(r=>r.q_type))]});
+    }
+    return days;
+  },
+
+  timeToPercent(t){
+    if(!t) return 0;
+    const [h,m]=(t+':00').split(':').map(Number);
+    return ((h*60+(m||0))/1440)*100;
+  },
   roleLabel(r){return {admin:'Admin',researcher:'Výzkumník',participant:'Účastník'}[r]||r||'—';},
   stepClass(phase){
     const ph=this.PHASES; const cur=ph.indexOf(this.currentUser?.phase); const idx=ph.indexOf(phase);
