@@ -253,32 +253,35 @@ def sync_phase_notifications(db_session_factory):
         for user in users:
             study_day = (now.date() - user.study_start_date.date()).days + 1
 
-            # Den 1: přepni fázi a nastavení notifikací z rozvrhu
-            if study_day == 1 and user.phase == 'prerandomizace':
+            if study_day < 1:
+                # Studie ještě nezačala – vypni všechny notifikace
+                db.query(NotificationSchedule).filter(
+                    NotificationSchedule.user_id == user.id,
+                    NotificationSchedule.enabled == True,
+                ).update({"enabled": False})
+
+            elif study_day >= 1 and user.phase == 'prerandomizace':
+                # Studie začala dnes nebo dříve, ale fáze nebyla přepnuta (missed transition)
                 user.phase = 'phase1'
                 db.query(NotificationSchedule).filter(NotificationSchedule.user_id == user.id).delete()
                 for s in _build_notif_schedules(user.id, user.shift_schedule):
                     db.add(s)
 
-            # Den 8: washout – vypni stimulace, přepni fázi
             elif study_day == 8 and user.phase == 'phase1':
+                # Den 8: washout – vypni stimulace
                 user.phase = 'washout'
-                scheds = db.query(NotificationSchedule).filter(
+                db.query(NotificationSchedule).filter(
                     NotificationSchedule.user_id == user.id,
                     NotificationSchedule.notif_type.in_(STIM_TYPES),
-                ).all()
-                for s in scheds:
-                    s.enabled = False
+                ).update({"enabled": False})
 
-            # Den 15: fáze 3 – zapni stimulace zpět
             elif study_day == 15 and user.phase == 'washout':
+                # Den 15: fáze 3 – zapni stimulace zpět
                 user.phase = 'phase2'
-                scheds = db.query(NotificationSchedule).filter(
+                db.query(NotificationSchedule).filter(
                     NotificationSchedule.user_id == user.id,
                     NotificationSchedule.notif_type.in_(STIM_TYPES),
-                ).all()
-                for s in scheds:
-                    s.enabled = True
+                ).update({"enabled": True})
 
         db.commit()
     finally:

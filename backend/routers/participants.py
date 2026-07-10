@@ -30,17 +30,15 @@ def participant_to_dict(u: User) -> dict:
     # Vypočítej doporučenou fázi dle study_start_date
     recommended_phase = None
     study_day = None
-    if u.study_start_date and u.phase not in (None, 'prerandomizace'):
+    if u.study_start_date:
         delta = (datetime.utcnow() - u.study_start_date).days + 1
-        study_day = max(1, delta)
-        if study_day <= 7:
-            recommended_phase = "phase1"
-        elif study_day <= 14:
-            recommended_phase = "washout"
-        elif study_day <= 21:
-            recommended_phase = "phase2"
-        else:
-            recommended_phase = "completed"
+        if delta >= 1:  # studie již začala
+            if u.phase not in (None, 'prerandomizace'):
+                study_day = min(delta, 21)
+            # Doporučená fáze jen pokud studie začala a fáze neodpovídá
+            actual_phase = 'phase1' if delta <= 7 else ('washout' if delta <= 14 else ('phase2' if delta <= 21 else 'completed'))
+            if u.phase != actual_phase:
+                recommended_phase = actual_phase
     return {
         "id": u.id,
         "participant_code": u.participant_code,
