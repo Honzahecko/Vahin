@@ -2397,8 +2397,8 @@ function app() { return {
   drawerSchedules:[], drawerSchedSaving:false, drawerSchedMsg:'',
   drawerNotifTab: 'nocni',
   notifTabTypes: {
-    nocni:    ['psd_morning','pre_shift','stimulation_start','stimulation_p1','stimulation_p2','stimulation_p3','stimulation_end','post_shift','pvt_post','shift_entry','reminder'],
-    denni:    ['psd_morning','pre_shift','stimulation_volno','post_shift'],
+    nocni:    ['psd_morning','pre_shift','stimulation_start','stimulation_p1','stimulation_p2','stimulation_p3','stimulation_end','post_shift','pvt_post','reminder'],
+    denni:    ['psd_morning','stimulation_volno'],
     volno:    ['psd_morning','stimulation_volno'],
     kortizol: ['cortisol_am','cortisol_pm','cortisol_eve'],
     tydeni:   ['weekly'],
@@ -2590,10 +2590,8 @@ function app() { return {
     };
     // Samostatné profily pro záložky
     P.denni = {
-      psd_morning:       {h:8,  m:0,  en:true},
-      pre_shift:         {h:7,  m:0,  en:true},
-      stimulation_volno: {h:8,  m:0,  en:true},
-      post_shift:        {h:15, m:0,  en:true},
+      psd_morning:       {h:8, m:0, en:true},
+      stimulation_volno: {h:8, m:0, en:true},
     };
     P.volno = {
       psd_morning:       {h:8,  m:0,  en:true},
