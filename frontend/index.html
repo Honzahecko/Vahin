@@ -125,7 +125,10 @@
                   </template>
                 </div>
               </template>
-              <button @click="garminAdminRelink(selectedP.id)" class="mt-1 text-xs text-red-500 hover:text-red-700 underline">Smazat token (nové párování)</button>
+              <div class="flex gap-3 mt-1">
+                <button x-show="garminDiag.garmin_connected && !garminDiag.garmin_user_id" @click="garminAdminFetchUid(selectedP.id)" class="text-xs text-indigo-600 hover:text-indigo-800 underline font-semibold">Načíst Garmin ID</button>
+                <button @click="garminAdminRelink(selectedP.id)" class="text-xs text-red-500 hover:text-red-700 underline">Smazat token (nové párování)</button>
+              </div>
             </div>
           </template>
         </div>
@@ -2940,6 +2943,17 @@ function app() { return {
     const r = await this.apiFetch(`/api/garmin/admin/status/${userId}`);
     if (r) this.garminDiag = r;
     else alert('Chyba při načítání Garmin diagnostiky');
+  },
+
+  async garminAdminFetchUid(userId) {
+    const r = await this.apiFetch(`/api/garmin/admin/fetch-uid/${userId}`, {method:'POST'});
+    if (r?.ok) {
+      alert('Garmin ID načteno: ' + r.garmin_user_id + '\nWebhook data se teď budou správně párovat.');
+      await this.checkGarminAdminStatus(userId);
+      await this.loadParticipants();
+    } else {
+      alert('Nepodařilo se načíst Garmin ID – token je nejspíš neplatný. Použijte "Smazat token" a proveďte nové párování.');
+    }
   },
 
   async garminAdminRelink(userId) {
