@@ -390,6 +390,36 @@ QUESTIONNAIRE_DEFINITIONS = {
         "color": "violet",
         "questions": []
     },
+    'stim_pre': {
+        'title': 'tAVNS stimulace (před směnou)',
+        'description': 'Stimulace před zahájením noční směny (15 min)',
+        'questions': [],
+        'frequency': 'daily',
+    },
+    'stim_p1': {
+        'title': 'tAVNS stimulace (pauza 1)',
+        'description': 'Stimulace v pauze ~21:00 (5 min)',
+        'questions': [],
+        'frequency': 'daily',
+    },
+    'stim_p2': {
+        'title': 'tAVNS stimulace (pauza 2)',
+        'description': 'Stimulace v pauze ~00:00 (5 min)',
+        'questions': [],
+        'frequency': 'daily',
+    },
+    'stim_p3': {
+        'title': 'tAVNS stimulace (pauza 3)',
+        'description': 'Stimulace v pauze ~03:00 (5 min)',
+        'questions': [],
+        'frequency': 'daily',
+    },
+    'stim_end': {
+        'title': 'tAVNS stimulace (závěrečná)',
+        'description': 'Závěrečná stimulace před koncem noční směny (15 min)',
+        'questions': [],
+        'frequency': 'daily',
+    },
     "cortizol_done": {
         "title": "Odběr kortizolu proveden",
         "description": "Potvrzení odběru kortizolu (slin) v kortizolový den studie.",

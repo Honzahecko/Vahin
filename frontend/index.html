@@ -1463,7 +1463,7 @@
                 <div class="divide-y divide-gray-50">
                   <template x-for="task in dayTasks.filter(t=>t.group==='morning')" :key="task.id">
                     <button
-                      @click="!task.done && (task.action==='stim_confirm' ? openStimConfirm() : task.action==='cortizol_confirm' ? openCortizolConfirm() : task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : null)"
+                      @click="!task.done && (task.action==='stim_confirm' ? openStimConfirm(task.qtype) : task.action==='cortizol_confirm' ? openCortizolConfirm() : task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : null)"
                       class="flex items-center gap-3 px-4 py-3 w-full text-left transition-colors"
                       :class="task.done ? 'bg-green-50 cursor-default' : 'hover:bg-gray-50 cursor-pointer'">
                       <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors"
@@ -1492,7 +1492,36 @@
                 <div class="divide-y divide-gray-50">
                   <template x-for="task in dayTasks.filter(t=>t.group==='pre_shift')" :key="task.id">
                     <button
-                      @click="!task.done && (task.action==='stim_confirm' ? openStimConfirm() : task.action==='cortizol_confirm' ? openCortizolConfirm() : task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : null)"
+                      @click="!task.done && (task.action==='stim_confirm' ? openStimConfirm(task.qtype) : task.action==='cortizol_confirm' ? openCortizolConfirm() : task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : null)"
+                      class="flex items-center gap-3 px-4 py-3 w-full text-left transition-colors"
+                      :class="task.done ? 'bg-green-50 cursor-default' : 'hover:bg-gray-50 cursor-pointer'">
+                      <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors"
+                           :class="task.done ? 'bg-green-500 border-green-500' : 'border-gray-300 bg-white'">
+                        <svg x-show="task.done" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="text-sm font-semibold" :class="task.done ? 'text-gray-400 line-through' : 'text-gray-800'" x-text="task.title"></div>
+                        <div class="text-xs text-gray-400" x-text="task.when"></div>
+                      </div>
+                      <svg x-show="!task.done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                  </template>
+                </div>
+              </div>
+            </template>
+
+            <!-- Sekce: Během směny -->
+            <template x-if="dayTasks.filter(t=>t.group==='during_shift').length > 0">
+              <div class="card overflow-hidden">
+                <div class="px-4 py-2.5 bg-violet-50 border-b border-violet-100 flex items-center gap-2">
+                  <span class="text-sm">⚡</span>
+                  <span class="text-xs font-bold text-violet-800 uppercase tracking-wide">Během směny</span>
+                  <span class="ml-auto text-xs text-violet-400" x-text="dayTasks.filter(t=>t.group==='during_shift'&&t.done).length + '/' + dayTasks.filter(t=>t.group==='during_shift').length"></span>
+                </div>
+                <div class="divide-y divide-gray-50">
+                  <template x-for="task in dayTasks.filter(t=>t.group==='during_shift')" :key="task.id">
+                    <button
+                      @click="!task.done && (task.action==='stim_confirm' ? openStimConfirm(task.qtype) : task.action==='cortizol_confirm' ? openCortizolConfirm() : task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : null)"
                       class="flex items-center gap-3 px-4 py-3 w-full text-left transition-colors"
                       :class="task.done ? 'bg-green-50 cursor-default' : 'hover:bg-gray-50 cursor-pointer'">
                       <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors"
@@ -1521,7 +1550,7 @@
                 <div class="divide-y divide-gray-50">
                   <template x-for="task in dayTasks.filter(t=>t.group==='post_shift')" :key="task.id">
                     <button
-                      @click="!task.done && (task.action==='stim_confirm' ? openStimConfirm() : task.action==='cortizol_confirm' ? openCortizolConfirm() : task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : null)"
+                      @click="!task.done && (task.action==='stim_confirm' ? openStimConfirm(task.qtype) : task.action==='cortizol_confirm' ? openCortizolConfirm() : task.action==='questionnaire' ? goQuestionnaire(task.qtype) : task.action==='pvt' ? startPvt() : null)"
                       class="flex items-center gap-3 px-4 py-3 w-full text-left transition-colors"
                       :class="task.done ? 'bg-green-50 cursor-default' : 'hover:bg-gray-50 cursor-pointer'">
                       <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors"
@@ -2310,6 +2339,7 @@ function app() { return {
   adminGarminUserId: '', adminGarminMsg: '', adminGarminOk: false,
   guideTasks: [], allQDefs: [], rawDefs: {},
   todayShiftType: null,
+  stimConfirmQtype: 'stim_done',
   dayTasks: [],
   // Tutorial
   tutorialActive: false, tutorialStep: 0,
@@ -2445,17 +2475,17 @@ function app() { return {
     if (r) {
       const defaults = [
         // -- Dotazníky --
-        {notif_type:'pre_shift',         hour:21, minute:30, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
-        {notif_type:'post_shift',        hour:7,  minute:0,  enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
+        {notif_type:'pre_shift',         hour:18, minute:0,  enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
+        {notif_type:'post_shift',        hour:5,  minute:30, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
         {notif_type:'psd_morning',       hour:8,  minute:0,  enabled:false, days_mask:127, study_days_mask:(1<<21)-1, custom_msg:''},
-        {notif_type:'pvt_post',          hour:7,  minute:15, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
+        {notif_type:'pvt_post',          hour:5,  minute:30, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
         {notif_type:'weekly',            hour:10, minute:0,  enabled:false, days_mask:127, study_days_mask:(1<<6)|(1<<13)|(1<<20), custom_msg:''},
         // -- Stimulace (noční) --
-        {notif_type:'stimulation_start', hour:21, minute:45, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
-        {notif_type:'stimulation_p1',    hour:0,  minute:30, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
-        {notif_type:'stimulation_p2',    hour:2,  minute:30, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
-        {notif_type:'stimulation_p3',    hour:4,  minute:30, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
-        {notif_type:'stimulation_end',   hour:6,  minute:30, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
+        {notif_type:'stimulation_start', hour:18, minute:15, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
+        {notif_type:'stimulation_p1',    hour:21, minute:0,  enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
+        {notif_type:'stimulation_p2',    hour:0,  minute:0,  enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
+        {notif_type:'stimulation_p3',    hour:3,  minute:0,  enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
+        {notif_type:'stimulation_end',   hour:5,  minute:30, enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
         // -- Stimulace (volno/denní) --
         {notif_type:'stimulation_volno', hour:10, minute:0,  enabled:false, days_mask:127, study_days_mask:0, custom_msg:''},
         // -- Kortizol (aktivovat jen v den 1,7,15,21) --
@@ -2491,14 +2521,14 @@ function app() { return {
     // Noční směna 22:00-06:00 | Ranní 07:00-15:00 | Volno
     const P = {
       nocni: {
-        pre_shift:         {h:21, m:30, en:true},
-        stimulation_start: {h:21, m:45, en:true},
-        stimulation_p1:    {h:0,  m:30, en:true},
-        stimulation_p2:    {h:2,  m:30, en:true},
-        stimulation_p3:    {h:4,  m:30, en:true},
-        stimulation_end:   {h:6,  m:30, en:true},
-        post_shift:        {h:7,  m:0,  en:true},
-        pvt_post:          {h:7,  m:15, en:true},
+        pre_shift:         {h:18, m:0,  en:true},
+        stimulation_start: {h:18, m:15, en:true},
+        stimulation_p1:    {h:21, m:0,  en:true},
+        stimulation_p2:    {h:0,  m:0,  en:true},
+        stimulation_p3:    {h:3,  m:0,  en:true},
+        stimulation_end:   {h:5,  m:30, en:true},
+        post_shift:        {h:5,  m:30, en:true},
+        pvt_post:          {h:5,  m:30, en:true},
         psd_morning:       {h:8,  m:0,  en:true},
         stimulation_volno: {h:10, m:0,  en:false},
         cortisol_am:       {h:7,  m:30, en:false},
@@ -2690,7 +2720,7 @@ function app() { return {
     this.garminConnected = false;
   },
 
-  openStimConfirm() { this.stimConfirmVisible = true; },
+  openStimConfirm(qtype) { this.stimConfirmQtype = qtype || 'stim_done'; this.stimConfirmVisible = true; },
   openCortizolConfirm() { this.cortizolConfirmVisible = true; },
 
   async confirmCortizol(confirmed) {
@@ -2710,7 +2740,7 @@ function app() { return {
     await this.apiFetch('/api/questionnaires/', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({q_type:'stim_done', answers:{done:true}})
+      body: JSON.stringify({q_type: this.stimConfirmQtype, answers:{done:true}})
     });
     await this.loadMyResponses();
   },
@@ -2970,7 +3000,11 @@ function app() { return {
       bgClass:'bg-violet-100', tagClass:'bg-violet-100 text-violet-700', tag:'Stimulace',
       required:true, urgent:false,
     };
-    const STIM_NOCNI = {...STIM, id:'stim_nocni', when:'Stimulace během noční směny', group:'pre_shift'};
+    const STIM_PRE  = {...STIM, id:'stim_pre',  title:'tAVNS stimulace',       when:'Před zahájením směny · 15 min',          qtype:'stim_pre',  group:'pre_shift'};
+    const STIM_P1   = {...STIM, id:'stim_p1',   title:'tAVNS stimulace (pauza 1)', when:'Stimulace v pauze · 5 min (~21:00)',  qtype:'stim_p1',   group:'during_shift'};
+    const STIM_P2   = {...STIM, id:'stim_p2',   title:'tAVNS stimulace (pauza 2)', when:'Stimulace v pauze · 5 min (~00:00)',  qtype:'stim_p2',   group:'during_shift'};
+    const STIM_P3   = {...STIM, id:'stim_p3',   title:'tAVNS stimulace (pauza 3)', when:'Stimulace v pauze · 5 min (~03:00)',  qtype:'stim_p3',   group:'during_shift'};
+    const STIM_END  = {...STIM, id:'stim_end',  title:'tAVNS stimulace',           when:'Závěrečná stimulace · 15 min (~05:30)', qtype:'stim_end', group:'post_shift'};
     const CORTIZOL = {
       id:'cortizol', title:'Odběr kortizolu', when:'Kortizolový den · 3 vzorky slin',
       action:'cortizol_confirm', qtype:'cortizol_done', group:'morning',
@@ -2979,7 +3013,7 @@ function app() { return {
       required:true, urgent:true,
     };
     const PLANS = {
-      nocni: [PSD, STIM_NOCNI, KSSp, KSSpo, PVT],
+      nocni: [PSD, KSSp, STIM_PRE, STIM_P1, STIM_P2, STIM_P3, STIM_END, KSSpo, PVT],
       denni: [PSD, STIM],
       volno: [PSD, STIM],
     };
@@ -3702,6 +3736,11 @@ function app() { return {
     mfi20:'MFI-20 – Únava',tavns_adverse:'Nežádoucí účinky',
     meq:'MEQ – Chronotyp',tavns_satisfaction:'Dotazník spokojenosti',
     stim_done:'tAVNS stimulace ✓',
+    stim_pre:'tAVNS stimulace (před směnou) ✓',
+    stim_p1:'tAVNS pauza 1 ✓',
+    stim_p2:'tAVNS pauza 2 ✓',
+    stim_p3:'tAVNS pauza 3 ✓',
+    stim_end:'tAVNS stimulace (závěrečná) ✓',
     cortizol_done:'Odběr kortizolu ✓',
   }[t]||t||'—';},
 
@@ -3795,7 +3834,7 @@ function app() { return {
 
   qtypeColor(qt){return {
     psd:'bg-blue-400',kss:'bg-indigo-400',kss_pre:'bg-indigo-400',kss_post:'bg-indigo-600',
-    pvt:'bg-cyan-400',stim_done:'bg-violet-500',tavns_diary:'bg-fuchsia-400',
+    pvt:'bg-cyan-400',stim_done:'bg-violet-500',stim_pre:'bg-violet-500',stim_p1:'bg-violet-400',stim_p2:'bg-violet-400',stim_p3:'bg-violet-400',stim_end:'bg-violet-600',tavns_diary:'bg-fuchsia-400',
     mfi20:'bg-orange-400',psqi:'bg-orange-300',meq:'bg-green-400',
     pre_shift_fatigue:'bg-sky-400',post_shift_fatigue:'bg-amber-400',
   }[qt]||'bg-gray-400';},
