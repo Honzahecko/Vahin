@@ -135,7 +135,12 @@ def delete_participant(participant_id: int, current_user: User = Depends(get_cur
     if not user:
         raise HTTPException(404, "Účastník nenalezen")
     # cascade: smaž data účastníka
-    from database import NightShift, QuestionnaireResponse, GarminData, AdminNote
+    from database import (NightShift, QuestionnaireResponse, GarminData, AdminNote,
+                          CortisolLog, CognitiveTest, PushSubscription, NotificationSchedule)
+    db.query(NotificationSchedule).filter(NotificationSchedule.user_id == participant_id).delete()
+    db.query(PushSubscription).filter(PushSubscription.user_id == participant_id).delete()
+    db.query(CognitiveTest).filter(CognitiveTest.user_id == participant_id).delete()
+    db.query(CortisolLog).filter(CortisolLog.user_id == participant_id).delete()
     db.query(AdminNote).filter(AdminNote.user_id == participant_id).delete()
     db.query(GarminData).filter(GarminData.user_id == participant_id).delete()
     db.query(QuestionnaireResponse).filter(QuestionnaireResponse.user_id == participant_id).delete()
