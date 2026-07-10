@@ -107,6 +107,18 @@
           </div>
           <div x-show="!selectedP.garmin_user_id" class="text-xs text-gray-400">Nepropojeno</div>
         </div>
+        <!-- Protokol fáze (tAVNS / SHAM dle skupiny) -->
+        <template x-if="selectedP.group">
+          <div class="col-span-2 rounded-lg p-3 flex items-center gap-3"
+               :class="selectedP.group?.toLowerCase().includes('sham') ? 'bg-gray-100 text-gray-700' : 'bg-violet-100 text-violet-800'">
+            <span class="text-xl leading-none" x-text="selectedP.group?.toLowerCase().includes('sham') ? '🔵' : '⚡'"></span>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-semibold opacity-70">Protokol fáze 1 & 3</div>
+              <div class="font-bold text-sm" x-text="selectedP.group?.toLowerCase().includes('sham') ? 'SHAM stimulace' : 'tAVNS aktivní stimulace'"></div>
+            </div>
+            <div class="text-xs font-mono font-bold opacity-60 uppercase" x-text="selectedP.group"></div>
+          </div>
+        </template>
         <template x-if="meqChronotype(selectedPResponses)">
           <div class="col-span-2 rounded-lg p-3 flex items-center gap-3" :class="meqChronotype(selectedPResponses)?.cls">
             <span class="text-xl leading-none" x-text="meqChronotype(selectedPResponses)?.emoji"></span>
@@ -3036,7 +3048,16 @@ function app() { return {
       bgClass:'bg-purple-100', tagClass:'bg-purple-100 text-purple-700', tag:'Kortizol',
       required:true, urgent:true,
     };
-    const PLANS = {
+    // Detekce týdne studie: 1-7 = fáze 1, 8-14 = washout, 15-21 = fáze 2
+    const studyDay = this.currentUser?.study_day || 0;
+    const isWashout = studyDay >= 8 && studyDay <= 14;
+    const PLANS = isWashout ? {
+      // Washout (týden 2): bez stimulace
+      nocni: [PSD, KSSp, KSSpo, PVT],
+      denni: [PSD],
+      volno: [PSD],
+    } : {
+      // Fáze 1 & 2 (týdny 1 a 3): plný protokol
       nocni: [PSD, KSSp, STIM_PRE, STIM_P1, STIM_P2, STIM_P3, STIM_END, KSSpo, PVT],
       denni: [PSD, STIM],
       volno: [PSD, STIM],
