@@ -113,17 +113,22 @@
             <div class="flex items-center justify-between mb-2">
               <div class="text-xs font-semibold text-gray-400">Crossover protokol · Skupina <span class="font-bold text-gray-700 uppercase" x-text="selectedP.group"></span></div>
             </div>
-            <div class="flex gap-2">
-              <div class="flex-1 rounded-lg px-3 py-2 text-center"
+            <div class="flex gap-1.5 items-center">
+              <div class="flex-1 rounded-lg px-2 py-2 text-center"
                    :class="selectedP.group?.toUpperCase()==='A' ? 'bg-violet-100 text-violet-800' : 'bg-gray-200 text-gray-600'">
-                <div class="text-xs opacity-70 mb-0.5">Fáze 1 (týden 1)</div>
-                <div class="font-bold text-sm" x-text="selectedP.group?.toUpperCase()==='A' ? '⚡ tAVNS' : '🔵 SHAM'"></div>
+                <div class="text-xs opacity-70 mb-0.5">Fáze 1</div>
+                <div class="font-bold text-xs" x-text="selectedP.group?.toUpperCase()==='A' ? '⚡ tAVNS' : '🔵 SHAM'"></div>
               </div>
-              <div class="flex items-center text-gray-300 font-bold">→</div>
-              <div class="flex-1 rounded-lg px-3 py-2 text-center"
+              <div class="text-gray-300 font-bold text-xs">→</div>
+              <div class="flex-1 rounded-lg px-2 py-2 text-center bg-amber-50 text-amber-700">
+                <div class="text-xs opacity-70 mb-0.5">Fáze 2</div>
+                <div class="font-bold text-xs">🔄 Washout</div>
+              </div>
+              <div class="text-gray-300 font-bold text-xs">→</div>
+              <div class="flex-1 rounded-lg px-2 py-2 text-center"
                    :class="selectedP.group?.toUpperCase()==='A' ? 'bg-gray-200 text-gray-600' : 'bg-violet-100 text-violet-800'">
-                <div class="text-xs opacity-70 mb-0.5">Fáze 2 (týden 3)</div>
-                <div class="font-bold text-sm" x-text="selectedP.group?.toUpperCase()==='A' ? '🔵 SHAM' : '⚡ tAVNS'"></div>
+                <div class="text-xs opacity-70 mb-0.5">Fáze 3</div>
+                <div class="font-bold text-xs" x-text="selectedP.group?.toUpperCase()==='A' ? '🔵 SHAM' : '⚡ tAVNS'"></div>
               </div>
             </div>
           </div>
