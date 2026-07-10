@@ -2825,11 +2825,10 @@ function app() { return {
 
     const STIM = {
       id:'stim_volno', title:'tAVNS stimulace', when:'Udržovací stimulace · 15 minut',
-      action:'info', qtype:null, group:'morning',
+      action:'questionnaire', qtype:'tavns_diary', group:'morning',
       icon:'<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>', stroke:'#7c3aed',
       bgClass:'bg-violet-100', tagClass:'bg-violet-100 text-violet-700', tag:'Stimulace',
       required:true, urgent:false,
-      done: false,
     };
     const PLANS = {
       nocni: [PSD, KSSp, KSSpo, PVT],
