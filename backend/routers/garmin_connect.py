@@ -32,7 +32,7 @@ router = APIRouter(prefix="/api/garmin", tags=["garmin-connect"])
 GARMIN_CLIENT_ID     = os.environ.get("GARMIN_CLIENT_ID", "")
 GARMIN_CLIENT_SECRET = os.environ.get("GARMIN_CLIENT_SECRET", "")
 GARMIN_REDIRECT_URI  = "https://vahin-production.up.railway.app/"
-GARMIN_AUTH_URL      = "https://apis.garmin.com/tools/oauth2/authorizeUser"
+GARMIN_AUTH_URL      = "https://connect.garmin.com/oauth2Confirm"
 GARMIN_TOKEN_URL     = "https://diauth.garmin.com/di-oauth2-service/oauth/token"
 
 # In-memory store for PKCE code_verifiers keyed by state.
@@ -75,10 +75,9 @@ def garmin_auth_start(current_user: User = Depends(get_current_user)):
 
     params = (
         f"client_id={GARMIN_CLIENT_ID}"
-        f"&redirect_uri={GARMIN_REDIRECT_URI}"
         f"&response_type=code"
-        f"&scope=HEALTH_API"
         f"&state={state}"
+        f"&redirect_uri={GARMIN_REDIRECT_URI}"
         f"&code_challenge={code_challenge}"
         f"&code_challenge_method=S256"
     )
