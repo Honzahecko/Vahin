@@ -183,11 +183,32 @@ NOTIF_TEXTS = {
     "cortisol":          ("VAHIN – Kortizol",              "Čas na odběr kortizolu ze slin.",                                  "/"),
 }
 
-# Typy notifikací potlačené během washout (dny 8–14)
-WASHOUT_SUPPRESSED = {
+STIM_TYPES = {
     'stimulation_start', 'stimulation_p1', 'stimulation_p2', 'stimulation_p3',
     'stimulation_end', 'stimulation_volno', 'stimulation',
 }
+
+def sync_phase_notifications(db_session_factory):
+    """Každý den v 00:05 zkontroluje fázi každého účastníka a podle toho zapne/vypne stimulační notifikace."""
+    from sqlalchemy.orm import Session as DBSession
+    now = datetime.now(_PRAGUE) if _PRAGUE else datetime.now()
+    db: DBSession = db_session_factory()
+    try:
+        users = db.query(User).filter(User.study_start_date != None).all()
+        for user in users:
+            study_day = (now.date() - user.study_start_date.date()).days + 1
+            if study_day < 1 or study_day > 21:
+                continue
+            in_washout = 8 <= study_day <= 14
+            scheds = db.query(NotificationSchedule).filter(
+                NotificationSchedule.user_id == user.id,
+                NotificationSchedule.notif_type.in_(STIM_TYPES),
+            ).all()
+            for s in scheds:
+                s.enabled = not in_washout
+        db.commit()
+    finally:
+        db.close()
 
 def check_and_send(db_session_factory):
     """Spouštěno každou minutu APSchedulerem."""
@@ -204,23 +225,12 @@ def check_and_send(db_session_factory):
         ).all()
 
         for sched in schedules:
-            # Zjisti study_day pro washout check i pro masku
-            user = None
-            study_day = None
-            if sched.notif_type in WASHOUT_SUPPRESSED or sched.study_days_mask:
-                user = db.query(User).filter(User.id == sched.user_id).first()
-                if user and user.study_start_date:
-                    study_day = (now.date() - user.study_start_date.date()).days + 1
-
-            # Washout guard: stimulace se neposílají v dnech 8–14 bez ohledu na masky
-            if sched.notif_type in WASHOUT_SUPPRESSED and study_day is not None:
-                if 8 <= study_day <= 14:
-                    continue
-
             sdm = sched.study_days_mask or 0
             if sdm:
-                if not user or not user.study_start_date or study_day is None:
+                user = db.query(User).filter(User.id == sched.user_id).first()
+                if not user or not user.study_start_date:
                     continue
+                study_day = (now.date() - user.study_start_date.date()).days + 1
                 if study_day < 1 or study_day > 21:
                     continue
                 if not (sdm & (1 << (study_day - 1))):
@@ -228,7 +238,6 @@ def check_and_send(db_session_factory):
             else:
                 if not (sched.days_mask & weekday_bit):
                     continue
-
             subs = db.query(PushSubscription).filter(
                 PushSubscription.user_id == sched.user_id).all()
             title, body, url = NOTIF_TEXTS.get(sched.notif_type, ("VAHIN", "Připomínka", "/"))

@@ -66,10 +66,10 @@ def startup():
     import push_manager
     push_manager.init_vapid()
     from apscheduler.schedulers.background import BackgroundScheduler
-    from routers.push import check_and_send
+    from routers.push import check_and_send, sync_phase_notifications
     scheduler = BackgroundScheduler()
     scheduler.add_job(check_and_send, 'interval', minutes=1, args=[SessionLocal])
-    # Kortizol notifikace jsou řešeny přes push.py (cortisol_am/pm/eve)
+    scheduler.add_job(sync_phase_notifications, 'cron', hour=0, minute=5, args=[SessionLocal])
     scheduler.start()
 
 def _migrate_db():
