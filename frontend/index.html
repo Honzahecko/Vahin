@@ -327,6 +327,24 @@
         </button>
       </div>
 
+      <!-- Aktuální fáze studie -->
+      <template x-if="selectedP.study_day">
+        <div class="mb-3 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold"
+          :class="selectedP.study_day >= 8 && selectedP.study_day <= 14
+            ? 'bg-amber-50 text-amber-700 border border-amber-200'
+            : 'bg-violet-50 text-violet-700 border border-violet-200'">
+          <span x-text="selectedP.study_day >= 8 && selectedP.study_day <= 14
+            ? '🔄'
+            : (selectedP.study_day <= 7 ? '⚡' : '⚡')"></span>
+          <span x-text="selectedP.study_day >= 1 && selectedP.study_day <= 7
+            ? 'Fáze 1 · dny 1–7 · stimulace aktivní'
+            : selectedP.study_day >= 8 && selectedP.study_day <= 14
+              ? 'Washout · dny 8–14 · stimulace vypnuty'
+              : 'Fáze 3 · dny 15–21 · stimulace aktivní'"></span>
+          <span class="ml-auto text-xs opacity-60" x-text="'den ' + selectedP.study_day"></span>
+        </div>
+      </template>
+
       <!-- Notifikace – admin schedule editor -->
       <div class="border-t border-gray-100 pt-4 mb-4">
         <div class="flex items-center justify-between mb-3">
@@ -2613,8 +2631,8 @@ function app() { return {
       stimulation_volno: {h:8, m:0, en:true},
     };
     P.volno = {
-      psd_morning:       {h:8,  m:0,  en:true},
-      stimulation_volno: {h:10, m:0,  en:true},
+      psd_morning:       {h:8, m:0, en:true},
+      stimulation_volno: {h:8, m:0, en:true},
     };
     P.kortizol = {
       cortisol_am:  {h:7,  m:30, en:true},
@@ -2674,7 +2692,7 @@ function app() { return {
       stimulation_end:   maskNocniStim,
       post_shift:        maskNocni,
       pvt_post:          maskNocni,
-      stimulation_volno: maskVolno | maskDenni,
+      stimulation_volno: (maskVolno | maskDenni) & weeks1and3,
       psd_morning:       allMask,
       cortisol_am:       cortisolMask,
       cortisol_pm:       cortisolMask,
