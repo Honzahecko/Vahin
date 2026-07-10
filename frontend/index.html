@@ -349,11 +349,17 @@
       <div class="border-t border-gray-100 pt-4 mb-4">
         <div class="flex items-center justify-between mb-3">
           <div class="text-xs font-bold text-gray-400 uppercase tracking-wide">Notifikace</div>
-          <button @click="sendTestPush(selectedP.id)"
-            class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            Test
-          </button>
+          <div class="flex items-center gap-2">
+            <button @click="syncPhaseNotifs()" title="Aktualizovat zapnutí/vypnutí notifikací podle aktuální fáze studie"
+              class="text-xs text-amber-600 hover:text-amber-800 font-semibold flex items-center gap-1">
+              🔄 Sync fáze
+            </button>
+            <button @click="sendTestPush(selectedP.id)"
+              class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Test
+            </button>
+          </div>
         </div>
         <!-- Záložky -->
         <div class="flex gap-1 mb-3 overflow-x-auto pb-1" style="scrollbar-width:none;-webkit-overflow-scrolling:touch">
@@ -2661,6 +2667,24 @@ function app() { return {
     this.drawerSchedSaving = false;
     this.drawerSchedMsg = r ? 'Uloženo ✓' : 'Chyba uložení';
     setTimeout(()=>this.drawerSchedMsg='', 2500);
+  },
+
+  async syncPhaseNotifs() {
+    const r = await this.apiFetch('/api/push/sync-phase', {method:'POST'});
+    if (r?.ok) {
+      // Znovu načti schedules aby se zobrazil aktuální stav checkboxů
+      const scheds = await this.apiFetch('/api/push/schedules/'+this.selectedP.id);
+      if (scheds) {
+        this.drawerSchedules = this.drawerSchedules.map(s => {
+          const fresh = scheds.find(f => f.notif_type === s.notif_type);
+          return fresh ? {...s, enabled: fresh.enabled} : s;
+        });
+      }
+      this.drawerSchedMsg = 'Sync hotov ✓';
+      setTimeout(()=>this.drawerSchedMsg='', 2500);
+    } else {
+      alert('Chyba při synchronizaci fáze.');
+    }
   },
 
   async sendTestPush(userId) {
