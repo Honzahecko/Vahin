@@ -2359,7 +2359,6 @@
       <template x-if="!isResearcher()">
         <div class="flex w-full" x-init="$nextTick(()=>lucide&&lucide.createIcons())">
           <button @click="activeTab='home'" class="mob-nav-btn" :class="activeTab==='home'?'active':''"><i data-lucide="home"></i>Domů</button>
-          <button @click="activeTab='questionnaires'" class="mob-nav-btn" :class="activeTab==='questionnaires'?'active':''"><i data-lucide="clipboard-list"></i>Dotazníky</button>
           <button @click="activeTab='guide'" class="mob-nav-btn" :class="activeTab==='guide'?'active':''"><i data-lucide="book-open"></i>Průvodce</button>
           <button @click="activeTab='profile'" class="mob-nav-btn" :class="activeTab==='profile'?'active':''"><i data-lucide="user"></i>Profil</button>
         </div>
