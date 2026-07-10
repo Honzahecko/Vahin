@@ -2823,10 +2823,18 @@ function app() { return {
                    stroke:'#0891b2', bgClass:'bg-cyan-100', tagClass:'bg-cyan-100 text-cyan-700',
                    tag:'Test', required:true, urgent:false, group:'post_shift'};
 
+    const STIM = {
+      id:'stim_volno', title:'tAVNS stimulace', when:'Udržovací stimulace · 15 minut',
+      action:'info', qtype:null, group:'morning',
+      icon:'<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>', stroke:'#7c3aed',
+      bgClass:'bg-violet-100', tagClass:'bg-violet-100 text-violet-700', tag:'Stimulace',
+      required:true, urgent:false,
+      done: false,
+    };
     const PLANS = {
       nocni: [PSD, KSSp, KSSpo, PVT],
-      denni: [PSD],
-      volno: [PSD],
+      denni: [PSD, STIM],
+      volno: [PSD, STIM],
     };
 
     // Nastav done pro každý úkol (kss a stim mohou být vyplněny vícekrát — bereme "alespoň 1x dnes")
