@@ -30,7 +30,7 @@ def participant_to_dict(u: User) -> dict:
     # Vypočítej doporučenou fázi dle study_start_date
     recommended_phase = None
     study_day = None
-    if u.study_start_date:
+    if u.study_start_date and u.phase not in (None, 'prerandomizace'):
         delta = (datetime.utcnow() - u.study_start_date).days + 1
         study_day = max(1, delta)
         if study_day <= 7:
