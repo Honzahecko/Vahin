@@ -2711,18 +2711,20 @@ function app() { return {
     const weeklyMask    = (1<<0)|(1<<6)|(1<<14)|(1<<20); // dny 1,7,15,21 = stejně jako kortizol
     const allMask       = (1<<21)-1;
     // Stimulační protokol jen v týdnu 1 (dny 1–7) a týdnu 3 (dny 15–21), ne ve washout
-    const weeks1and3    = ((1<<7)-1) | (((1<<7)-1) << 14);
-    const maskNocniStim = maskNocni & weeks1and3;
+    const weeks1and3      = ((1<<7)-1) | (((1<<7)-1) << 14);
+    const stimNocniPre    = maskNocni & weeks1and3;           // den N: 18:00–21:00
+    const stimNocniPost   = (stimNocniPre << 1) & allMask;   // den N+1: 00:00–05:30
+    const maskNocniPost   = (maskNocni << 1) & allMask;      // den N+1: post_shift, pvt
     this.applyNotifProfile('nocni');
     const TYPE_MASKS = {
       pre_shift:         maskNocni,
-      stimulation_start: maskNocniStim,
-      stimulation_p1:    maskNocniStim,
-      stimulation_p2:    maskNocniStim,
-      stimulation_p3:    maskNocniStim,
-      stimulation_end:   maskNocniStim,
-      post_shift:        maskNocni,
-      pvt_post:          maskNocni,
+      stimulation_start: stimNocniPre,
+      stimulation_p1:    stimNocniPre,
+      stimulation_p2:    stimNocniPost,
+      stimulation_p3:    stimNocniPost,
+      stimulation_end:   stimNocniPost,
+      post_shift:        maskNocniPost,
+      pvt_post:          maskNocniPost,
       stimulation_volno: (maskVolno | maskDenni) & weeks1and3,
       psd_morning:       allMask,
       cortisol_am:       cortisolMask,

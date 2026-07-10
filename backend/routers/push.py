@@ -262,19 +262,21 @@ def _build_notif_schedules(user_id: int, shift_schedule: str) -> list:
     weekly_mask   = (1<<0)|(1<<6)|(1<<14)|(1<<20)
     all_mask      = (1<<21) - 1
     weeks1and3    = ((1<<7)-1) | (((1<<7)-1) << 14)
-    stim_nocni    = mask_n & weeks1and3
-    stim_volno    = (mask_v | mask_d) & weeks1and3
+    stim_nocni_pre  = mask_n & weeks1and3          # den zahájení noční (18:00–21:00)
+    stim_nocni_post = (stim_nocni_pre << 1) & all_mask  # ráno PO noční s stimulací (00:00–05:30)
+    mask_n_post     = (mask_n << 1) & all_mask     # ráno PO každé noční (post_shift, pvt, psd)
+    stim_volno      = (mask_v | mask_d) & weeks1and3
 
     # (notif_type, study_days_mask, hour, minute)
     entries = [
-        ('pre_shift',         mask_n,       18, 15),
-        ('stimulation_start', stim_nocni,   18, 15),
-        ('stimulation_p1',    stim_nocni,   21,  0),
-        ('stimulation_p2',    stim_nocni,    0,  0),
-        ('stimulation_p3',    stim_nocni,    3,  0),
-        ('stimulation_end',   stim_nocni,    5, 30),
-        ('post_shift',        mask_n,        5, 30),
-        ('pvt_post',          mask_n,        5, 30),
+        ('pre_shift',         mask_n,            18, 15),  # den N zahájení
+        ('stimulation_start', stim_nocni_pre,    18, 15),  # den N
+        ('stimulation_p1',    stim_nocni_pre,    21,  0),  # den N 21:00
+        ('stimulation_p2',    stim_nocni_post,    0,  0),  # den N+1 00:00
+        ('stimulation_p3',    stim_nocni_post,    3,  0),  # den N+1 03:00
+        ('stimulation_end',   stim_nocni_post,    5, 30),  # den N+1 05:30
+        ('post_shift',        mask_n_post,        5, 30),  # den N+1 05:30
+        ('pvt_post',          mask_n_post,        5, 30),  # den N+1 05:30
         ('stimulation_volno', stim_volno,    8,  0),
         ('psd_morning',       all_mask,      8,  0),
         ('cortisol_am',       cortisol_mask, 7, 30),
