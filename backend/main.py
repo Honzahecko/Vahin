@@ -95,6 +95,11 @@ def _migrate_db():
     add_col("cortisol_logs",           "timepoint",           "TEXT NOT NULL DEFAULT 't0'")
     add_col("notification_schedules",  "study_days_mask",     "INTEGER DEFAULT 0")
 
+    # Oprav neplatnou hodnotu 'prerandomizace' → 'preparation' (způsobená chybou v kódu)
+    cur.execute("UPDATE users SET phase = 'preparation' WHERE phase = 'prerandomizace'")
+    if cur.rowcount:
+        print(f"[VAHIN migrate] Opraveno {cur.rowcount} účastníků: prerandomizace → preparation")
+
     con.commit()
     con.close()
 

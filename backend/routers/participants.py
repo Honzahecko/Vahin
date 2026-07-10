@@ -33,7 +33,7 @@ def participant_to_dict(u: User) -> dict:
     if u.study_start_date:
         delta = (datetime.utcnow() - u.study_start_date).days + 1
         if delta >= 1:  # studie již začala
-            if u.phase not in (None, 'prerandomizace'):
+            if u.phase not in (None, 'preparation'):
                 study_day = min(delta, 21)
             # Doporučená fáze jen pokud studie začala a fáze neodpovídá
             actual_phase = 'phase1' if delta <= 7 else ('washout' if delta <= 14 else ('phase2' if delta <= 21 else 'completed'))

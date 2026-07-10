@@ -328,7 +328,7 @@
       </div>
 
       <!-- Aktuální fáze studie -->
-      <template x-if="selectedP.study_day && selectedP.phase !== 'prerandomizace'">
+      <template x-if="selectedP.study_day && selectedP.phase !== 'preparation'">
         <div class="mb-3 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold"
           :class="selectedP.study_day >= 8 && selectedP.study_day <= 14
             ? 'bg-amber-50 text-amber-700 border border-amber-200'

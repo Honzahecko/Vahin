@@ -156,7 +156,7 @@ def sync_phase_for_user(user_id: int, db: Session = Depends(get_db)):
         for s in db.query(NotificationSchedule).filter(NotificationSchedule.user_id == user_id).all():
             s.enabled = False
         db.commit()
-        return {"ok": True, "phase": user.phase or "prerandomizace", "study_day": None}
+        return {"ok": True, "phase": user.phase or "preparation", "study_day": None}
 
     study_day = (now.date() - user.study_start_date.date()).days + 1
 
@@ -164,9 +164,9 @@ def sync_phase_for_user(user_id: int, db: Session = Depends(get_db)):
         # Studie ještě nezačala – vypni všechny notifikace
         for s in db.query(NotificationSchedule).filter(NotificationSchedule.user_id == user_id).all():
             s.enabled = False
-        # Fáze zůstává prerandomizace
-        if user.phase not in (None, 'prerandomizace'):
-            user.phase = 'prerandomizace'
+        # Fáze zůstává preparation
+        if user.phase not in (None, 'preparation'):
+            user.phase = 'preparation'
     else:
         # Studie běží – přebuduj notifikace z rozvrhu
         capped_day = min(study_day, 21)
@@ -313,7 +313,7 @@ def sync_phase_notifications(db_session_factory):
                 ).all():
                     s.enabled = False
 
-            elif user.phase in (None, 'prerandomizace'):
+            elif user.phase in (None, 'preparation'):
                 # Studie začala – přepni fázi a vybuduj notifikace z rozvrhu
                 user.phase = 'phase1'
                 existing = db.query(NotificationSchedule).filter(
