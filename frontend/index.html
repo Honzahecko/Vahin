@@ -211,6 +211,11 @@
               <div class="text-sm font-semibold leading-tight" x-text="qTypeLabel(r.q_type)"></div>
               <div class="text-xs text-gray-400" x-text="formatDateTime(r.filled_at)"></div>
             </div>
+            <template x-if="computeQScore(r.q_type, r.answers)">
+              <span class="text-xs font-bold rounded-lg px-2 py-0.5 flex-shrink-0 bg-gray-100"
+                    :class="computeQScore(r.q_type, r.answers)?.cls"
+                    x-text="computeQScore(r.q_type, r.answers)?.score + '/' + computeQScore(r.q_type, r.answers)?.max"></span>
+            </template>
             <template x-if="r.answers && r.answers.vas_fatigue!==undefined">
               <span class="badge bg-blue-100 text-blue-800 text-xs flex-shrink-0" x-text="'Únava: '+r.answers.vas_fatigue"></span>
             </template>
@@ -1962,7 +1967,15 @@
                 <span x-show="!loading">Odeslat dotazník</span>
                 <span x-show="loading">Ukládám…</span>
               </button>
-              <div x-show="qMsg" class="mt-3 text-sm" :class="qOk?'text-green-600':'text-red-600'" x-text="qMsg"></div>
+              <div x-show="qMsg" class="mt-3 text-sm font-semibold" :class="qOk?'text-green-600':'text-red-600'" x-text="qMsg"></div>
+              <template x-if="qOk && qLastScore">
+                <div class="mt-4 rounded-2xl p-5 bg-gray-50 text-center border border-gray-100">
+                  <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2" x-text="qLastScore.label"></div>
+                  <div class="text-4xl font-black mb-1" :class="qLastScore.cls" x-text="qLastScore.score + ' / ' + qLastScore.max"></div>
+                  <div class="text-base font-semibold" :class="qLastScore.cls" x-text="qLastScore.text"></div>
+                  <div class="mt-3 text-xs text-gray-400">Přesměrování za okamžik…</div>
+                </div>
+              </template>
             </form>
           </div>
         </div>
@@ -2346,7 +2359,7 @@ function app() { return {
     { label: '📊 Jednou týdně',              freqs: ['weekly'] },
     { label: '📋 Jednorázové',               freqs: ['once_start','once_end'] },
   ],
-  selectedQ:'', qDef:null, qAnswers:{}, qMsg:'', qOk:false,
+  selectedQ:'', qDef:null, qAnswers:{}, qMsg:'', qOk:false, qLastScore: null,
   participants:[], stats:{total:0,active:0,consent:0,groupA:0,groupB:0},
   showAddP:false, newP:{full_name:'',email:'',password:'',profession:'',group:''},
   addMsg:'', addOk:false, actionMsg:'', actionOk:false,
@@ -3550,10 +3563,13 @@ function app() { return {
     this.loading=true; this.qMsg=''; this.qOk=false;
     const r=await this.apiFetch('/api/questionnaires/',{method:'POST',body:JSON.stringify({q_type:this.selectedQ,answers:this.qAnswers})});
     if(r){
-      this.qMsg='Dotazník byl úspěšně uložen!'; this.qOk=true; this.qAnswers={};
+      this.qOk=true;
+      this.qLastScore = this.computeQScore(this.selectedQ, this.qAnswers);
+      this.qMsg='Dotazník byl úspěšně uložen!';
+      this.qAnswers={};
       const fresh = await this.apiFetch('/api/questionnaires/my');
       if(fresh){ this.myResponses=fresh; this.buildGuideTasks(); this.buildDayTasks(); }
-      setTimeout(() => { this.activeTab='home'; this.qMsg=''; }, 1500);
+      setTimeout(() => { this.activeTab='home'; this.qMsg=''; this.qLastScore=null; }, 3500);
     } else {this.qMsg='Chyba při ukládání.'; this.qOk=false;}
     this.loading=false;
   },
@@ -3709,16 +3725,88 @@ function app() { return {
     const src = responses || this.myResponses || [];
     const resp = src.find(r => r.q_type === 'meq');
     if (!resp || !resp.answers) return null;
-    const map = {a:4, b:3, c:2, d:1};
+    // Scoring per document: Q3,13,14 are reversed; Q18 is special
+    const regular  = {a:4, b:3, c:2, d:1};
+    const reversed = {a:1, b:2, c:3, d:4};
+    const special18= {a:6, b:4, c:2, d:0};
+    const scoringMap = {
+      meq_01:regular, meq_02:regular, meq_03:reversed,
+      meq_04:regular, meq_05:regular, meq_06:regular,
+      meq_07:regular, meq_08:regular, meq_09:regular,
+      meq_10:regular, meq_11:regular, meq_12:regular,
+      meq_13:reversed, meq_14:reversed, meq_15:regular,
+      meq_16:regular, meq_17:regular, meq_18:special18, meq_19:regular,
+    };
     let score = 0, count = 0;
     for (let i = 1; i <= 19; i++) {
-      const v = resp.answers['meq_' + String(i).padStart(2,'0')];
-      if (v && map[v]) { score += map[v]; count++; }
+      const key = 'meq_' + String(i).padStart(2,'0');
+      const map = scoringMap[key] || regular;
+      const v = resp.answers[key];
+      if (v !== undefined && map[v] !== undefined) { score += map[v]; count++; }
     }
     if (count < 10) return null;
-    if (score >= 55) return {score, label:'Skřivan', emoji:'🌅', cls:'bg-amber-100 text-amber-800', desc:'Ranní typ'};
-    if (score >= 42) return {score, label:'Mezityp',  emoji:'☀️', cls:'bg-sky-100 text-sky-800',    desc:'Střední typ'};
-    return              {score, label:'Sova',     emoji:'🦉', cls:'bg-indigo-100 text-indigo-800', desc:'Večerní typ'};
+    // Thresholds from document: 70-86 výrazně ranní, 59-69 mírně ranní, 42-58 neutrální, 31-41 mírně večerní, 16-30 výrazně večerní
+    if (score >= 70) return {score, label:'Výrazný skřivan', emoji:'🌅', cls:'bg-amber-100 text-amber-800', desc:'Výrazně ranní typ'};
+    if (score >= 59) return {score, label:'Skřivan',          emoji:'🌄', cls:'bg-yellow-100 text-yellow-800', desc:'Mírně ranní typ'};
+    if (score >= 42) return {score, label:'Mezityp',           emoji:'☀️', cls:'bg-sky-100 text-sky-800',     desc:'Neutrální typ'};
+    if (score >= 31) return {score, label:'Sova',              emoji:'🌙', cls:'bg-indigo-100 text-indigo-800', desc:'Mírně večerní typ'};
+    return               {score, label:'Výrazná sova',      emoji:'🦉', cls:'bg-purple-100 text-purple-800', desc:'Výrazně večerní typ'};
+  },
+
+  computeQScore(qtype, answers){
+    if (!answers) return null;
+    if (qtype === 'psd') {
+      const m = {a:1, b:2, c:3, d:4};
+      const score = ['sleep_latency','total_sleep_time','night_awakenings','sleep_quality']
+        .reduce((s,k) => s + (m[answers[k]] || 0), 0);
+      if (!score) return null;
+      const text = score <= 6 ? 'Kvalitní spánek' : score <= 10 ? 'Průměrný spánek' : 'Špatný spánek';
+      const cls  = score <= 6 ? 'text-green-700'   : score <= 10 ? 'text-amber-700'   : 'text-red-700';
+      return {score, max:16, label:'PSD Spánek', text, cls};
+    }
+    if (['kss','kss_pre','kss_post'].includes(qtype)) {
+      const v = parseInt(answers.sleepiness_level) || 0;
+      if (!v) return null;
+      const text = v <= 3 ? 'Bdělý/á' : v <= 5 ? 'Mírná ospalost' : v <= 7 ? 'Zvýšená ospalost' : 'Výrazná ospalost';
+      const cls  = v <= 3 ? 'text-green-700' : v <= 5 ? 'text-amber-700' : 'text-red-700';
+      return {score: v, max:9, label:'KSS Ospalost', text, cls};
+    }
+    if (qtype === 'mfi20') {
+      const rev = new Set(['gf3','gf4','pf3','pf4','ra3','ra4','rm2','mf3']);
+      const keys = ['gf1','gf2','gf3','gf4','pf1','pf2','pf3','pf4','ra1','ra2','ra3','ra4','rm1','rm2','rm3','rm4','mf1','mf2','mf3','mf4'];
+      let total = 0, cnt = 0;
+      for (const k of keys) {
+        const v = parseInt(answers[k]);
+        if (v >= 1 && v <= 5) { total += rev.has(k) ? (6 - v) : v; cnt++; }
+      }
+      if (cnt < 10) return null;
+      const text = total <= 40 ? 'Nízká únava' : total <= 60 ? 'Střední únava' : 'Vysoká únava';
+      const cls  = total <= 40 ? 'text-green-700' : total <= 60 ? 'text-amber-700' : 'text-red-700';
+      return {score: total, max:100, label:'MFI-20 Únava', text, cls};
+    }
+    if (qtype === 'psqi') {
+      const latMap = {a:0, b:1, c:2, d:3};
+      const durMap = {a:0, b:1, c:2, d:3};
+      const lat = latMap[answers.sleep_latency_category] ?? 0;
+      const dur = durMap[answers.actual_sleep_duration_category] ?? 0;
+      const bKeys = ['cannot_sleep_30_min','wake_middle_or_early','need_bathroom','breathing_discomfort','cough_or_snore','feel_cold','feel_hot','bad_dreams','pain'];
+      const bSum = bKeys.reduce((s,k) => s + (parseInt(answers[k]) || 0), 0);
+      const bComp = bSum === 0 ? 0 : bSum <= 9 ? 1 : bSum <= 18 ? 2 : 3;
+      const med = parseInt(answers.sleep_medication) || 0;
+      const d1  = parseInt(answers.daytime_stay_awake_problems) || 0;
+      const d2  = parseInt(answers.daytime_activity_attention_difficulty) || 0;
+      const dayComp = Math.round((d1 + d2) / 2);
+      const qual = parseInt(answers.subjective_sleep_quality) || 0;
+      const total = lat + dur + bComp + med + dayComp + qual;
+      const text = total <= 4 ? 'Dobrá kvalita spánku' : total <= 10 ? 'Mírně zhoršená kvalita' : 'Výrazně špatná kvalita (klinicky)';
+      const cls  = total <= 4 ? 'text-green-700' : total <= 10 ? 'text-amber-700' : 'text-red-700';
+      return {score: total, max:21, label:'PSQI Spánek', text, cls};
+    }
+    if (qtype === 'meq') {
+      const ct = this.meqChronotype([{q_type:'meq', answers}]);
+      if (ct) return {score: ct.score, max:86, label:'MEQ Chronotyp', text:`${ct.emoji} ${ct.label} – ${ct.desc}`, cls:'text-amber-700'};
+    }
+    return null;
   },
 
   qtypeColor(qt){return {
