@@ -57,7 +57,14 @@ def export_garmin(db: Session = Depends(get_db)):
         "stress_avg": r.stress_avg,
         "steps": r.steps,
         "resting_hr": r.resting_hr,
+        "max_hr": getattr(r, "max_hr", None),
+        "spo2_avg": getattr(r, "spo2_avg", None),
+        "respiration_avg": getattr(r, "respiration_avg", None),
         "body_battery_low": r.body_battery_low,
+        "body_battery_high": getattr(r, "body_battery_high", None),
+        "active_minutes": getattr(r, "active_minutes", None),
+        "calories_active": getattr(r, "calories_active", None),
+        "source": r.source,
     } for r, u in rows]
     df = pd.DataFrame(records)
     buf = io.BytesIO()

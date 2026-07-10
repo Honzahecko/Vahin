@@ -390,12 +390,18 @@ async def webhook_dailies(request: Request, db: Session = Depends(get_db)):
         updates = {
             "steps":           item.get("steps"),
             "resting_hr":      item.get("restingHeartRateInBeatsPerMinute"),
+            "max_hr":          item.get("maxHeartRateInBeatsPerMinute"),
             "spo2_avg":        item.get("averageSpO2"),
             "respiration_avg": item.get("averageRespirationValue"),
             "stress_avg":      item.get("averageStressLevel"),
-            "body_battery_high": item.get("bodyBatteryChargedValue"),
-            "body_battery_low":  item.get("bodyBatteryDrainedValue"),
+            "calories_active": item.get("activeKilocalories"),
+            # bodyBatteryCharged/DrainedValue = kolik se nabilo/vybilo, NE min/max
+            # → skutečné min/max posílá stress webhook (Highest/LowestValue)
         }
+        mod = item.get("moderateIntensityDurationInSeconds") or 0
+        vig = item.get("vigorousIntensityDurationInSeconds") or 0
+        if mod or vig:
+            updates["active_minutes"] = int((mod + vig) // 60)
         _upsert_garmin(user.id, date_val, updates, db)
 
     return {"ok": True}
