@@ -2672,12 +2672,19 @@ function app() { return {
   async syncPhaseNotifs() {
     const r = await this.apiFetch('/api/push/sync-phase', {method:'POST'});
     if (r?.ok) {
-      // Znovu načti schedules aby se zobrazil aktuální stav checkboxů
+      // Načti aktuální stav účastníka (fáze se mohla změnit)
+      const participants = await this.apiFetch('/api/participants');
+      if (participants) {
+        const fresh = participants.find(p => p.id === this.selectedP.id);
+        if (fresh) this.selectedP = {...this.selectedP, ...fresh};
+      }
+      // Načti nové schedules z DB a překresli celý seznam
       const scheds = await this.apiFetch('/api/push/schedules/'+this.selectedP.id);
-      if (scheds) {
+      if (scheds && scheds.length > 0) {
+        // Merge: zachovej lokální custom_msg a time, aktualizuj enabled + study_days_mask
         this.drawerSchedules = this.drawerSchedules.map(s => {
-          const fresh = scheds.find(f => f.notif_type === s.notif_type);
-          return fresh ? {...s, enabled: fresh.enabled} : s;
+          const db = scheds.find(f => f.notif_type === s.notif_type);
+          return db ? {...s, enabled: db.enabled, study_days_mask: db.study_days_mask, hour: db.hour, minute: db.minute, time: this.padTime(db.hour, db.minute)} : s;
         });
       }
       this.drawerSchedMsg = 'Sync hotov ✓';

@@ -244,7 +244,7 @@ def _build_notif_schedules(user_id: int, shift_schedule: str) -> list:
     ]
 
 def sync_phase_notifications(db_session_factory):
-    """Každý den v 00:05: přepíná fáze a aktualizuje notifikace podle aktuálního study_day."""
+    """Každý den v 00:05 (a při ručním Sync fáze): přepíná fáze a nastavuje notifikace."""
     from sqlalchemy.orm import Session as DBSession
     now = datetime.now(_PRAGUE) if _PRAGUE else datetime.now()
     db: DBSession = db_session_factory()
@@ -255,35 +255,46 @@ def sync_phase_notifications(db_session_factory):
 
             if study_day < 1:
                 # Studie ještě nezačala – vypni všechny notifikace
-                db.query(NotificationSchedule).filter(
-                    NotificationSchedule.user_id == user.id,
-                    NotificationSchedule.enabled == True,
-                ).update({"enabled": False})
+                for s in db.query(NotificationSchedule).filter(
+                    NotificationSchedule.user_id == user.id
+                ).all():
+                    s.enabled = False
 
-            elif study_day >= 1 and user.phase == 'prerandomizace':
-                # Studie začala dnes nebo dříve, ale fáze nebyla přepnuta (missed transition)
+            elif user.phase in (None, 'prerandomizace'):
+                # Studie začala – přepni fázi a vybuduj notifikace z rozvrhu
                 user.phase = 'phase1'
-                db.query(NotificationSchedule).filter(NotificationSchedule.user_id == user.id).delete()
+                existing = db.query(NotificationSchedule).filter(
+                    NotificationSchedule.user_id == user.id
+                ).all()
+                for s in existing:
+                    db.delete(s)
+                db.flush()
                 for s in _build_notif_schedules(user.id, user.shift_schedule):
                     db.add(s)
 
-            elif study_day == 8 and user.phase == 'phase1':
-                # Den 8: washout – vypni stimulace
+            elif 8 <= study_day <= 14 and user.phase == 'phase1':
+                # Washout – vypni stimulace
                 user.phase = 'washout'
-                db.query(NotificationSchedule).filter(
-                    NotificationSchedule.user_id == user.id,
-                    NotificationSchedule.notif_type.in_(STIM_TYPES),
-                ).update({"enabled": False})
+                for s in db.query(NotificationSchedule).filter(
+                    NotificationSchedule.user_id == user.id
+                ).all():
+                    if s.notif_type in STIM_TYPES:
+                        s.enabled = False
 
-            elif study_day == 15 and user.phase == 'washout':
-                # Den 15: fáze 3 – zapni stimulace zpět
+            elif study_day >= 15 and user.phase == 'washout':
+                # Fáze 3 – zapni stimulace zpět
                 user.phase = 'phase2'
-                db.query(NotificationSchedule).filter(
-                    NotificationSchedule.user_id == user.id,
-                    NotificationSchedule.notif_type.in_(STIM_TYPES),
-                ).update({"enabled": True})
+                for s in db.query(NotificationSchedule).filter(
+                    NotificationSchedule.user_id == user.id
+                ).all():
+                    if s.notif_type in STIM_TYPES:
+                        s.enabled = True
 
         db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"[sync_phase_notifications] ERROR: {e}")
+        raise
     finally:
         db.close()
 
