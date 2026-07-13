@@ -1775,13 +1775,13 @@
             </div>
 
             <!-- Dnešní záznamy -->
-            <template x-if="cortisolData.logs.filter(l=>l.sample_time.slice(0,10)===new Date().toISOString().slice(0,10)).length > 0">
+            <template x-if="cortisolData.logs.filter(l=>localDay(l.sample_time)===localDay(new Date())).length > 0">
               <div class="border-t border-purple-200 pt-2">
                 <div class="text-xs text-purple-500 font-semibold mb-1">Dnešní záznamy</div>
-                <template x-for="log in cortisolData.logs.filter(l=>l.sample_time.slice(0,10)===new Date().toISOString().slice(0,10))" :key="log.id">
+                <template x-for="log in cortisolData.logs.filter(l=>localDay(l.sample_time)===localDay(new Date()))" :key="log.id">
                   <div class="flex justify-between items-center text-xs py-0.5">
                     <span class="font-semibold text-purple-700" x-text="{t0:'Vzorek 1 – ráno',t15:'Vzorek 2 – odpoledne',t30:'Vzorek 3 – večer'}[log.timepoint]"></span>
-                    <span class="text-purple-400" x-text="log.sample_time.slice(11,16)"></span>
+                    <span class="text-purple-400" x-text="formatTime(log.sample_time)"></span>
                     <button @click="deleteCortisol(log.id)" class="text-red-400 hover:text-red-600 ml-2">✕</button>
                   </div>
                 </template>
@@ -3117,11 +3117,11 @@ function app() { return {
 
   cortisolDoneToday(timepoint){
     if(!this.cortisolData?.logs) return false;
-    const today = new Date().toISOString().slice(0,10);
+    const today = this.localDay(new Date());
     return this.cortisolData.logs.some(l =>
       l.timepoint === timepoint &&
       l.sample_type === this.cortisolData.sample_type_today &&
-      l.sample_time.slice(0,10) === today
+      this.localDay(l.sample_time) === today
     );
   },
 
@@ -3179,7 +3179,7 @@ function app() { return {
 
   setShiftType(type){
     this.todayShiftType = type;
-    const key = 'vahin_shift_' + new Date().toISOString().slice(0,10);
+    const key = 'vahin_shift_' + this.localDay(new Date());
     if(type) localStorage.setItem(key, type);
     else localStorage.removeItem(key);
     this.buildDayTasks();
@@ -3205,10 +3205,10 @@ function app() { return {
 
   buildDayTasks(){
     const now = new Date();
-    const todayStr = now.toISOString().slice(0,10);
+    const todayStr = this.localDay(now);
     const ms7d = 7*24*60*60*1000;
 
-    const filledToday = (qtype) => this.myResponses.some(r=>r.q_type===qtype && r.filled_at.slice(0,10)===todayStr);
+    const filledToday = (qtype) => this.myResponses.some(r=>r.q_type===qtype && this.localDay(r.filled_at)===todayStr);
     const filledWithin7d = (qtype) => this.myResponses.some(r=>r.q_type===qtype && (now-new Date(r.filled_at))<ms7d);
 
     // Týdenní — vždy viditelné bez ohledu na výběr směny
@@ -3295,7 +3295,7 @@ function app() { return {
   // ── Pomocné funkce pro dlaždicový seznam dotazníků ────────────────────────
 
   qIsDone(qkey){
-    const todayStr = new Date().toISOString().slice(0,10);
+    const todayStr = this.localDay(new Date());
     const ms7d = 7*24*60*60*1000;
     const def = this.allQDefs.find(d=>d.key===qkey);
     const freq = def?.frequency;
@@ -3303,7 +3303,7 @@ function app() { return {
     if(!last) return false;
     if(freq==='once_start'||freq==='once_end') return true;
     if(freq==='weekly') return (new Date()-new Date(last.filled_at)) < ms7d;
-    return last.filled_at.slice(0,10)===todayStr;
+    return this.localDay(last.filled_at)===todayStr;
   },
 
   qShortTitle(qkey){
@@ -3366,7 +3366,7 @@ function app() { return {
 
   buildGuideTasks(){
     const now = new Date();
-    const todayStr = now.toISOString().slice(0,10);
+    const todayStr = this.localDay(now);
     const ms12h = 12*60*60*1000;
     const ms7d  = 7*24*60*60*1000;
 
@@ -3377,7 +3377,7 @@ function app() { return {
     };
     const filledToday = (qtype) => {
       const d = lastFilled(qtype);
-      return d && d.toISOString().slice(0,10)===todayStr;
+      return d && this.localDay(d)===todayStr;
     };
     const filledWithin = (qtype, ms) => {
       const d = lastFilled(qtype);
@@ -3636,7 +3636,7 @@ function app() { return {
   chartKss(){
     const byDate={};
     this.liveResponses.filter(r=>r.q_type==='kss_pre'||r.q_type==='kss_post').forEach(r=>{
-      const d=(r.filled_at||'').split('T')[0]; if(!d) return;
+      const d=r.filled_at?this.localDay(r.filled_at):null; if(!d) return;
       if(!byDate[d]) byDate[d]={pre:[],post:[]};
       const v=r.answers?.sleepiness_level; if(v==null) return;
       byDate[d][r.q_type==='kss_pre'?'pre':'post'].push(+v);
@@ -3649,7 +3649,7 @@ function app() { return {
   chartVas(){
     const byDate={};
     this.liveResponses.filter(r=>r.answers?.vas_fatigue!=null).forEach(r=>{
-      const d=(r.filled_at||'').split('T')[0]; if(!d) return;
+      const d=r.filled_at?this.localDay(r.filled_at):null; if(!d) return;
       if(!byDate[d]) byDate[d]=[];
       byDate[d].push(+r.answers.vas_fatigue);
     });
@@ -4107,12 +4107,12 @@ function app() { return {
 
   drawerDayGrid(){
     const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = this.localDay(today);
     const days = [];
     for(let i=6;i>=0;i--){
       const d = new Date(today); d.setDate(d.getDate()-i);
-      const dateStr = d.toISOString().split('T')[0];
-      const responses = this.selectedPResponses.filter(r=>r.filled_at&&r.filled_at.startsWith(dateStr));
+      const dateStr = this.localDay(d);
+      const responses = this.selectedPResponses.filter(r=>r.filled_at&&this.localDay(r.filled_at)===dateStr);
       const label = i===0?'Dnes':d.toLocaleDateString('cs-CZ',{weekday:'short'}).replace('.','');
       days.push({date:dateStr,label,count:responses.length,isToday:dateStr===todayStr,
                  qtypes:[...new Set(responses.map(r=>r.q_type))]});
@@ -4131,6 +4131,9 @@ function app() { return {
     return idx<cur?'done':idx===cur?'current':'';
   },
   todayStr(){ return new Date().toLocaleDateString('cs-CZ',{weekday:'long',year:'numeric',month:'long',day:'numeric'}); },
+  // Lokální (české) datum YYYY-MM-DD z ISO stringu nebo Date — nikdy neřezat
+  // ISO string přímo (je v UTC a po půlnoci/večer by dal špatný den).
+  localDay(d){ const dt = d instanceof Date ? d : new Date(d); if(isNaN(dt)) return null; const p=n=>('0'+n).slice(-2); return dt.getFullYear()+'-'+p(dt.getMonth()+1)+'-'+p(dt.getDate()); },
   formatDate(d){ if(!d) return '—'; const p=d.split('T')[0].split('-'); const dt=new Date(+p[0],+p[1]-1,+p[2]); return dt.toLocaleDateString('cs-CZ',{weekday:'short',day:'2-digit',month:'2-digit'}); },
   formatDateTime(d){ return d?new Date(d).toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'; },
   formatTime(d){ return d?new Date(d).toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}):'—'; },

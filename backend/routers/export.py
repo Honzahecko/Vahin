@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
@@ -6,6 +6,7 @@ import pandas as pd, json, io
 from database import (get_db, User, UserRole, QuestionnaireResponse, GarminData,
                       NightShift, CortisolLog, CognitiveTest)
 from auth import require_researcher
+from tzutil import prague_str
 
 router = APIRouter(prefix="/api/export", tags=["export"])
 
@@ -36,11 +37,11 @@ def _participant_records(db: Session) -> list:
         "phase": u.phase,
         "is_active": u.is_active,
         "consent_signed": u.consent_signed,
-        "consent_date": u.consent_date.isoformat() if u.consent_date else None,
+        "consent_date": prague_str(u.consent_date),
         "study_start_date": u.study_start_date.date().isoformat() if u.study_start_date else None,
         "shift_schedule": u.shift_schedule,
         "garmin_connected": bool(getattr(u, "garmin_access_token", None)),
-        "created_at": u.created_at.isoformat() if u.created_at else None,
+        "created_at": prague_str(u.created_at),
     } for u in users]
 
 def _questionnaire_records(db: Session) -> list:
@@ -56,7 +57,7 @@ def _questionnaire_records(db: Session) -> list:
             "group": u.group,
             "phase": r.phase,
             "q_type": r.q_type,
-            "filled_at": r.filled_at.isoformat() if r.filled_at else None,
+            "filled_at": prague_str(r.filled_at),
             "shift_id": r.shift_id,
         }
         base.update(answers)
@@ -118,7 +119,7 @@ def _cortisol_records(db: Session) -> list:
         "group": u.group,
         "sample_type": c.sample_type,      # day1/day7/day15/day21
         "timepoint": c.timepoint,          # t0/t15/t30
-        "sample_time": c.sample_time.isoformat() if c.sample_time else None,
+        "sample_time": prague_str(c.sample_time),
         "phase": c.phase,
         "notes": c.notes,
     } for c, u in rows]
@@ -137,7 +138,7 @@ def _pvt_records(db: Session) -> list:
             "phase": t.phase,
             "score": t.score,
             "duration_ms": t.duration_ms,
-            "taken_at": t.taken_at.isoformat() if t.taken_at else None,
+            "taken_at": prague_str(t.taken_at),
         }
         # Rozbal detailní výsledky (medián RT, lapses…) do sloupců
         if t.result_json:

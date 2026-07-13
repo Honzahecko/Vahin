@@ -6,6 +6,7 @@ from typing import Optional, List
 from datetime import datetime
 from database import get_db, User, NightShift, StudyPhase
 from auth import get_current_user, require_researcher
+from tzutil import utc_iso
 
 router = APIRouter(prefix="/api/shifts", tags=["shifts"])
 
@@ -28,7 +29,7 @@ def shift_to_dict(s: NightShift) -> dict:
         "nurosym_minutes": s.nurosym_minutes,
         "phase": s.phase,
         "notes": s.notes,
-        "created_at": s.created_at.isoformat() if s.created_at else None,
+        "created_at": utc_iso(s.created_at),
     }
 
 @router.get("/my")

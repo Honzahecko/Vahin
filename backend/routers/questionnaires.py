@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 Dotazníky: únava před/po směně (VAS), kvalita spánku (PSQI subset), týdenní pohoda.
 """
@@ -10,6 +10,7 @@ from datetime import datetime
 import json
 from database import get_db, User, QuestionnaireResponse, QuestionnaireType, StudyPhase
 from auth import get_current_user, require_researcher
+from tzutil import utc_iso
 
 router = APIRouter(prefix="/api/questionnaires", tags=["questionnaires"])
 
@@ -465,7 +466,7 @@ def submit_response(
     db.add(resp)
     db.commit()
     db.refresh(resp)
-    return {"id": resp.id, "filled_at": resp.filled_at.isoformat()}
+    return {"id": resp.id, "filled_at": utc_iso(resp.filled_at)}
 
 @router.get("/my")
 def my_responses(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -477,7 +478,7 @@ def my_responses(current_user: User = Depends(get_current_user), db: Session = D
             "id": r.id,
             "q_type": r.q_type,
             "shift_id": r.shift_id,
-            "filled_at": r.filled_at.isoformat(),
+            "filled_at": utc_iso(r.filled_at),
             "answers": json.loads(r.answers),
         }
         for r in responses
@@ -518,7 +519,7 @@ def user_responses(user_id: int, db: Session = Depends(get_db)):
             "user_id": r.user_id,
             "q_type": r.q_type,
             "phase": r.phase,
-            "filled_at": r.filled_at.isoformat(),
+            "filled_at": utc_iso(r.filled_at),
             "answers": json.loads(r.answers),
         }
         for r in responses
@@ -535,7 +536,7 @@ def all_responses(db: Session = Depends(get_db)):
             "q_type": r.q_type,
             "shift_id": r.shift_id,
             "phase": r.phase,
-            "filled_at": r.filled_at.isoformat(),
+            "filled_at": utc_iso(r.filled_at),
             "answers": json.loads(r.answers),
         }
         for r in responses

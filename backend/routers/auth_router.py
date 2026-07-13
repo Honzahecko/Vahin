@@ -57,10 +57,10 @@ def change_password(data: ChangePasswordRequest, current_user: User = Depends(ge
 
 @router.get("/me")
 def me(current_user: User = Depends(get_current_user)):
-    from datetime import datetime
+    from tzutil import now_prague
     study_day = None
     if current_user.study_start_date and current_user.phase not in (None, 'preparation'):
-        delta = (datetime.utcnow() - current_user.study_start_date).days + 1
+        delta = (now_prague().date() - current_user.study_start_date.date()).days + 1
         study_day = max(1, min(delta, 21))
     return {
         "id": current_user.id,

@@ -6,6 +6,7 @@ from typing import Optional, List
 from datetime import datetime
 from database import get_db, User, UserRole, StudyGroup, StudyPhase, ProfessionType
 from auth import hash_password, get_current_user, require_researcher
+from tzutil import utc_iso, now_prague
 
 router = APIRouter(prefix="/api/participants", tags=["participants"])
 
@@ -31,7 +32,7 @@ def participant_to_dict(u: User) -> dict:
     recommended_phase = None
     study_day = None
     if u.study_start_date:
-        delta = (datetime.utcnow() - u.study_start_date).days + 1
+        delta = (now_prague().date() - u.study_start_date.date()).days + 1
         if delta >= 1:  # studie již začala
             if u.phase not in (None, 'preparation'):
                 study_day = min(delta, 21)
@@ -50,13 +51,13 @@ def participant_to_dict(u: User) -> dict:
         "phase": u.phase,
         "is_active": u.is_active,
         "consent_signed": u.consent_signed,
-        "consent_date": u.consent_date.isoformat() if u.consent_date else None,
+        "consent_date": utc_iso(u.consent_date),
         "study_start_date": u.study_start_date.date().isoformat() if u.study_start_date else None,
         "study_day": study_day,
         "recommended_phase": recommended_phase,
         "notes": u.notes,
         "garmin_user_id": getattr(u, "garmin_user_id", None),
-        "created_at": u.created_at.isoformat() if u.created_at else None,
+        "created_at": utc_iso(u.created_at),
     }
 
 def next_participant_code(db: Session) -> str:

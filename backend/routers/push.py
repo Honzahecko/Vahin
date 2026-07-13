@@ -14,6 +14,7 @@ except Exception:
     _PRAGUE = None
 from database import get_db, User, PushSubscription, NotificationSchedule, NotifType
 from auth import get_current_user, require_researcher
+from tzutil import utc_iso, now_prague
 import push_manager
 
 router = APIRouter(prefix="/api/push", tags=["push"])
@@ -76,7 +77,7 @@ def unsubscribe(data: SubscribeIn, current_user: User = Depends(get_current_user
 @router.get("/subscriptions/me")
 def my_subscriptions(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     subs = db.query(PushSubscription).filter(PushSubscription.user_id == current_user.id).all()
-    return [{"id": s.id, "endpoint_short": s.endpoint[-30:], "created_at": s.created_at.isoformat()} for s in subs]
+    return [{"id": s.id, "endpoint_short": s.endpoint[-30:], "created_at": utc_iso(s.created_at)} for s in subs]
 
 # ── Admin: schedules ────────────────────────────────────────────────────────
 
@@ -112,7 +113,7 @@ def get_my_shift_schedule(current_user: User = Depends(get_current_user), db: Se
     schedule_set = any(c != 'V' for c in schedule)
     today_type = None
     if current_user.study_start_date:
-        study_day = (datetime.utcnow().date() - current_user.study_start_date.date()).days + 1
+        study_day = (now_prague().date() - current_user.study_start_date.date()).days + 1
         if 1 <= study_day <= 21:
             char = schedule[study_day - 1] if (study_day - 1) < len(schedule) else 'V'
             today_type = {'N': 'nocni', 'D': 'denni', 'V': 'volno'}.get(char, 'volno')

@@ -6,6 +6,7 @@ from typing import Optional
 from datetime import datetime
 from database import get_db, AdminNote, User, AdminNoteType
 from auth import get_current_user, require_researcher
+from tzutil import utc_iso
 
 router = APIRouter(prefix="/api/notes", tags=["admin_notes"])
 
@@ -27,7 +28,7 @@ def note_to_dict(n: AdminNote, author: User = None) -> dict:
         "note_type": n.note_type,
         "text": n.text,
         "phase": n.phase,
-        "created_at": n.created_at.isoformat(),
+        "created_at": utc_iso(n.created_at),
         "resolved": n.resolved,
     }
 

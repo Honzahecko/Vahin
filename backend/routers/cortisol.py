@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 
 from database import get_db, User, CortisolLog, CortisolSampleType, CortisolTimepoint, StudyPhase
 from auth import get_current_user, require_researcher
+from tzutil import utc_iso, now_prague
 import push_manager
 
 router = APIRouter(prefix="/api/cortisol", tags=["cortisol"])
@@ -38,7 +39,9 @@ CORTISOL_DAYS = {1: "day1", 7: "day7", 15: "day15", 21: "day21"}
 def current_study_day(user: User) -> Optional[int]:
     if not user.study_start_date:
         return None
-    delta = (datetime.utcnow() - user.study_start_date).days + 1
+    # Den studie počítej v českém čase (konzistentně s plánovačem notifikací),
+    # jinak se den přepne až ve 2:00 ráno letního času.
+    delta = (now_prague().date() - user.study_start_date.date()).days + 1
     return max(1, delta)
 
 def is_cortisol_day(user: User) -> bool:
@@ -54,10 +57,10 @@ def log_to_dict(log: CortisolLog) -> dict:
         "id":          log.id,
         "sample_type": log.sample_type,
         "timepoint":   log.timepoint,
-        "sample_time": log.sample_time.isoformat(),
+        "sample_time": utc_iso(log.sample_time),
         "phase":       log.phase,
         "notes":       log.notes,
-        "created_at":  log.created_at.isoformat(),
+        "created_at":  utc_iso(log.created_at),
     }
 
 # ─── Endpointy – účastník ────────────────────────────────────────────────────
