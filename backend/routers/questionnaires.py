@@ -472,7 +472,7 @@ def submit_response(
 def my_responses(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     responses = db.query(QuestionnaireResponse)\
                   .filter(QuestionnaireResponse.user_id == current_user.id)\
-                  .order_by(QuestionnaireResponse.filled_at.desc()).limit(50).all()
+                  .order_by(QuestionnaireResponse.filled_at.desc()).limit(500).all()
     return [
         {
             "id": r.id,

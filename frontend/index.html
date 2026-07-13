@@ -2201,6 +2201,46 @@
             </div>
           </div>
 
+          <!-- Moje plnění protokolu -->
+          <template x-if="currentUser?.study_start_date && myProtocolGrid().length">
+            <div class="card p-5">
+              <div class="font-bold text-navy-900 mb-1">📋 Moje plnění</div>
+              <div class="text-xs text-gray-500 mb-3">Den po dni podle vašeho rozpisu směn — rozklikněte den pro detail.</div>
+              <div class="divide-y divide-gray-50">
+                <template x-for="day in myProtocolGrid()" :key="'my'+day.d">
+                  <div>
+                    <button @click="protoOpenDay = protoOpenDay===('m'+day.d) ? null : ('m'+day.d)"
+                            class="w-full flex items-center gap-2 py-2 text-left"
+                            :class="day.future ? 'opacity-45' : 'hover:bg-gray-50'">
+                      <span class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                            :class="day.future ? 'bg-gray-200' : day.doneCount===day.total ? 'bg-green-500' : day.doneCount>0 ? 'bg-amber-400' : 'bg-red-400'"></span>
+                      <span class="text-xs font-bold text-gray-700 w-14" x-text="'Den '+day.d"></span>
+                      <span class="text-xs text-gray-400 w-16" x-text="formatDate(day.dateStr)"></span>
+                      <span class="text-xs px-1.5 py-0.5 rounded font-semibold"
+                            :class="day.type==='N' ? 'bg-indigo-100 text-indigo-700' : day.type==='D' ? 'bg-sky-100 text-sky-700' : 'bg-gray-100 text-gray-500'"
+                            x-text="day.type==='N' ? 'Noční' : day.type==='D' ? 'Denní' : 'Volno'"></span>
+                      <span x-show="day.isToday" class="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-semibold">Dnes</span>
+                      <span class="ml-auto text-xs font-mono" :class="day.future ? 'text-gray-300' : day.doneCount===day.total ? 'text-green-600' : 'text-gray-500'"
+                            x-text="day.doneCount+'/'+day.total"></span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                           :style="protoOpenDay===('m'+day.d) ? 'transform:rotate(90deg)' : ''"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                    <div x-show="protoOpenDay===('m'+day.d)" class="pb-2 pl-5 space-y-1">
+                      <template x-for="t in day.tasks" :key="t.q+day.d">
+                        <div class="flex items-center gap-2 text-xs">
+                          <span x-show="t.done" class="text-green-600 font-bold">✓</span>
+                          <span x-show="!t.done && !day.future" class="text-red-400 font-bold">✗</span>
+                          <span x-show="!t.done && day.future" class="text-gray-300">·</span>
+                          <span class="text-gray-600" :class="day.future ? 'text-gray-400' : ''" x-text="t.label"></span>
+                        </div>
+                      </template>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+
           <!-- PŘED STUDIÍ -->
           <div class="card p-5 border-l-4 border-gray-300">
             <div class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Před zahájením · jednorázově</div>
@@ -2526,7 +2566,7 @@ function app() { return {
   adminGarminUserId: '', adminGarminMsg: '', adminGarminOk: false,
   garminDiag: null, garminPulling: false, garminWebhookLog: null,
   guideTasks: [], allQDefs: [], rawDefs: {},
-  todayShiftType: null, yesterdayShiftType: null,
+  todayShiftType: null, yesterdayShiftType: null, myScheduleArr: Array(21).fill('V'),
   stimConfirmQtype: 'stim_done',
   dayTasks: [],
   // Tutorial
@@ -3247,6 +3287,7 @@ function app() { return {
     const r = await this.apiFetch('/api/push/shift-schedule/me');
     this.todayShiftType = (r && r.today_type) ? r.today_type : null;
     this.yesterdayShiftType = (r && r.yesterday_type) ? r.yesterday_type : null;
+    this.myScheduleArr = ((r && r.schedule) || 'V'.repeat(21)).split('');
   },
 
   shiftTypeStyle(type){
@@ -4164,12 +4205,19 @@ function app() { return {
   // Očekávané úkoly každého dne studie dle rozpisu směn (zrcadlí logiku
   // notifikací v backendu) + skutečné plnění z odpovědí účastníka.
   protocolGrid(){
-    if(!this.selectedP?.study_start_date) return [];
-    const start = new Date(this.selectedP.study_start_date + 'T00:00:00');
+    return this._protocolGrid(this.selectedP?.study_start_date, this.participantShiftSchedule, this.selectedPResponses);
+  },
+
+  myProtocolGrid(){
+    return this._protocolGrid(this.currentUser?.study_start_date, this.myScheduleArr, this.myResponses);
+  },
+
+  _protocolGrid(startISO, sch, responses){
+    if(!startISO) return [];
+    const start = new Date(startISO + 'T00:00:00');
     if(isNaN(start)) return [];
-    const sch = this.participantShiftSchedule;
     const todayStr = this.localDay(new Date());
-    const has = (qtype, dateStr) => this.selectedPResponses.some(r => r.q_type===qtype && this.localDay(r.filled_at)===dateStr);
+    const has = (qtype, dateStr) => (responses||[]).some(r => r.q_type===qtype && this.localDay(r.filled_at)===dateStr);
     const days = [];
     for(let d=1; d<=21; d++){
       const dt = new Date(start); dt.setDate(dt.getDate()+d-1);
