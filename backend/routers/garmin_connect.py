@@ -497,6 +497,12 @@ def _apply_stress(user: User, item: dict, db: Session) -> bool:
     return True
 
 
+@router.get("/webhook/{summary_type}")
+def webhook_health_check(summary_type: str):
+    """GET na webhook URL (prohlížeč, verifikace Garmin portálu) → 200 OK."""
+    return {"ok": True, "endpoint": summary_type, "info": "Garmin sem posílá data přes POST"}
+
+
 @router.post("/webhook/dailies")
 async def webhook_dailies(request: Request, db: Session = Depends(get_db)):
     """Receive daily summary push from Garmin Health API."""
