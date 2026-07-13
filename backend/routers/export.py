@@ -58,6 +58,7 @@ def _questionnaire_records(db: Session) -> list:
             "phase": r.phase,
             "q_type": r.q_type,
             "filled_at": prague_str(r.filled_at),
+            "target_date": getattr(r, "target_date", None),
             "shift_id": r.shift_id,
         }
         base.update(answers)

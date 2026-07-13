@@ -97,6 +97,7 @@ def _migrate_db():
     add_col("users",                   "garmin_user_id",      "TEXT")
     add_col("cortisol_logs",           "timepoint",           "TEXT NOT NULL DEFAULT 't0'")
     add_col("notification_schedules",  "study_days_mask",     "INTEGER DEFAULT 0")
+    add_col("questionnaire_responses", "target_date",         "TEXT")
 
     # Oprav neplatnou hodnotu 'prerandomizace' → 'preparation' (způsobená chybou v kódu)
     cur.execute("UPDATE users SET phase = 'preparation' WHERE phase = 'prerandomizace'")

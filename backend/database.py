@@ -102,6 +102,8 @@ class QuestionnaireResponse(Base):
     phase         = Column(SAEnum(StudyPhase), nullable=True)
     filled_at     = Column(DateTime, default=datetime.utcnow)
     duration_seconds = Column(Integer, nullable=True)
+    # Zpětné doplnění: ke kterému dni odpověď patří ('YYYY-MM-DD'), None = den vyplnění
+    target_date   = Column(String, nullable=True)
 
     user          = relationship("User",        back_populates="responses")
     shift         = relationship("NightShift",  back_populates="responses")

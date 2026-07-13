@@ -1875,6 +1875,50 @@
             </div>
           </div>
 
+          <!-- Moje plnění protokolu -->
+          <template x-if="currentUser?.study_start_date && myProtocolGrid().length">
+            <div class="card p-5">
+              <div class="font-bold text-navy-900 mb-1">📋 Moje plnění</div>
+              <div class="text-xs text-gray-500 mb-3">Rozklikněte den — co chybí, můžete kliknutím doplnit.</div>
+              <div class="divide-y divide-gray-50 max-h-96 overflow-y-auto">
+                <template x-for="day in myProtocolGrid()" :key="'my'+day.d">
+                  <div>
+                    <button @click="protoOpenDay = protoOpenDay===('m'+day.d) ? null : ('m'+day.d)"
+                            class="w-full flex items-center gap-2 py-2 text-left"
+                            :class="day.future ? 'opacity-45' : 'hover:bg-gray-50'">
+                      <span class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                            :class="day.future ? 'bg-gray-200' : day.doneCount===day.total ? 'bg-green-500' : day.doneCount>0 ? 'bg-amber-400' : 'bg-red-400'"></span>
+                      <span class="text-xs font-bold text-gray-700 w-12" x-text="'Den '+day.d"></span>
+                      <span class="text-xs text-gray-400 w-14" x-text="formatDate(day.dateStr)"></span>
+                      <span class="text-xs px-1.5 py-0.5 rounded font-semibold"
+                            :class="day.type==='N' ? 'bg-indigo-100 text-indigo-700' : day.type==='D' ? 'bg-sky-100 text-sky-700' : 'bg-gray-100 text-gray-500'"
+                            x-text="day.type==='N' ? 'Noční' : day.type==='D' ? 'Denní' : 'Volno'"></span>
+                      <span x-show="day.isToday" class="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-semibold">Dnes</span>
+                      <span class="ml-auto text-xs font-mono" :class="day.future ? 'text-gray-300' : day.doneCount===day.total ? 'text-green-600' : 'text-gray-500'"
+                            x-text="day.doneCount+'/'+day.total"></span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                           :style="protoOpenDay===('m'+day.d) ? 'transform:rotate(90deg)' : ''"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                    <div x-show="protoOpenDay===('m'+day.d)" class="pb-2 pl-5 space-y-0.5">
+                      <template x-for="t in day.tasks" :key="t.q+day.d">
+                        <button class="w-full flex items-center gap-2 text-xs py-1 text-left rounded"
+                                :disabled="t.done || day.future"
+                                @click="backfillTask(t, day)"
+                                :class="!t.done && !day.future ? 'hover:bg-blue-50 cursor-pointer' : 'cursor-default'">
+                          <span x-show="t.done" class="text-green-600 font-bold">✓</span>
+                          <span x-show="!t.done && !day.future" class="text-red-400 font-bold">✗</span>
+                          <span x-show="!t.done && day.future" class="text-gray-300">·</span>
+                          <span :class="day.future ? 'text-gray-400' : 'text-gray-600'" x-text="t.label"></span>
+                          <span x-show="!t.done && !day.future" class="ml-auto text-blue-600 font-semibold">Doplnit →</span>
+                        </button>
+                      </template>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
+
           <!-- Last shifts -->
           <div class="flex flex-col gap-4">
             <div class="card p-5">
@@ -2200,46 +2244,6 @@
               <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-lg bg-amber-50 text-amber-700">🎯 Stimulace</span>
             </div>
           </div>
-
-          <!-- Moje plnění protokolu -->
-          <template x-if="currentUser?.study_start_date && myProtocolGrid().length">
-            <div class="card p-5">
-              <div class="font-bold text-navy-900 mb-1">📋 Moje plnění</div>
-              <div class="text-xs text-gray-500 mb-3">Den po dni podle vašeho rozpisu směn — rozklikněte den pro detail.</div>
-              <div class="divide-y divide-gray-50">
-                <template x-for="day in myProtocolGrid()" :key="'my'+day.d">
-                  <div>
-                    <button @click="protoOpenDay = protoOpenDay===('m'+day.d) ? null : ('m'+day.d)"
-                            class="w-full flex items-center gap-2 py-2 text-left"
-                            :class="day.future ? 'opacity-45' : 'hover:bg-gray-50'">
-                      <span class="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                            :class="day.future ? 'bg-gray-200' : day.doneCount===day.total ? 'bg-green-500' : day.doneCount>0 ? 'bg-amber-400' : 'bg-red-400'"></span>
-                      <span class="text-xs font-bold text-gray-700 w-14" x-text="'Den '+day.d"></span>
-                      <span class="text-xs text-gray-400 w-16" x-text="formatDate(day.dateStr)"></span>
-                      <span class="text-xs px-1.5 py-0.5 rounded font-semibold"
-                            :class="day.type==='N' ? 'bg-indigo-100 text-indigo-700' : day.type==='D' ? 'bg-sky-100 text-sky-700' : 'bg-gray-100 text-gray-500'"
-                            x-text="day.type==='N' ? 'Noční' : day.type==='D' ? 'Denní' : 'Volno'"></span>
-                      <span x-show="day.isToday" class="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-semibold">Dnes</span>
-                      <span class="ml-auto text-xs font-mono" :class="day.future ? 'text-gray-300' : day.doneCount===day.total ? 'text-green-600' : 'text-gray-500'"
-                            x-text="day.doneCount+'/'+day.total"></span>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                           :style="protoOpenDay===('m'+day.d) ? 'transform:rotate(90deg)' : ''"><polyline points="9 18 15 12 9 6"/></svg>
-                    </button>
-                    <div x-show="protoOpenDay===('m'+day.d)" class="pb-2 pl-5 space-y-1">
-                      <template x-for="t in day.tasks" :key="t.q+day.d">
-                        <div class="flex items-center gap-2 text-xs">
-                          <span x-show="t.done" class="text-green-600 font-bold">✓</span>
-                          <span x-show="!t.done && !day.future" class="text-red-400 font-bold">✗</span>
-                          <span x-show="!t.done && day.future" class="text-gray-300">·</span>
-                          <span class="text-gray-600" :class="day.future ? 'text-gray-400' : ''" x-text="t.label"></span>
-                        </div>
-                      </template>
-                    </div>
-                  </div>
-                </template>
-              </div>
-            </div>
-          </template>
 
           <!-- PŘED STUDIÍ -->
           <div class="card p-5 border-l-4 border-gray-300">
@@ -2606,7 +2610,7 @@ function app() { return {
   showAddP:false, newP:{full_name:'',email:'',password:'',profession:'',group:''},
   addMsg:'', addOk:false, actionMsg:'', actionOk:false,
   detailPanel:false, selectedP:null, selectedPShifts:[], selectedPResponses:[], selectedPCortisol:[], selectedPGarmin:[],
-  protoOpenDay:null,
+  protoOpenDay:null, qTargetDate:null,
   drawerMsg:'', drawerOk:false,
   liveResponses:[], liveShifts:[], liveGarmin:[], dataTab:'live', expandedRow:null,
   editModal:false, editTarget:null, editMsg:'', editOk:false,
@@ -3013,8 +3017,8 @@ function app() { return {
     this.garminConnected = false;
   },
 
-  openStimConfirm(qtype) { this.stimConfirmQtype = qtype || 'stim_done'; this.stimConfirmVisible = true; },
-  openCortizolConfirm() { this.cortizolConfirmVisible = true; },
+  openStimConfirm(qtype) { this.qTargetDate=null; this.stimConfirmQtype = qtype || 'stim_done'; this.stimConfirmVisible = true; },
+  openCortizolConfirm() { this.qTargetDate=null; this.cortizolConfirmVisible = true; },
 
   async confirmCortizol(confirmed) {
     this.cortizolConfirmVisible = false;
@@ -3022,12 +3026,13 @@ function app() { return {
     await this.apiFetch('/api/questionnaires/', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({q_type:'cortizol_done', answers:{done:true}})
+      body: JSON.stringify({q_type:'cortizol_done', answers:{done:true}, target_date:this.qTargetDate||undefined})
     });
     await this.loadMyResponses();
   },
 
   async loadMyResponses(){
+    this.qTargetDate = null;   // zpětné doplnění se použije jen na jedno odeslání
     const fresh = await this.apiFetch('/api/questionnaires/my');
     if(fresh){ this.myResponses = fresh; this.buildGuideTasks(); this.buildDayTasks(); }
     return fresh;
@@ -3039,7 +3044,7 @@ function app() { return {
     await this.apiFetch('/api/questionnaires/', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({q_type: this.stimConfirmQtype, answers:{done:true}})
+      body: JSON.stringify({q_type: this.stimConfirmQtype, answers:{done:true}, target_date:this.qTargetDate||undefined})
     });
     await this.loadMyResponses();
   },
@@ -3128,6 +3133,7 @@ function app() { return {
   // ── PVT game ──────────────────────────────────────────────────────────────
 
   startPvt(){
+    this.qTargetDate = null;
     this.pvtPhase = 'intro';
     this.pvtTrials = [];
     this.pvtLastRt = null;
@@ -3188,10 +3194,10 @@ function app() { return {
   async pvtSave(){
     this.pvtSaving = true;
     try {
-      await fetch('/api/questionnaires/pvt/responses', {
+      await fetch('/api/questionnaires/', {
         method:'POST',
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+this.token},
-        body: JSON.stringify({answers: this.pvtResult})
+        body: JSON.stringify({q_type:'pvt', answers: this.pvtResult, target_date: this.qTargetDate||undefined})
       });
       await this.loadMyResponses();
     } catch(e){}
@@ -3308,7 +3314,7 @@ function app() { return {
     const todayStr = this.localDay(now);
     const ms7d = 7*24*60*60*1000;
 
-    const filledToday = (qtype) => this.myResponses.some(r=>r.q_type===qtype && this.localDay(r.filled_at)===todayStr);
+    const filledToday = (qtype) => this.myResponses.some(r=>r.q_type===qtype && this.responseDay(r)===todayStr);
     const filledWithin7d = (qtype) => this.myResponses.some(r=>r.q_type===qtype && (now-new Date(r.filled_at))<ms7d);
 
     // Týdenní — vždy viditelné bez ohledu na výběr směny
@@ -3410,7 +3416,7 @@ function app() { return {
     if(!last) return false;
     if(freq==='once_start'||freq==='once_end') return true;
     if(freq==='weekly') return (new Date()-new Date(last.filled_at)) < ms7d;
-    return this.localDay(last.filled_at)===todayStr;
+    return this.responseDay(last)===todayStr;
   },
 
   qShortTitle(qkey){
@@ -3934,13 +3940,25 @@ function app() { return {
     event.target.value='';
   },
 
-  goQuestionnaire(type){ this.selectedQ=type; this.activeTab='questionnaire'; },
+  goQuestionnaire(type){ this.qTargetDate=null; this.selectedQ=type; this.activeTab='questionnaire'; },
+
+  // Zpětné doplnění zmeškaného úkolu z přehledu plnění: otevře příslušný
+  // formulář a odpověď se připíše k danému dni (target_date), ne k dnešku.
+  backfillTask(t, day){
+    if(day.future || t.done) return;
+    if(t.q==='pvt') this.startPvt();
+    else if(t.q==='cortizol_done') this.openCortizolConfirm();
+    else if(t.q.startsWith('stim')) this.openStimConfirm(t.q);
+    else this.goQuestionnaire(t.q);
+    if(!day.isToday) this.qTargetDate = day.dateStr;   // až po otevření (otevírací funkce qTargetDate nulují)
+  },
 
   async submitQuestionnaire(){
     this.loading=true; this.qMsg=''; this.qOk=false;
-    const r=await this.apiFetch('/api/questionnaires/',{method:'POST',body:JSON.stringify({q_type:this.selectedQ,answers:this.qAnswers})});
+    const r=await this.apiFetch('/api/questionnaires/',{method:'POST',body:JSON.stringify({q_type:this.selectedQ,answers:this.qAnswers,target_date:this.qTargetDate||undefined})});
     if(r){
       this.qOk=true;
+      this.qTargetDate=null;
       this.qLastScore = this.computeQScore(this.selectedQ, this.qAnswers);
       this.qMsg='Dotazník byl úspěšně uložen!';
       this.qAnswers={};
@@ -4217,7 +4235,7 @@ function app() { return {
     const start = new Date(startISO + 'T00:00:00');
     if(isNaN(start)) return [];
     const todayStr = this.localDay(new Date());
-    const has = (qtype, dateStr) => (responses||[]).some(r => r.q_type===qtype && this.localDay(r.filled_at)===dateStr);
+    const has = (qtype, dateStr) => (responses||[]).some(r => r.q_type===qtype && this.responseDay(r)===dateStr);
     const days = [];
     for(let d=1; d<=21; d++){
       const dt = new Date(start); dt.setDate(dt.getDate()+d-1);
@@ -4288,6 +4306,8 @@ function app() { return {
   // Lokální (české) datum YYYY-MM-DD z ISO stringu nebo Date — nikdy neřezat
   // ISO string přímo (je v UTC a po půlnoci/večer by dal špatný den).
   localDay(d){ const dt = d instanceof Date ? d : new Date(d); if(isNaN(dt)) return null; const p=n=>('0'+n).slice(-2); return dt.getFullYear()+'-'+p(dt.getMonth()+1)+'-'+p(dt.getDate()); },
+  // Den, ke kterému odpověď patří: zpětně doplněné mají target_date, jinak den vyplnění
+  responseDay(r){ return r.target_date || this.localDay(r.filled_at); },
   formatDate(d){ if(!d) return '—'; const p=d.split('T')[0].split('-'); const dt=new Date(+p[0],+p[1]-1,+p[2]); return dt.toLocaleDateString('cs-CZ',{weekday:'short',day:'2-digit',month:'2-digit'}); },
   formatDateTime(d){ return d?new Date(d).toLocaleString('cs-CZ',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'; },
   formatTime(d){ return d?new Date(d).toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'}):'—'; },

@@ -436,6 +436,7 @@ class ResponseCreate(BaseModel):
     shift_id: Optional[int] = None
     answers: dict
     duration_seconds: Optional[int] = None
+    target_date: Optional[str] = None   # 'YYYY-MM-DD' – zpětné doplnění k danému dni
 
 @router.get("/definitions")
 def get_definitions():
@@ -455,6 +456,12 @@ def submit_response(
 ):
     if data.q_type not in QUESTIONNAIRE_DEFINITIONS:
         raise HTTPException(400, "Neznamy typ dotazniku")
+    target_date = None
+    if data.target_date:
+        try:
+            target_date = datetime.strptime(data.target_date, "%Y-%m-%d").strftime("%Y-%m-%d")
+        except ValueError:
+            raise HTTPException(400, "Neplatné target_date (očekáván formát YYYY-MM-DD)")
     resp = QuestionnaireResponse(
         user_id=current_user.id,
         shift_id=data.shift_id,
@@ -462,6 +469,7 @@ def submit_response(
         answers=json.dumps(data.answers, ensure_ascii=False),
         phase=current_user.phase,
         duration_seconds=data.duration_seconds,
+        target_date=target_date,
     )
     db.add(resp)
     db.commit()
@@ -479,6 +487,7 @@ def my_responses(current_user: User = Depends(get_current_user), db: Session = D
             "q_type": r.q_type,
             "shift_id": r.shift_id,
             "filled_at": utc_iso(r.filled_at),
+            "target_date": r.target_date,
             "answers": json.loads(r.answers),
         }
         for r in responses
@@ -520,6 +529,7 @@ def user_responses(user_id: int, db: Session = Depends(get_db)):
             "q_type": r.q_type,
             "phase": r.phase,
             "filled_at": utc_iso(r.filled_at),
+            "target_date": r.target_date,
             "answers": json.loads(r.answers),
         }
         for r in responses
@@ -537,6 +547,7 @@ def all_responses(db: Session = Depends(get_db)):
             "shift_id": r.shift_id,
             "phase": r.phase,
             "filled_at": utc_iso(r.filled_at),
+            "target_date": r.target_date,
             "answers": json.loads(r.answers),
         }
         for r in responses
