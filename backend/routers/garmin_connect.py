@@ -435,9 +435,14 @@ async def webhook_sleep(request: Request, db: Session = Depends(get_db)):
         deep_s     = item.get("deepSleepDurationInSeconds")
         rem_s      = item.get("remSleepInSeconds")
 
+        # overallSleepScore chodí buď jako číslo, nebo objekt {"value": 78, ...}
+        score = item.get("overallSleepScore")
+        if isinstance(score, dict):
+            score = score.get("value")
+
         updates = {
             "sleep_hours":    round(duration_s / 3600, 2) if duration_s else None,
-            "sleep_score":    item.get("overallSleepScore"),
+            "sleep_score":    score,
             "deep_sleep_min": int(deep_s // 60) if deep_s else None,
             "rem_sleep_min":  int(rem_s // 60) if rem_s else None,
             "spo2_avg":       item.get("averageSpO2Value"),
