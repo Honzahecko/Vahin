@@ -125,8 +125,9 @@
                   </template>
                 </div>
               </template>
-              <div class="flex gap-3 mt-1">
+              <div class="flex gap-3 mt-1 flex-wrap">
                 <button x-show="garminDiag.garmin_connected && !garminDiag.garmin_user_id" @click="garminAdminFetchUid(selectedP.id)" class="text-xs text-indigo-600 hover:text-indigo-800 underline font-semibold">Načíst Garmin ID</button>
+                <button x-show="garminDiag.garmin_connected" @click="garminAdminPull(selectedP.id)" :disabled="garminPulling" class="text-xs text-indigo-600 hover:text-indigo-800 underline font-semibold disabled:opacity-40" x-text="garminPulling ? 'Stahuji…' : 'Stáhnout data (7 dní)'"></button>
                 <button @click="garminAdminRelink(selectedP.id)" class="text-xs text-red-500 hover:text-red-700 underline">Smazat token (nové párování)</button>
               </div>
             </div>
@@ -2464,7 +2465,7 @@ function app() { return {
   loginForm: {email:'',password:''}, loginError: '',
   myShifts: [], myResponses: [], garminMsg:'', garminOk:false,
   adminGarminUserId: '', adminGarminMsg: '', adminGarminOk: false,
-  garminDiag: null,
+  garminDiag: null, garminPulling: false,
   guideTasks: [], allQDefs: [], rawDefs: {},
   todayShiftType: null,
   stimConfirmQtype: 'stim_done',
@@ -2968,6 +2969,26 @@ function app() { return {
       await this.loadParticipants();
     } else {
       alert('Nepodařilo se načíst Garmin ID – token je nejspíš neplatný. Použijte "Smazat token" a proveďte nové párování.');
+    }
+  },
+
+  async garminAdminPull(userId) {
+    this.garminPulling = true;
+    try {
+      const r = await this.apiFetch(`/api/garmin/admin/pull/${userId}?days=7`, {method:'POST'});
+      if (r?.ok) {
+        const s = r.imported || {};
+        alert(`Staženo z Garmin API:\nDailies: ${s.dailies||0}\nSpánek: ${s.sleeps||0}\nHRV: ${s.hrv||0}\nStres: ${s.stressDetails||0}`);
+        await this.checkGarminAdminStatus(userId);
+        if (this.selectedP) {
+          const garmin = await this.apiFetch('/api/garmin/user/'+userId);
+          if (garmin) this.selectedPGarmin = garmin;
+        }
+      } else {
+        alert('Stažení selhalo – token je nejspíš neplatný.');
+      }
+    } finally {
+      this.garminPulling = false;
     }
   },
 

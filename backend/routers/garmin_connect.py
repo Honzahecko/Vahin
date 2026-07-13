@@ -361,7 +361,141 @@ def _store_garmin_user_id(user: User, item: dict, db: Session):
         user.garmin_user_id = str(uid)
         db.commit()
 
+
+def _fetch_callback_data(user: User, url: str, db: Session) -> list:
+    """Ping notifikace neobsahuje data – stáhni je z callbackURL (Bearer token,
+    při 401 obnov token refresh tokenem a zkus znovu)."""
+    token = getattr(user, "garmin_access_token", None)
+    if not token:
+        return []
+    for attempt in (1, 2):
+        try:
+            r = _requests.get(url, headers={"Authorization": f"Bearer {token}"}, timeout=20)
+        except Exception as exc:
+            print(f"[Garmin ping] fetch exception: {exc}")
+            return []
+        if r.status_code == 401 and attempt == 1:
+            token = _garmin_refresh_token(user, db)
+            if not token:
+                print(f"[Garmin ping] token expiroval a refresh selhal ({user.participant_code})")
+                return []
+            continue
+        if not r.ok:
+            print(f"[Garmin ping] fetch error {r.status_code}: {r.text[:200]}")
+            return []
+        try:
+            data = r.json()
+        except Exception:
+            return []
+        # API vrací buď rovnou seznam, nebo objekt {klic: [...]}
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict):
+            for v in data.values():
+                if isinstance(v, list):
+                    return v
+        return []
+    return []
+
+
+def _iter_summaries(body: dict, key: str, endpoint: str, db: Session):
+    """Projdi webhook payload a vydávej (user, summary) dvojice.
+
+    Zvládá push režim (summary obsahuje data) i ping režim (jen callbackURL,
+    data se musí stáhnout zvlášť)."""
+    print(f"[Garmin webhook/{endpoint}] payload keys={list(body.keys())}")
+    items = body.get(key, [])
+    if not isinstance(items, list):
+        items = []
+    for item in items:
+        user = _find_user_for_item(item, db)
+        if not user:
+            print(f"[Garmin webhook/{endpoint}] UNKNOWN userId={item.get('userId')} – žádný účastník nenalezen")
+            continue
+        _store_garmin_user_id(user, item, db)
+        if item.get("callbackURL") and not item.get("calendarDate"):
+            # ping notifikace – stáhni skutečná data
+            fetched = _fetch_callback_data(user, item["callbackURL"], db)
+            print(f"[Garmin webhook/{endpoint}] ping pro {user.participant_code} → staženo {len(fetched)} záznamů")
+            for real in fetched:
+                if isinstance(real, dict):
+                    yield user, real
+        else:
+            print(f"[Garmin webhook/{endpoint}] push data pro {user.participant_code} ({item.get('calendarDate')})")
+            yield user, item
+
 # ── Webhook endpoints ────────────────────────────────────────────────────────
+
+def _apply_daily(user: User, item: dict, db: Session) -> bool:
+    date_val = _parse_date(item.get("calendarDate", ""))
+    if not date_val:
+        return False
+    updates = {
+        "steps":           item.get("steps"),
+        "resting_hr":      item.get("restingHeartRateInBeatsPerMinute"),
+        "max_hr":          item.get("maxHeartRateInBeatsPerMinute"),
+        "spo2_avg":        item.get("averageSpO2"),
+        "respiration_avg": item.get("averageRespirationValue"),
+        "stress_avg":      item.get("averageStressLevel"),
+        "calories_active": item.get("activeKilocalories"),
+        # bodyBatteryCharged/DrainedValue = kolik se nabilo/vybilo, NE min/max
+        # → skutečné min/max posílá stress webhook (Highest/LowestValue)
+    }
+    mod = item.get("moderateIntensityDurationInSeconds") or 0
+    vig = item.get("vigorousIntensityDurationInSeconds") or 0
+    if mod or vig:
+        updates["active_minutes"] = int((mod + vig) // 60)
+    _upsert_garmin(user.id, date_val, updates, db)
+    return True
+
+
+def _apply_sleep(user: User, item: dict, db: Session) -> bool:
+    date_val = _parse_date(item.get("calendarDate", ""))
+    if not date_val:
+        return False
+    duration_s = item.get("durationInSeconds")
+    deep_s     = item.get("deepSleepDurationInSeconds")
+    rem_s      = item.get("remSleepInSeconds")
+    # overallSleepScore chodí buď jako číslo, nebo objekt {"value": 78, ...}
+    score = item.get("overallSleepScore")
+    if isinstance(score, dict):
+        score = score.get("value")
+    updates = {
+        "sleep_hours":    round(duration_s / 3600, 2) if duration_s else None,
+        "sleep_score":    score,
+        "deep_sleep_min": int(deep_s // 60) if deep_s else None,
+        "rem_sleep_min":  int(rem_s // 60) if rem_s else None,
+        "spo2_avg":       item.get("averageSpO2Value"),
+        "respiration_avg": item.get("averageRespirationValue"),
+    }
+    _upsert_garmin(user.id, date_val, updates, db)
+    return True
+
+
+def _apply_hrv(user: User, item: dict, db: Session) -> bool:
+    date_val = _parse_date(item.get("calendarDate", ""))
+    if not date_val:
+        return False
+    updates = {
+        "hrv_rmssd":      item.get("lastNightAvg") or item.get("lastNight"),
+        "hrv_weekly_avg": item.get("weeklyAvg") or item.get("weeklyAverage"),
+    }
+    _upsert_garmin(user.id, date_val, updates, db)
+    return True
+
+
+def _apply_stress(user: User, item: dict, db: Session) -> bool:
+    date_val = _parse_date(item.get("calendarDate", ""))
+    if not date_val:
+        return False
+    updates = {
+        "stress_avg":        item.get("averageStressLevel"),
+        "body_battery_high": item.get("bodyBatteryHighestValue"),
+        "body_battery_low":  item.get("bodyBatteryLowestValue"),
+    }
+    _upsert_garmin(user.id, date_val, updates, db)
+    return True
+
 
 @router.post("/webhook/dailies")
 async def webhook_dailies(request: Request, db: Session = Depends(get_db)):
@@ -370,40 +504,8 @@ async def webhook_dailies(request: Request, db: Session = Depends(get_db)):
         body = await request.json()
     except Exception:
         return {"ok": True}
-
-    items = body.get("dailies", [])
-    if not isinstance(items, list):
-        items = []
-
-    for item in items:
-        user = _find_user_for_item(item, db)
-        if not user:
-            print(f"[Garmin webhook/dailies] UNKNOWN userId={item.get('userId')} – žádný účastník nenalezen")
-            continue
-        print(f"[Garmin webhook/dailies] Data pro {user.participant_code} ({item.get('calendarDate')})")
-        _store_garmin_user_id(user, item, db)
-
-        date_val = _parse_date(item.get("calendarDate", ""))
-        if not date_val:
-            continue
-
-        updates = {
-            "steps":           item.get("steps"),
-            "resting_hr":      item.get("restingHeartRateInBeatsPerMinute"),
-            "max_hr":          item.get("maxHeartRateInBeatsPerMinute"),
-            "spo2_avg":        item.get("averageSpO2"),
-            "respiration_avg": item.get("averageRespirationValue"),
-            "stress_avg":      item.get("averageStressLevel"),
-            "calories_active": item.get("activeKilocalories"),
-            # bodyBatteryCharged/DrainedValue = kolik se nabilo/vybilo, NE min/max
-            # → skutečné min/max posílá stress webhook (Highest/LowestValue)
-        }
-        mod = item.get("moderateIntensityDurationInSeconds") or 0
-        vig = item.get("vigorousIntensityDurationInSeconds") or 0
-        if mod or vig:
-            updates["active_minutes"] = int((mod + vig) // 60)
-        _upsert_garmin(user.id, date_val, updates, db)
-
+    for user, item in _iter_summaries(body, "dailies", "dailies", db):
+        _apply_daily(user, item, db)
     return {"ok": True}
 
 
@@ -414,42 +516,8 @@ async def webhook_sleep(request: Request, db: Session = Depends(get_db)):
         body = await request.json()
     except Exception:
         return {"ok": True}
-
-    items = body.get("sleeps", [])
-    if not isinstance(items, list):
-        items = []
-
-    for item in items:
-        user = _find_user_for_item(item, db)
-        if not user:
-            print(f"[Garmin webhook/sleep] UNKNOWN userId={item.get('userId')} – žádný účastník nenalezen")
-            continue
-        print(f"[Garmin webhook/sleep] Data pro {user.participant_code} ({item.get('calendarDate')})")
-        _store_garmin_user_id(user, item, db)
-
-        date_val = _parse_date(item.get("calendarDate", ""))
-        if not date_val:
-            continue
-
-        duration_s = item.get("durationInSeconds")
-        deep_s     = item.get("deepSleepDurationInSeconds")
-        rem_s      = item.get("remSleepInSeconds")
-
-        # overallSleepScore chodí buď jako číslo, nebo objekt {"value": 78, ...}
-        score = item.get("overallSleepScore")
-        if isinstance(score, dict):
-            score = score.get("value")
-
-        updates = {
-            "sleep_hours":    round(duration_s / 3600, 2) if duration_s else None,
-            "sleep_score":    score,
-            "deep_sleep_min": int(deep_s // 60) if deep_s else None,
-            "rem_sleep_min":  int(rem_s // 60) if rem_s else None,
-            "spo2_avg":       item.get("averageSpO2Value"),
-            "respiration_avg": item.get("averageRespirationValue"),
-        }
-        _upsert_garmin(user.id, date_val, updates, db)
-
+    for user, item in _iter_summaries(body, "sleeps", "sleep", db):
+        _apply_sleep(user, item, db)
     return {"ok": True}
 
 
@@ -460,29 +528,8 @@ async def webhook_hrv(request: Request, db: Session = Depends(get_db)):
         body = await request.json()
     except Exception:
         return {"ok": True}
-
-    items = body.get("hrv", [])
-    if not isinstance(items, list):
-        items = []
-
-    for item in items:
-        user = _find_user_for_item(item, db)
-        if not user:
-            print(f"[Garmin webhook/hrv] UNKNOWN userId={item.get('userId')} – žádný účastník nenalezen")
-            continue
-        print(f"[Garmin webhook/hrv] Data pro {user.participant_code} ({item.get('calendarDate')})")
-        _store_garmin_user_id(user, item, db)
-
-        date_val = _parse_date(item.get("calendarDate", ""))
-        if not date_val:
-            continue
-
-        updates = {
-            "hrv_rmssd":      item.get("lastNight"),
-            "hrv_weekly_avg": item.get("weeklyAverage"),
-        }
-        _upsert_garmin(user.id, date_val, updates, db)
-
+    for user, item in _iter_summaries(body, "hrv", "hrv", db):
+        _apply_hrv(user, item, db)
     return {"ok": True}
 
 
@@ -493,28 +540,46 @@ async def webhook_stress(request: Request, db: Session = Depends(get_db)):
         body = await request.json()
     except Exception:
         return {"ok": True}
-
-    items = body.get("stressDetails", [])
-    if not isinstance(items, list):
-        items = []
-
-    for item in items:
-        user = _find_user_for_item(item, db)
-        if not user:
-            print(f"[Garmin webhook/stress] UNKNOWN userId={item.get('userId')} – žádný účastník nenalezen")
-            continue
-        print(f"[Garmin webhook/stress] Data pro {user.participant_code} ({item.get('calendarDate')})")
-        _store_garmin_user_id(user, item, db)
-
-        date_val = _parse_date(item.get("calendarDate", ""))
-        if not date_val:
-            continue
-
-        updates = {
-            "stress_avg":        item.get("averageStressLevel"),
-            "body_battery_high": item.get("bodyBatteryHighestValue"),
-            "body_battery_low":  item.get("bodyBatteryLowestValue"),
-        }
-        _upsert_garmin(user.id, date_val, updates, db)
-
+    for user, item in _iter_summaries(body, "stressDetails", "stress", db):
+        _apply_stress(user, item, db)
     return {"ok": True}
+
+
+# ── Aktivní stažení dat z Garmin API (pull / backfill) ──────────────────────
+
+_PULL_TYPES = [
+    ("dailies",       "https://apis.garmin.com/wellness-api/rest/dailies",       _apply_daily),
+    ("sleeps",        "https://apis.garmin.com/wellness-api/rest/sleeps",        _apply_sleep),
+    ("hrv",           "https://apis.garmin.com/wellness-api/rest/hrv",           _apply_hrv),
+    ("stressDetails", "https://apis.garmin.com/wellness-api/rest/stressDetails", _apply_stress),
+]
+
+@router.post("/admin/pull/{user_id}", dependencies=[Depends(require_researcher)])
+def garmin_admin_pull(user_id: int, days: int = 7, db: Session = Depends(get_db)):
+    """Admin: aktivně stáhni data z Garmin API za posledních N dní (max 30).
+
+    Nezávisí na webhoocích – Wellness API dovolí max 24h okno na dotaz,
+    proto se stahuje po dnech."""
+    import time as _time
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "Účastník nenalezen")
+    if not getattr(user, "garmin_access_token", None):
+        raise HTTPException(400, "Účastník nemá uložený Garmin token")
+
+    days = max(1, min(days, 30))
+    now = int(_time.time())
+    stats = {k: 0 for k, _, _ in _PULL_TYPES}
+    errors = []
+
+    for d in range(days):
+        end   = now - d * 86400
+        start = end - 86400
+        for key, url, apply_fn in _PULL_TYPES:
+            full = f"{url}?uploadStartTimeInSeconds={start}&uploadEndTimeInSeconds={end}"
+            data = _fetch_callback_data(user, full, db)
+            for item in data:
+                if isinstance(item, dict) and apply_fn(user, item, db):
+                    stats[key] += 1
+
+    return {"ok": True, "days": days, "imported": stats, "errors": errors}
