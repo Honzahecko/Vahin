@@ -129,7 +129,25 @@
                 <button x-show="garminDiag.garmin_connected && !garminDiag.garmin_user_id" @click="garminAdminFetchUid(selectedP.id)" class="text-xs text-indigo-600 hover:text-indigo-800 underline font-semibold">Načíst Garmin ID</button>
                 <button x-show="garminDiag.garmin_connected" @click="garminAdminPull(selectedP.id)" :disabled="garminPulling" class="text-xs text-indigo-600 hover:text-indigo-800 underline font-semibold disabled:opacity-40" x-text="garminPulling ? 'Žádám…' : 'Vyžádat data (7 dní)'"></button>
                 <button @click="garminAdminRelink(selectedP.id)" class="text-xs text-red-500 hover:text-red-700 underline">Smazat token (nové párování)</button>
+                <button @click="loadGarminWebhookLog()" class="text-xs text-indigo-600 hover:text-indigo-800 underline font-semibold">Webhook log</button>
               </div>
+              <template x-if="garminWebhookLog">
+                <div class="mt-1 pt-1 border-t border-gray-100 max-h-64 overflow-y-auto">
+                  <div class="text-gray-400 mb-0.5" x-text="'Příchozí webhooky (' + garminWebhookLog.count + ', od restartu serveru):'"></div>
+                  <template x-if="!garminWebhookLog.count">
+                    <div class="text-gray-500 italic">Zatím žádný webhook nedorazil.</div>
+                  </template>
+                  <template x-for="(e, i) in garminWebhookLog.entries" :key="i">
+                    <div class="mb-1.5 pb-1.5 border-b border-gray-50">
+                      <div class="flex gap-2 font-semibold text-gray-700"><span x-text="e.endpoint"></span><span class="text-gray-400 font-normal" x-text="e.time"></span></div>
+                      <div class="text-gray-500 font-mono break-all" x-text="JSON.stringify(e.payload_keys)"></div>
+                      <template x-for="(res, j) in e.results" :key="j">
+                        <div class="text-gray-600" x-text="'· ' + res"></div>
+                      </template>
+                    </div>
+                  </template>
+                </div>
+              </template>
             </div>
           </template>
         </div>
@@ -2465,7 +2483,7 @@ function app() { return {
   loginForm: {email:'',password:''}, loginError: '',
   myShifts: [], myResponses: [], garminMsg:'', garminOk:false,
   adminGarminUserId: '', adminGarminMsg: '', adminGarminOk: false,
-  garminDiag: null, garminPulling: false,
+  garminDiag: null, garminPulling: false, garminWebhookLog: null,
   guideTasks: [], allQDefs: [], rawDefs: {},
   todayShiftType: null,
   stimConfirmQtype: 'stim_done',
@@ -2990,6 +3008,12 @@ function app() { return {
     } finally {
       this.garminPulling = false;
     }
+  },
+
+  async loadGarminWebhookLog() {
+    const r = await this.apiFetch('/api/garmin/admin/webhook-log?limit=50');
+    if (r) this.garminWebhookLog = r;
+    else alert('Chyba při načítání webhook logu');
   },
 
   async garminAdminRelink(userId) {
