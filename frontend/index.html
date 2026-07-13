@@ -27,6 +27,8 @@
     .btn-secondary{background:#e0e7ef;color:#1F3864;border-radius:8px;padding:.55rem 1.2rem;font-weight:600;cursor:pointer}
     .btn-green{background:#16a34a;color:white;border-radius:8px;padding:.55rem 1.2rem;font-weight:600;cursor:pointer}
     input,select,textarea{border:1.5px solid #d1d5db;border-radius:8px;padding:.45rem .75rem;width:100%;outline:none;transition:border-color .15s;background:white}
+    /* radio/checkbox nesmí zdědit width:100% – roztažený kroužek rozhazoval texty voleb */
+    input[type=radio],input[type=checkbox]{width:1rem;height:1rem;flex:none;padding:0;border:none}
     input:focus,select:focus,textarea:focus{border-color:#1F3864;box-shadow:0 0 0 3px rgba(31,56,100,.1)}
     /* Sidebar nav item */
     .nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;cursor:pointer;color:#94a3b8;font-weight:500;transition:all .15s;text-decoration:none}
@@ -2083,8 +2085,8 @@
                   <!-- Scale -->
                   <div x-show="q.type==='scale4'||q.type==='scale5'" class="flex flex-wrap gap-2">
                     <template x-for="(opt,oi) in q.options" :key="oi">
-                      <label class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg border text-sm"
-                             :class="qAnswers[q.id]==oi?'bg-blue-100 border-blue-400 font-semibold':'border-gray-200 hover:border-gray-400'">
+                      <label class="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg border text-sm w-full sm:w-auto"
+                             :class="qAnswers[q.id]!=='' && qAnswers[q.id]==oi?'bg-blue-100 border-blue-400 font-semibold':'border-gray-200 hover:border-gray-400'">
                         <input type="radio" :name="q.id" :value="oi" x-model="qAnswers[q.id]" class="accent-blue-800" />
                         <span x-text="opt"></span>
                       </label>
@@ -2560,15 +2562,6 @@ function app() { return {
   async init() {
     if (this.token) { await this.loadMe(); await this.loadData(); }
     await this.checkGarminCallback();
-    // Deep link z push notifikace při zavřené aplikaci: /?q=kss_pre, /?tab=home
-    const dl = new URLSearchParams(window.location.search);
-    const dlQ = dl.get('q'), dlTab = dl.get('tab');
-    if ((dlQ || dlTab) && this.token && !this.isResearcher()) {
-      window.history.replaceState({}, '', '/');
-      if (dlQ === 'pvt') this.startPvt();
-      else if (dlQ) this.goQuestionnaire(dlQ);
-      else this.activeTab = dlTab || 'home';
-    }
     this.$watch('selectedQ', async q => {
       if (!q) return;
       this.qDef=null; this.qAnswers={};
@@ -2581,6 +2574,16 @@ function app() { return {
     });
     this.$nextTick(()=>{ if(typeof lucide!=='undefined') lucide.createIcons(); });
     this.initPush();
+    // Deep link z push notifikace při zavřené aplikaci: /?q=kss_pre, /?tab=home
+    // (až po registraci $watch('selectedQ'), jinak se nenačte definice dotazníku)
+    const dl = new URLSearchParams(window.location.search);
+    const dlQ = dl.get('q'), dlTab = dl.get('tab');
+    if ((dlQ || dlTab) && this.token && !this.isResearcher()) {
+      window.history.replaceState({}, '', '/');
+      if (dlQ === 'pvt') this.startPvt();
+      else if (dlQ) this.goQuestionnaire(dlQ);
+      else this.activeTab = dlTab || 'home';
+    }
   },
 
   async initPush() {
