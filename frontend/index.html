@@ -2891,7 +2891,7 @@ function app() { return {
     if(defs) {
       this.rawDefs = defs;
       const HIDDEN = new Set(['tavns_diary','tavns_adverse','tavns_satisfaction',
-        'kss','pre_shift_fatigue','post_shift_fatigue']);
+        'kss','pre_shift_fatigue','post_shift_fatigue','weekly_wellbeing']);
       this.allQDefs = Object.entries(defs).filter(([key]) => !HIDDEN.has(key)).map(([key, d]) => ({key, ...d}));
     }
     if(this.isResearcher()) {
@@ -3225,8 +3225,6 @@ function app() { return {
     const weekly = [
       {id:'psqi',     qtype:'psqi',             title:'PSQI spánek'},
       {id:'mfi20',    qtype:'mfi20',            title:'MFI-20 únava'},
-      {id:'adverse',  qtype:'tavns_adverse',    title:'Nežádoucí účinky'},
-      {id:'wellbeing',qtype:'weekly_wellbeing', title:'Týdenní pohoda'},
     ];
     this.weeklyPending = weekly.filter(t => !filledWithin7d(t.qtype));
 
@@ -3462,16 +3460,6 @@ function app() { return {
       id:'mfi20', qtype:'mfi20', title:'MFI-20 – Únava (multidimenzionální)', when:'1× týdně',
       iconPath: ICON_PATHS.activity, iconStroke: ICON_COLORS.orange, colorClass: COLOR_BG.orange,
       done: filledWithin('mfi20', ms7d),
-    });
-    tasks.push({
-      id:'tavns_adverse', qtype:'tavns_adverse', title:'Nežádoucí účinky tAVNS', when:'1× týdně',
-      iconPath: ICON_PATHS.triangle, iconStroke: ICON_COLORS.red, colorClass: COLOR_BG.red,
-      done: filledWithin('tavns_adverse', ms7d),
-    });
-    tasks.push({
-      id:'weekly_wellbeing', qtype:'weekly_wellbeing', title:'Týdenní pohoda', when:'1× týdně',
-      iconPath: ICON_PATHS.star, iconStroke: ICON_COLORS.green, colorClass: COLOR_BG.green,
-      done: filledWithin('weekly_wellbeing', ms7d),
     });
     tasks.push({
       id:'sleep_quality', qtype:'sleep_quality', title:'Kvalita spánku (základní)', when:'1× týdně',
