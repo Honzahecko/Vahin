@@ -512,7 +512,7 @@ def update_response(response_id: int, body: dict, current_user: User = Depends(g
 def user_responses(user_id: int, db: Session = Depends(get_db)):
     responses = db.query(QuestionnaireResponse)\
                   .filter(QuestionnaireResponse.user_id == user_id)\
-                  .order_by(QuestionnaireResponse.filled_at.desc()).limit(100).all()
+                  .order_by(QuestionnaireResponse.filled_at.desc()).limit(500).all()
     return [
         {
             "id": r.id,

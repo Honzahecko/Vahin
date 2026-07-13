@@ -191,6 +191,45 @@
         </template>
       </div>
 
+      <!-- Plnění protokolu den po dni -->
+      <template x-if="selectedP.study_start_date">
+        <div class="card p-4 mb-5">
+          <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Plnění protokolu (dle rozpisu směn)</div>
+          <div class="divide-y divide-gray-50">
+            <template x-for="day in protocolGrid()" :key="day.d">
+              <div>
+                <button @click="protoOpenDay = protoOpenDay===day.d ? null : day.d"
+                        class="w-full flex items-center gap-2 py-2 text-left"
+                        :class="day.future ? 'opacity-45' : 'hover:bg-gray-50'">
+                  <span class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                        :class="day.future ? 'bg-gray-200' : day.doneCount===day.total ? 'bg-green-500' : day.doneCount>0 ? 'bg-amber-400' : 'bg-red-400'"></span>
+                  <span class="text-xs font-bold text-gray-700 w-14" x-text="'Den '+day.d"></span>
+                  <span class="text-xs text-gray-400 w-16" x-text="formatDate(day.dateStr)"></span>
+                  <span class="text-xs px-1.5 py-0.5 rounded font-semibold"
+                        :class="day.type==='N' ? 'bg-indigo-100 text-indigo-700' : day.type==='D' ? 'bg-sky-100 text-sky-700' : 'bg-gray-100 text-gray-500'"
+                        x-text="day.type==='N' ? 'Noční' : day.type==='D' ? 'Denní' : 'Volno'"></span>
+                  <span x-show="day.isToday" class="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-semibold">Dnes</span>
+                  <span class="ml-auto text-xs font-mono" :class="day.future ? 'text-gray-300' : day.doneCount===day.total ? 'text-green-600' : 'text-gray-500'"
+                        x-text="day.doneCount+'/'+day.total"></span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                       :style="protoOpenDay===day.d ? 'transform:rotate(90deg)' : ''"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+                <div x-show="protoOpenDay===day.d" class="pb-2 pl-5 space-y-1">
+                  <template x-for="t in day.tasks" :key="t.q+day.d">
+                    <div class="flex items-center gap-2 text-xs">
+                      <span x-show="t.done" class="text-green-600 font-bold">✓</span>
+                      <span x-show="!t.done && !day.future" class="text-red-400 font-bold">✗</span>
+                      <span x-show="!t.done && day.future" class="text-gray-300">·</span>
+                      <span :class="t.done ? 'text-gray-600' : day.future ? 'text-gray-400' : 'text-gray-600'" x-text="t.label"></span>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+
       <!-- Phase manager -->
       <div class="card p-4 mb-5">
         <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Fáze studie</div>
@@ -2527,6 +2566,7 @@ function app() { return {
   showAddP:false, newP:{full_name:'',email:'',password:'',profession:'',group:''},
   addMsg:'', addOk:false, actionMsg:'', actionOk:false,
   detailPanel:false, selectedP:null, selectedPShifts:[], selectedPResponses:[], selectedPCortisol:[], selectedPGarmin:[],
+  protoOpenDay:null,
   drawerMsg:'', drawerOk:false,
   liveResponses:[], liveShifts:[], liveGarmin:[], dataTab:'live', expandedRow:null,
   editModal:false, editTarget:null, editMsg:'', editOk:false,
@@ -4120,6 +4160,56 @@ function app() { return {
     mfi20:'bg-orange-400',psqi:'bg-orange-300',meq:'bg-green-400',
     pre_shift_fatigue:'bg-sky-400',post_shift_fatigue:'bg-amber-400',
   }[qt]||'bg-gray-400';},
+
+  // Očekávané úkoly každého dne studie dle rozpisu směn (zrcadlí logiku
+  // notifikací v backendu) + skutečné plnění z odpovědí účastníka.
+  protocolGrid(){
+    if(!this.selectedP?.study_start_date) return [];
+    const start = new Date(this.selectedP.study_start_date + 'T00:00:00');
+    if(isNaN(start)) return [];
+    const sch = this.participantShiftSchedule;
+    const todayStr = this.localDay(new Date());
+    const has = (qtype, dateStr) => this.selectedPResponses.some(r => r.q_type===qtype && this.localDay(r.filled_at)===dateStr);
+    const days = [];
+    for(let d=1; d<=21; d++){
+      const dt = new Date(start); dt.setDate(dt.getDate()+d-1);
+      const dateStr = this.localDay(dt);
+      const type = sch[d-1] || 'V';
+      const prevType = d>=2 ? (sch[d-2] || 'V') : null;
+      const w13 = d<=7 || d>=15;                      // týdny se stimulací
+      const prevW13 = d>=2 && ((d-1)<=7 || (d-1)>=15);
+      const tasks = [{q:'psd', label:'Spánkový deník'}];
+      if(d===1 || d===7 || d===15 || d===21){
+        tasks.push({q:'cortizol_done', label:'Kortizol (potvrzení odběru)'});
+        tasks.push({q:'mfi20', label:'MFI-20'});
+        tasks.push({q:'psqi', label:'PSQI'});
+      }
+      if(prevType==='N'){                             // ráno po včerejší noční
+        if(prevW13) tasks.push({q:'stim_p2', label:'Stimulace pauza 2 (~00:00) · za noc'},
+                               {q:'stim_p3', label:'Stimulace pauza 3 (~03:00) · za noc'},
+                               {q:'stim_end', label:'Stimulace závěrečná (~05:30) · za noc'});
+        tasks.push({q:'kss_post', label:'KSS po směně · za noc'},
+                   {q:'pvt', label:'PVT test · za noc'});
+      }
+      if(type==='N'){
+        tasks.push({q:'kss_pre', label:'KSS před směnou'});
+        if(w13) tasks.push({q:'stim_pre', label:'Stimulace před směnou'},
+                           {q:'stim_p1', label:'Stimulace pauza 1 (~21:00)'});
+      } else if(w13){
+        tasks.push({q:'stim_done', label:'Udržovací stimulace'});
+      }
+      const list = tasks.map(t => ({...t, done: has(t.q, dateStr)}));
+      days.push({
+        d, dateStr, type,
+        future: dateStr > todayStr,
+        isToday: dateStr === todayStr,
+        tasks: list,
+        doneCount: list.filter(t=>t.done).length,
+        total: list.length,
+      });
+    }
+    return days;
+  },
 
   drawerDayGrid(){
     const today = new Date();

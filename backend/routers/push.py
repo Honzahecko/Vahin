@@ -2,6 +2,7 @@
 """
 Web Push – správa subscriptions a notification schedules.
 """
+import os
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -363,40 +364,76 @@ def sync_phase_notifications(db_session_factory):
     finally:
         db.close()
 
+# Soubor s poslední zpracovanou minutou – přežije restart (data/ je na Railway
+# persistentní volume). Bez toho notifikace naplánované na minutu, kdy se server
+# zrovna restartoval (deploy), tiše propadly.
+_LAST_TICK_FILE = os.path.join(os.path.dirname(__file__), "..", "..", "data", "last_notif_tick.txt")
+_CATCHUP_MINUTES = 15   # maximální dohánění po výpadku
+
+
+def _send_for_minute(db, moment):
+    """Odešle notifikace naplánované na konkrétní minutu (hour:minute)."""
+    weekday_bit = 1 << moment.weekday()   # Po=1, Út=2 … Ne=64
+    schedules = db.query(NotificationSchedule).filter(
+        NotificationSchedule.enabled == True,
+        NotificationSchedule.hour   == moment.hour,
+        NotificationSchedule.minute == moment.minute,
+    ).all()
+
+    for sched in schedules:
+        sdm = sched.study_days_mask or 0
+        if sdm:
+            user = db.query(User).filter(User.id == sched.user_id).first()
+            if not user or not user.study_start_date:
+                continue
+            study_day = (moment.date() - user.study_start_date.date()).days + 1
+            if study_day < 1 or study_day > 21:
+                continue
+            if not (sdm & (1 << (study_day - 1))):
+                continue
+        else:
+            if not (sched.days_mask & weekday_bit):
+                continue
+        subs = db.query(PushSubscription).filter(
+            PushSubscription.user_id == sched.user_id).all()
+        title, body, url = NOTIF_TEXTS.get(sched.notif_type, ("VAHIN", "Připomínka", "/"))
+        if sched.custom_msg:
+            body = sched.custom_msg
+        for sub in subs:
+            push_manager.send_push(sub.endpoint, sub.p256dh, sub.auth, title, body, url)
+
+
 def check_and_send(db_session_factory):
-    """Spouštěno každou minutu APSchedulerem."""
+    """Spouštěno každou minutu APSchedulerem. Dohání i minuty zameškané
+    během restartu serveru (deploy) – do _CATCHUP_MINUTES zpět."""
+    from datetime import timedelta
     from sqlalchemy.orm import Session as DBSession
-    now = datetime.now(_PRAGUE) if _PRAGUE else datetime.now()
-    weekday_bit = 1 << now.weekday()   # Po=1, Út=2 … Ne=64
+    now = (datetime.now(_PRAGUE) if _PRAGUE else datetime.now()).replace(second=0, microsecond=0)
+
+    # Zjisti poslední zpracovanou minutu
+    last = None
+    try:
+        with open(_LAST_TICK_FILE) as f:
+            last = datetime.fromisoformat(f.read().strip())
+    except Exception:
+        pass
+    if last is None or (now - last) > timedelta(minutes=_CATCHUP_MINUTES):
+        last = now - timedelta(minutes=1)
+
+    if last >= now:
+        return
 
     db: DBSession = db_session_factory()
     try:
-        schedules = db.query(NotificationSchedule).filter(
-            NotificationSchedule.enabled == True,
-            NotificationSchedule.hour   == now.hour,
-            NotificationSchedule.minute == now.minute,
-        ).all()
-
-        for sched in schedules:
-            sdm = sched.study_days_mask or 0
-            if sdm:
-                user = db.query(User).filter(User.id == sched.user_id).first()
-                if not user or not user.study_start_date:
-                    continue
-                study_day = (now.date() - user.study_start_date.date()).days + 1
-                if study_day < 1 or study_day > 21:
-                    continue
-                if not (sdm & (1 << (study_day - 1))):
-                    continue
-            else:
-                if not (sched.days_mask & weekday_bit):
-                    continue
-            subs = db.query(PushSubscription).filter(
-                PushSubscription.user_id == sched.user_id).all()
-            title, body, url = NOTIF_TEXTS.get(sched.notif_type, ("VAHIN", "Připomínka", "/"))
-            if sched.custom_msg:
-                body = sched.custom_msg
-            for sub in subs:
-                push_manager.send_push(sub.endpoint, sub.p256dh, sub.auth, title, body, url)
+        moment = last + timedelta(minutes=1)
+        while moment <= now:
+            _send_for_minute(db, moment)
+            moment += timedelta(minutes=1)
+        try:
+            os.makedirs(os.path.dirname(_LAST_TICK_FILE), exist_ok=True)
+            with open(_LAST_TICK_FILE, "w") as f:
+                f.write(now.isoformat())
+        except Exception as exc:
+            print(f"[check_and_send] nelze zapsat last tick: {exc}")
     finally:
         db.close()

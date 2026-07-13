@@ -68,8 +68,11 @@ def startup():
     from apscheduler.schedulers.background import BackgroundScheduler
     from routers.push import check_and_send, sync_phase_notifications
     scheduler = BackgroundScheduler()
-    scheduler.add_job(check_and_send, 'interval', minutes=1, args=[SessionLocal])
-    scheduler.add_job(sync_phase_notifications, 'cron', hour=0, minute=5, args=[SessionLocal])
+    # coalesce+grace: zpožděný tick se spustí dodatečně místo tichého vynechání
+    scheduler.add_job(check_and_send, 'interval', minutes=1, args=[SessionLocal],
+                      coalesce=True, misfire_grace_time=120)
+    scheduler.add_job(sync_phase_notifications, 'cron', hour=0, minute=5, args=[SessionLocal],
+                      coalesce=True, misfire_grace_time=3600)
     scheduler.start()
 
 def _migrate_db():
