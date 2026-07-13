@@ -158,6 +158,7 @@ class CortisolLog(Base):
     sample_time   = Column(DateTime, nullable=False)                     # čas odběru
     phase         = Column(SAEnum(StudyPhase), nullable=True)
     notes         = Column(Text, nullable=True)
+    value_nmol_l  = Column(Float, nullable=True)                         # laboratorní výsledek (nmol/l)
     created_at    = Column(DateTime, default=datetime.utcnow)
 
     user          = relationship("User", back_populates="cortisol_logs")

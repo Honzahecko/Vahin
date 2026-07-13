@@ -361,11 +361,24 @@
         <template x-for="g in Object.entries(selectedPCortisol.reduce((a,l)=>{const k=l.sample_type;(a[k]=a[k]||[]).push(l);return a},{})).sort()" :key="g[0]">
           <div class="mb-2">
             <div class="text-xs font-semibold text-purple-700 mb-0.5" x-text="{day1:'Den 1',day7:'Den 7',day15:'Den 15',day21:'Den 21'}[g[0]]||g[0]"></div>
-            <div class="flex gap-2">
+            <div class="space-y-1">
               <template x-for="tp in ['t0','t15','t30']" :key="tp">
-                <span :class="g[1].some(l=>l.timepoint===tp) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'"
-                      class="text-xs px-2 py-0.5 rounded font-semibold"
-                      x-text="{t0:'Ráno',t15:'Odpoledne',t30:'Večer'}[tp]+(g[1].find(l=>l.timepoint===tp) ? ' ✓' : ' –')"></span>
+                <div class="flex items-center gap-2">
+                  <span :class="g[1].some(l=>l.timepoint===tp) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-400'"
+                        class="text-xs px-2 py-0.5 rounded font-semibold w-24 text-center"
+                        x-text="{t0:'Ráno',t15:'Odpoledne',t30:'Večer'}[tp]+(g[1].find(l=>l.timepoint===tp) ? ' ✓' : ' –')"></span>
+                  <template x-if="g[1].find(l=>l.timepoint===tp)">
+                    <div class="flex items-center gap-1">
+                      <span class="text-xs text-gray-400" x-text="formatTime(g[1].find(l=>l.timepoint===tp).sample_time)"></span>
+                      <input type="number" step="0.1" min="0" placeholder="hodnota"
+                             class="text-xs px-2 py-0.5 rounded border border-gray-200 focus:border-purple-400"
+                             style="width:5.5rem"
+                             :value="g[1].find(l=>l.timepoint===tp).value_nmol_l"
+                             @change="saveCortisolValue(g[1].find(l=>l.timepoint===tp), $event.target.value)" />
+                      <span class="text-xs text-gray-400">nmol/l</span>
+                    </div>
+                  </template>
+                </div>
               </template>
             </div>
           </div>
@@ -4025,6 +4038,14 @@ function app() { return {
   async markConsent(p){
     const r=await this.apiFetch('/api/participants/'+p.id,{method:'PATCH',body:JSON.stringify({consent_signed:true})});
     if(r){this.actionMsg='Souhlas potvrzen pro '+p.participant_code; this.actionOk=true; await this.loadParticipants();}
+  },
+
+  async saveCortisolValue(log, val){
+    const value = val === '' ? null : parseFloat(String(val).replace(',', '.'));
+    if (value !== null && (isNaN(value) || value < 0)) { alert('Neplatná hodnota'); return; }
+    const r = await this.apiFetch('/api/cortisol/'+log.id, {method:'PATCH', body: JSON.stringify({value_nmol_l: value})});
+    if (r) log.value_nmol_l = r.value_nmol_l;
+    else alert('Uložení hodnoty selhalo');
   },
 
   async openParticipant(p){

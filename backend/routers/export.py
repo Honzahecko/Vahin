@@ -121,6 +121,7 @@ def _cortisol_records(db: Session) -> list:
         "sample_type": c.sample_type,      # day1/day7/day15/day21
         "timepoint": c.timepoint,          # t0/t15/t30
         "sample_time": prague_str(c.sample_time),
+        "value_nmol_l": getattr(c, "value_nmol_l", None),
         "phase": c.phase,
         "notes": c.notes,
     } for c, u in rows]

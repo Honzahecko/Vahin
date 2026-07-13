@@ -60,6 +60,7 @@ def log_to_dict(log: CortisolLog) -> dict:
         "sample_time": utc_iso(log.sample_time),
         "phase":       log.phase,
         "notes":       log.notes,
+        "value_nmol_l": getattr(log, "value_nmol_l", None),
         "created_at":  utc_iso(log.created_at),
     }
 
@@ -128,6 +129,23 @@ def delete_cortisol_log(
     return {"ok": True}
 
 # ─── Endpointy – výzkumník ───────────────────────────────────────────────────
+
+class CortisolValueIn(BaseModel):
+    value_nmol_l: Optional[float] = None
+    notes: Optional[str] = None
+
+@router.patch("/{log_id}", dependencies=[Depends(require_researcher)])
+def set_cortisol_value(log_id: int, data: CortisolValueIn, db: Session = Depends(get_db)):
+    """Výzkumník: zapsat laboratorní hodnotu kortizolu (nmol/l) k odběru."""
+    log = db.query(CortisolLog).filter(CortisolLog.id == log_id).first()
+    if not log:
+        raise HTTPException(404, "Záznam nenalezen")
+    log.value_nmol_l = data.value_nmol_l
+    if data.notes is not None:
+        log.notes = data.notes
+    db.commit()
+    db.refresh(log)
+    return log_to_dict(log)
 
 @router.get("/participant/{user_id}", dependencies=[Depends(require_researcher)])
 def get_participant_cortisol(user_id: int, db: Session = Depends(get_db)):
