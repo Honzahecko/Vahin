@@ -2947,6 +2947,12 @@ function app() { return {
     await this.loadMyResponses();
   },
 
+  async loadMyResponses(){
+    const fresh = await this.apiFetch('/api/questionnaires/my');
+    if(fresh){ this.myResponses = fresh; this.buildGuideTasks(); this.buildDayTasks(); }
+    return fresh;
+  },
+
   async confirmStim(confirmed) {
     this.stimConfirmVisible = false;
     if (!confirmed) return;
@@ -3107,8 +3113,7 @@ function app() { return {
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+this.token},
         body: JSON.stringify({answers: this.pvtResult})
       });
-      const fresh = await this._loadResponses();
-      if(fresh){ this.myResponses = fresh; this.buildGuideTasks(); this.buildDayTasks(); }
+      await this.loadMyResponses();
     } catch(e){}
     this.pvtSaving = false;
     setTimeout(() => { this.activeTab = 'home'; }, 2500);
