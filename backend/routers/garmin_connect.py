@@ -14,7 +14,8 @@ Webhooks (Garmin POSTs here after each device sync):
   POST /api/garmin/webhook/hrv
   POST /api/garmin/webhook/stress
 """
-import os, secrets, hashlib, base64
+import os, secrets, hashlib, base64, json
+from collections import deque
 from datetime import datetime
 from typing import Optional
 
@@ -308,6 +309,24 @@ def garmin_admin_relink(user_id: int, db: Session = Depends(get_db)):
 
 # ── Webhook helpers ──────────────────────────────────────────────────────────
 
+# Ring buffer posledních příchozích webhooků pro diagnostiku z admin UI
+# (Railway logy nejsou z aplikace dostupné). Přežívá jen do restartu procesu.
+_webhook_log: deque = deque(maxlen=200)
+
+
+def _log_webhook(endpoint: str, body: dict, results: list):
+    entry = {
+        "time": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC"),
+        "endpoint": endpoint,
+        "payload_keys": {k: (len(v) if isinstance(v, list) else type(v).__name__)
+                         for k, v in body.items()} if isinstance(body, dict) else str(type(body)),
+        "results": results,
+        "raw_sample": json.dumps(body, default=str)[:2000],
+    }
+    _webhook_log.append(entry)
+    print(f"[Garmin webhook/{endpoint}] {entry['payload_keys']} → {results}")
+
+
 def _find_user_for_item(item: dict, db: Session) -> Optional[User]:
     """Najdi účastníka pro webhook záznam.
 
@@ -398,30 +417,44 @@ def _fetch_callback_data(user: User, url: str, db: Session) -> list:
     return []
 
 
-def _iter_summaries(body: dict, key: str, endpoint: str, db: Session):
+def _iter_summaries(body: dict, key: str, endpoint: str, db: Session, results: list):
     """Projdi webhook payload a vydávej (user, summary) dvojice.
 
     Zvládá push režim (summary obsahuje data) i ping režim (jen callbackURL,
-    data se musí stáhnout zvlášť)."""
-    print(f"[Garmin webhook/{endpoint}] payload keys={list(body.keys())}")
-    items = body.get(key, [])
-    if not isinstance(items, list):
+    data se musí stáhnout zvlášť). Záznamy bere z očekávaného klíče, a pokud
+    tam nejsou, z libovolného klíče se seznamem – Garmin názvy klíčů
+    v notifikacích ne vždy odpovídají názvu summary typu (např. HRV).
+    `results` plní popisy zpracování pro webhook log."""
+    if not isinstance(body, dict):
+        results.append("payload není objekt")
+        return
+    items = body.get(key)
+    if not isinstance(items, list) or not items:
+        # fallback: vezmi všechny list-klíče (jiný název než čekáme)
         items = []
+        for k, v in body.items():
+            if isinstance(v, list):
+                items.extend(v)
+                results.append(f"klíč '{k}' místo '{key}' ({len(v)} záznamů)")
+    if not items:
+        results.append("žádné záznamy v payloadu")
     for item in items:
+        if not isinstance(item, dict):
+            continue
         user = _find_user_for_item(item, db)
         if not user:
-            print(f"[Garmin webhook/{endpoint}] UNKNOWN userId={item.get('userId')} – žádný účastník nenalezen")
+            results.append(f"UNKNOWN userId={item.get('userId')} – žádný účastník nenalezen")
             continue
         _store_garmin_user_id(user, item, db)
         if item.get("callbackURL") and not item.get("calendarDate"):
             # ping notifikace – stáhni skutečná data
             fetched = _fetch_callback_data(user, item["callbackURL"], db)
-            print(f"[Garmin webhook/{endpoint}] ping pro {user.participant_code} → staženo {len(fetched)} záznamů")
+            results.append(f"ping pro {user.participant_code} → staženo {len(fetched)} záznamů")
             for real in fetched:
                 if isinstance(real, dict):
                     yield user, real
         else:
-            print(f"[Garmin webhook/{endpoint}] push data pro {user.participant_code} ({item.get('calendarDate')})")
+            results.append(f"push data pro {user.participant_code} ({item.get('calendarDate')})")
             yield user, item
 
 # ── Webhook endpoints ────────────────────────────────────────────────────────
@@ -503,52 +536,55 @@ def webhook_health_check(summary_type: str):
     return {"ok": True, "endpoint": summary_type, "info": "Garmin sem posílá data přes POST"}
 
 
-@router.post("/webhook/dailies")
-async def webhook_dailies(request: Request, db: Session = Depends(get_db)):
-    """Receive daily summary push from Garmin Health API."""
+async def _handle_webhook(request: Request, key: str, endpoint: str, apply_fn, db: Session):
     try:
         body = await request.json()
     except Exception:
+        _log_webhook(endpoint, {}, ["tělo požadavku není JSON"])
         return {"ok": True}
-    for user, item in _iter_summaries(body, "dailies", "dailies", db):
-        _apply_daily(user, item, db)
+    results: list = []
+    saved = 0
+    for user, item in _iter_summaries(body, key, endpoint, db, results):
+        if apply_fn(user, item, db):
+            saved += 1
+        else:
+            results.append(f"záznam bez calendarDate přeskočen (klíče: {list(item.keys())[:8]})")
+    results.append(f"uloženo {saved} záznamů")
+    _log_webhook(endpoint, body, results)
     return {"ok": True}
+
+
+@router.post("/webhook/dailies")
+async def webhook_dailies(request: Request, db: Session = Depends(get_db)):
+    """Receive daily summary push from Garmin Health API."""
+    return await _handle_webhook(request, "dailies", "dailies", _apply_daily, db)
 
 
 @router.post("/webhook/sleep")
 async def webhook_sleep(request: Request, db: Session = Depends(get_db)):
     """Receive sleep summary push from Garmin Health API."""
-    try:
-        body = await request.json()
-    except Exception:
-        return {"ok": True}
-    for user, item in _iter_summaries(body, "sleeps", "sleep", db):
-        _apply_sleep(user, item, db)
-    return {"ok": True}
+    return await _handle_webhook(request, "sleeps", "sleep", _apply_sleep, db)
 
 
 @router.post("/webhook/hrv")
 async def webhook_hrv(request: Request, db: Session = Depends(get_db)):
     """Receive HRV summary push from Garmin Health API."""
-    try:
-        body = await request.json()
-    except Exception:
-        return {"ok": True}
-    for user, item in _iter_summaries(body, "hrv", "hrv", db):
-        _apply_hrv(user, item, db)
-    return {"ok": True}
+    return await _handle_webhook(request, "hrv", "hrv", _apply_hrv, db)
 
 
 @router.post("/webhook/stress")
 async def webhook_stress(request: Request, db: Session = Depends(get_db)):
     """Receive stress detail push from Garmin Health API."""
-    try:
-        body = await request.json()
-    except Exception:
-        return {"ok": True}
-    for user, item in _iter_summaries(body, "stressDetails", "stress", db):
-        _apply_stress(user, item, db)
-    return {"ok": True}
+    return await _handle_webhook(request, "stressDetails", "stress", _apply_stress, db)
+
+
+@router.get("/admin/webhook-log", dependencies=[Depends(require_researcher)])
+def garmin_admin_webhook_log(limit: int = 50):
+    """Admin: posledních N příchozích Garmin webhooků (diagnostika bez Railway logů)."""
+    limit = max(1, min(limit, 200))
+    entries = list(_webhook_log)[-limit:]
+    entries.reverse()
+    return {"count": len(entries), "entries": entries}
 
 
 # ── Aktivní stažení dat z Garmin API (pull / backfill) ──────────────────────
