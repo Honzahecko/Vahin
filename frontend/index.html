@@ -2067,13 +2067,13 @@
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             </div>
             <div class="text-xl font-bold text-navy-900 mb-2">PVT – Reakční test</div>
-            <div class="text-sm text-gray-500 mb-6 leading-relaxed">Na obrazovce se v náhodný okamžik rozsvítí zelené pole. <strong>Klepněte na něj co nejrychleji.</strong><br><br>Test trvá přibližně 3 minuty (10 pokusů). Neanticiputje – klepejte až po rozsvícení.</div>
+            <div class="text-sm text-gray-500 mb-6 leading-relaxed">Na obrazovce se v náhodný okamžik rozsvítí zelené pole. <strong>Klepněte na něj co nejrychleji.</strong><br><br>Test trvá přibližně 1 minutu (5 pokusů). Klepejte až po rozsvícení, ne dříve.</div>
             <button @click="pvtStart()" class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-700 transition-colors text-sm">Spustit test</button>
           </div>
 
           <!-- WAITING / STIMULUS -->
           <div x-show="pvtPhase==='running'" class="text-center">
-            <div class="text-sm text-gray-400 mb-4" x-text="'Pokus ' + (pvtTrials.length+1) + ' / 5'"></div>
+            <div class="text-sm text-gray-400 mb-4" x-text="'Pokus ' + Math.min(pvtTrials.length+1, 5) + ' / 5'"></div>
             <!-- Progress dots -->
             <div class="flex justify-center gap-2 mb-8">
               <template x-for="i in 5" :key="i">
