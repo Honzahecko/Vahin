@@ -559,13 +559,31 @@ def garmin_admin_pull(user_id: int, days: int = 7, db: Session = Depends(get_db)
     """Admin: aktivně stáhni data z Garmin API za posledních N dní (max 30).
 
     Nezávisí na webhoocích – Wellness API dovolí max 24h okno na dotaz,
-    proto se stahuje po dnech."""
+    proto se stahuje po dnech. Vrací i chyby, aby šla diagnóza z UI."""
     import time as _time
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(404, "Účastník nenalezen")
-    if not getattr(user, "garmin_access_token", None):
+    token = getattr(user, "garmin_access_token", None)
+    if not token:
         raise HTTPException(400, "Účastník nemá uložený Garmin token")
+
+    # Ověř platnost tokenu; při 401 zkus refresh
+    token_valid = False
+    try:
+        r = _requests.get(GARMIN_USER_ID_URL, headers={"Authorization": f"Bearer {token}"}, timeout=15)
+        if r.status_code == 401:
+            token = _garmin_refresh_token(user, db)
+            if token:
+                r = _requests.get(GARMIN_USER_ID_URL, headers={"Authorization": f"Bearer {token}"}, timeout=15)
+        token_valid = bool(token) and r.ok
+        token_check = f"{r.status_code}: {r.text[:150]}" if not r.ok else "OK"
+    except Exception as exc:
+        token_check = f"výjimka: {exc}"
+
+    if not token_valid:
+        return {"ok": False, "token_valid": False, "token_check": token_check,
+                "imported": {}, "errors": ["Token je neplatný a refresh selhal – nutné nové párování"]}
 
     days = max(1, min(days, 30))
     now = int(_time.time())
@@ -577,9 +595,31 @@ def garmin_admin_pull(user_id: int, days: int = 7, db: Session = Depends(get_db)
         start = end - 86400
         for key, url, apply_fn in _PULL_TYPES:
             full = f"{url}?uploadStartTimeInSeconds={start}&uploadEndTimeInSeconds={end}"
-            data = _fetch_callback_data(user, full, db)
+            try:
+                r = _requests.get(full, headers={"Authorization": f"Bearer {token}"}, timeout=20)
+            except Exception as exc:
+                if len(errors) < 8:
+                    errors.append(f"{key}: výjimka {exc}")
+                continue
+            if not r.ok:
+                if len(errors) < 8:
+                    errors.append(f"{key}: HTTP {r.status_code} {r.text[:150]}")
+                continue
+            try:
+                data = r.json()
+            except Exception:
+                continue
+            if isinstance(data, dict):
+                for v in data.values():
+                    if isinstance(v, list):
+                        data = v
+                        break
+            if not isinstance(data, list):
+                continue
             for item in data:
                 if isinstance(item, dict) and apply_fn(user, item, db):
                     stats[key] += 1
 
-    return {"ok": True, "days": days, "imported": stats, "errors": errors}
+    # Chyby zdeduplikuj (stejná chyba se opakuje pro každý den)
+    errors = list(dict.fromkeys(errors))
+    return {"ok": True, "token_valid": True, "days": days, "imported": stats, "errors": errors}

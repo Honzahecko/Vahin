@@ -2978,14 +2978,18 @@ function app() { return {
       const r = await this.apiFetch(`/api/garmin/admin/pull/${userId}?days=7`, {method:'POST'});
       if (r?.ok) {
         const s = r.imported || {};
-        alert(`Staženo z Garmin API:\nDailies: ${s.dailies||0}\nSpánek: ${s.sleeps||0}\nHRV: ${s.hrv||0}\nStres: ${s.stressDetails||0}`);
+        let msg = `Staženo z Garmin API:\nDailies: ${s.dailies||0}\nSpánek: ${s.sleeps||0}\nHRV: ${s.hrv||0}\nStres: ${s.stressDetails||0}`;
+        if (r.errors?.length) msg += '\n\nChyby:\n' + r.errors.join('\n');
+        alert(msg);
         await this.checkGarminAdminStatus(userId);
         if (this.selectedP) {
           const garmin = await this.apiFetch('/api/garmin/user/'+userId);
           if (garmin) this.selectedPGarmin = garmin;
         }
+      } else if (r) {
+        alert('Stažení selhalo.\nToken check: ' + (r.token_check||'?') + '\n' + (r.errors||[]).join('\n'));
       } else {
-        alert('Stažení selhalo – token je nejspíš neplatný.');
+        alert('Stažení selhalo – chyba serveru.');
       }
     } finally {
       this.garminPulling = false;
