@@ -2487,7 +2487,7 @@ function app() { return {
   adminGarminUserId: '', adminGarminMsg: '', adminGarminOk: false,
   garminDiag: null, garminPulling: false, garminWebhookLog: null,
   guideTasks: [], allQDefs: [], rawDefs: {},
-  todayShiftType: null,
+  todayShiftType: null, yesterdayShiftType: null,
   stimConfirmQtype: 'stim_done',
   dayTasks: [],
   // Tutorial
@@ -3206,6 +3206,7 @@ function app() { return {
   async loadShiftType(){
     const r = await this.apiFetch('/api/push/shift-schedule/me');
     this.todayShiftType = (r && r.today_type) ? r.today_type : null;
+    this.yesterdayShiftType = (r && r.yesterday_type) ? r.yesterday_type : null;
   },
 
   shiftTypeStyle(type){
@@ -3236,7 +3237,7 @@ function app() { return {
     ];
     this.weeklyPending = weekly.filter(t => !filledWithin7d(t.qtype));
 
-    if(!this.todayShiftType){ this.dayTasks=[]; return; }
+    if(!this.todayShiftType && this.yesterdayShiftType!=='nocni'){ this.dayTasks=[]; return; }
 
     // Ikony
     const ICON = {
@@ -3284,14 +3285,17 @@ function app() { return {
     // Detekce týdne studie: 1-7 = fáze 1, 8-14 = washout, 15-21 = fáze 2
     const studyDay = this.currentUser?.study_day || 0;
     const isWashout = studyDay >= 8 && studyDay <= 14;
+    // Úkoly po půlnoci (pauza 2 a 3, závěrečná stimulace, KSS po směně, PVT)
+    // se dějí kalendářně až v den N+1 — v den noční směny se nenabízejí,
+    // zobrazí se ráno následujícího dne (viz yesterdayShiftType níže).
     const PLANS = isWashout ? {
       // Washout (týden 2): bez stimulace
-      nocni: [PSD, KSSp, KSSpo, PVT],
+      nocni: [PSD, KSSp],
       denni: [PSD],
       volno: [PSD],
     } : {
       // Fáze 1 & 2 (týdny 1 a 3): plný protokol
-      nocni: [PSD, KSSp, STIM_PRE, STIM_P1, STIM_P2, STIM_P3, STIM_END, KSSpo, PVT],
+      nocni: [PSD, KSSp, STIM_PRE, STIM_P1],
       denni: [PSD, STIM],
       volno: [PSD, STIM],
     };
@@ -3301,6 +3305,12 @@ function app() { return {
       ...t,
       done: filledToday(t.qtype)
     }));
+    // Ráno po včerejší noční směně: úkoly za noc, které se vyplňují dnes
+    if (this.yesterdayShiftType === 'nocni') {
+      const afterNight = (isWashout ? [KSSpo, PVT] : [STIM_P2, STIM_P3, STIM_END, KSSpo, PVT])
+        .map(t => ({...t, when: t.when + ' · za včerejší noční', done: filledToday(t.qtype)}));
+      plan.unshift(...afterNight);
+    }
     // Kortizol jen v kortizolové dny
     if (this.cortisolData?.is_cortisol_day && this.currentUser?.phase !== 'preparation') {
       plan.unshift({...CORTIZOL, done: filledToday('cortizol_done')});

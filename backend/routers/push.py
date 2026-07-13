@@ -112,12 +112,21 @@ def get_my_shift_schedule(current_user: User = Depends(get_current_user), db: Se
     schedule = current_user.shift_schedule or 'V' * 21
     schedule_set = any(c != 'V' for c in schedule)
     today_type = None
+    yesterday_type = None
+
+    def _day_type(day: int):
+        if 1 <= day <= 21:
+            char = schedule[day - 1] if (day - 1) < len(schedule) else 'V'
+            return {'N': 'nocni', 'D': 'denni', 'V': 'volno'}.get(char, 'volno')
+        return None
+
     if current_user.study_start_date:
         study_day = (now_prague().date() - current_user.study_start_date.date()).days + 1
-        if 1 <= study_day <= 21:
-            char = schedule[study_day - 1] if (study_day - 1) < len(schedule) else 'V'
-            today_type = {'N': 'nocni', 'D': 'denni', 'V': 'volno'}.get(char, 'volno')
-    return {"schedule": schedule, "today_type": today_type, "schedule_set": schedule_set}
+        today_type = _day_type(study_day)
+        # Ráno po noční směně: úkoly za noc N se vyplňují v den N+1
+        yesterday_type = _day_type(study_day - 1)
+    return {"schedule": schedule, "today_type": today_type,
+            "yesterday_type": yesterday_type, "schedule_set": schedule_set}
 
 @router.get("/shift-schedule/{user_id}", dependencies=[Depends(require_researcher)])
 def get_shift_schedule(user_id: int, db: Session = Depends(get_db)):
