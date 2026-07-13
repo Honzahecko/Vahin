@@ -240,7 +240,7 @@ NOTIF_TEXTS = {
     "stimulation_p2":    ("VAHIN – Pauza: stimulace",    "Zahajte 15minutovou tAVNS stimulaci v pauze.",                     "/?tab=home"),
     "stimulation_p3":    ("VAHIN – Pauza: stimulace",    "Zahajte 15minutovou tAVNS stimulaci v pauze.",                     "/?tab=home"),
     "stimulation_end":   ("VAHIN – Závěrečná stimulace", "Zahajte 15minutovou tAVNS stimulaci (konec směny).",               "/?tab=home"),
-    "post_shift":        ("VAHIN – Po směně",             "Vyplňte KSS a spánkový deník po směně.",                           "/?q=kss_post"),
+    "post_shift":        ("VAHIN – Po směně",             "Vyplňte KSS po skončení směny.",                                   "/?q=kss_post"),
     "stimulation_volno": ("VAHIN – Denní stimulace",      "Nezapomeňte na 15minutovou udržovací tAVNS stimulaci.",             "/?tab=home"),
     "cortisol_am":       ("VAHIN – Kortizol ráno",        "Odběr slin – vzorek č.1 (ráno, 30 min po probuzení, nalačno).",    "/"),
     "cortisol_pm":       ("VAHIN – Kortizol odpoledne",   "Odběr slin – vzorek č.2 (odpoledne, cca 6 h po ranním vzorku).",   "/"),
