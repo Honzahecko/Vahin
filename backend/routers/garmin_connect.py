@@ -585,41 +585,30 @@ def garmin_admin_pull(user_id: int, days: int = 7, db: Session = Depends(get_db)
         return {"ok": False, "token_valid": False, "token_check": token_check,
                 "imported": {}, "errors": ["Token je neplatný a refresh selhal – nutné nové párování"]}
 
+    # Aplikace je u Garminu v "evented" režimu → přímý pull vrací
+    # InvalidPullTokenException. Místo toho použij Backfill API: Garmin data
+    # pošle asynchronně přes webhooky (ping/push), které už umíme zpracovat.
     days = max(1, min(days, 30))
     now = int(_time.time())
-    stats = {k: 0 for k, _, _ in _PULL_TYPES}
+    start = now - days * 86400
+    stats = {}
     errors = []
 
-    for d in range(days):
-        end   = now - d * 86400
-        start = end - 86400
-        for key, url, apply_fn in _PULL_TYPES:
-            full = f"{url}?uploadStartTimeInSeconds={start}&uploadEndTimeInSeconds={end}"
-            try:
-                r = _requests.get(full, headers={"Authorization": f"Bearer {token}"}, timeout=20)
-            except Exception as exc:
-                if len(errors) < 8:
-                    errors.append(f"{key}: výjimka {exc}")
-                continue
-            if not r.ok:
-                if len(errors) < 8:
-                    errors.append(f"{key}: HTTP {r.status_code} {r.text[:150]}")
-                continue
-            try:
-                data = r.json()
-            except Exception:
-                continue
-            if isinstance(data, dict):
-                for v in data.values():
-                    if isinstance(v, list):
-                        data = v
-                        break
-            if not isinstance(data, list):
-                continue
-            for item in data:
-                if isinstance(item, dict) and apply_fn(user, item, db):
-                    stats[key] += 1
+    for key, _url, _fn in _PULL_TYPES:
+        bf_url = (f"https://apis.garmin.com/wellness-api/rest/backfill/{key}"
+                  f"?summaryStartTimeInSeconds={start}&summaryEndTimeInSeconds={now}")
+        try:
+            r = _requests.get(bf_url, headers={"Authorization": f"Bearer {token}"}, timeout=20)
+        except Exception as exc:
+            errors.append(f"{key}: výjimka {exc}")
+            stats[key] = "chyba"
+            continue
+        if r.status_code in (200, 202):
+            stats[key] = "vyžádáno"
+        else:
+            stats[key] = f"HTTP {r.status_code}"
+            if len(errors) < 8:
+                errors.append(f"{key}: HTTP {r.status_code} {r.text[:150]}")
 
-    # Chyby zdeduplikuj (stejná chyba se opakuje pro každý den)
     errors = list(dict.fromkeys(errors))
-    return {"ok": True, "token_valid": True, "days": days, "imported": stats, "errors": errors}
+    return {"ok": True, "token_valid": True, "days": days, "backfill": stats, "errors": errors}
