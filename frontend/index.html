@@ -1655,11 +1655,12 @@
                       class="flex items-center gap-3 px-4 py-3 w-full text-left transition-colors"
                       :class="task.done ? 'bg-green-50 cursor-default' : 'hover:bg-gray-50 cursor-pointer'">
                       <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors"
-                           :class="task.done ? 'bg-green-500 border-green-500' : 'border-gray-300 bg-white'">
+                           :class="task.done ? 'bg-green-500 border-green-500' : task.overdue ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white'">
                         <svg x-show="task.done" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                       </div>
                       <div class="flex-1 min-w-0">
-                        <div class="text-sm font-semibold" :class="task.done ? 'text-gray-400 line-through' : 'text-gray-800'" x-text="task.title"></div>
+                        <div class="text-sm font-semibold" :class="task.done ? 'text-gray-400 line-through' : task.overdue ? 'text-red-600' : 'text-gray-800'" x-text="task.title"></div>
+                        <div x-show="task.overdue" class="text-xs text-red-500 font-semibold">Nesplněno — doplňte prosím</div>
                         <div class="text-xs text-gray-400" x-text="task.when"></div>
                       </div>
                       <svg x-show="!task.done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -1684,11 +1685,12 @@
                       class="flex items-center gap-3 px-4 py-3 w-full text-left transition-colors"
                       :class="task.done ? 'bg-green-50 cursor-default' : 'hover:bg-gray-50 cursor-pointer'">
                       <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors"
-                           :class="task.done ? 'bg-green-500 border-green-500' : 'border-gray-300 bg-white'">
+                           :class="task.done ? 'bg-green-500 border-green-500' : task.overdue ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white'">
                         <svg x-show="task.done" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                       </div>
                       <div class="flex-1 min-w-0">
-                        <div class="text-sm font-semibold" :class="task.done ? 'text-gray-400 line-through' : 'text-gray-800'" x-text="task.title"></div>
+                        <div class="text-sm font-semibold" :class="task.done ? 'text-gray-400 line-through' : task.overdue ? 'text-red-600' : 'text-gray-800'" x-text="task.title"></div>
+                        <div x-show="task.overdue" class="text-xs text-red-500 font-semibold">Nesplněno — doplňte prosím</div>
                         <div class="text-xs text-gray-400" x-text="task.when"></div>
                       </div>
                       <svg x-show="!task.done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -1713,11 +1715,12 @@
                       class="flex items-center gap-3 px-4 py-3 w-full text-left transition-colors"
                       :class="task.done ? 'bg-green-50 cursor-default' : 'hover:bg-gray-50 cursor-pointer'">
                       <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors"
-                           :class="task.done ? 'bg-green-500 border-green-500' : 'border-gray-300 bg-white'">
+                           :class="task.done ? 'bg-green-500 border-green-500' : task.overdue ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white'">
                         <svg x-show="task.done" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                       </div>
                       <div class="flex-1 min-w-0">
-                        <div class="text-sm font-semibold" :class="task.done ? 'text-gray-400 line-through' : 'text-gray-800'" x-text="task.title"></div>
+                        <div class="text-sm font-semibold" :class="task.done ? 'text-gray-400 line-through' : task.overdue ? 'text-red-600' : 'text-gray-800'" x-text="task.title"></div>
+                        <div x-show="task.overdue" class="text-xs text-red-500 font-semibold">Nesplněno — doplňte prosím</div>
                         <div class="text-xs text-gray-400" x-text="task.when"></div>
                       </div>
                       <svg x-show="!task.done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -1742,11 +1745,12 @@
                       class="flex items-center gap-3 px-4 py-3 w-full text-left transition-colors"
                       :class="task.done ? 'bg-green-50 cursor-default' : 'hover:bg-gray-50 cursor-pointer'">
                       <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors"
-                           :class="task.done ? 'bg-green-500 border-green-500' : 'border-gray-300 bg-white'">
+                           :class="task.done ? 'bg-green-500 border-green-500' : task.overdue ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white'">
                         <svg x-show="task.done" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                       </div>
                       <div class="flex-1 min-w-0">
-                        <div class="text-sm font-semibold" :class="task.done ? 'text-gray-400 line-through' : 'text-gray-800'" x-text="task.title"></div>
+                        <div class="text-sm font-semibold" :class="task.done ? 'text-gray-400 line-through' : task.overdue ? 'text-red-600' : 'text-gray-800'" x-text="task.title"></div>
+                        <div x-show="task.overdue" class="text-xs text-red-500 font-semibold">Nesplněno — doplňte prosím</div>
                         <div class="text-xs text-gray-400" x-text="task.when"></div>
                       </div>
                       <svg x-show="!task.done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
@@ -3338,33 +3342,35 @@ function app() { return {
 
     // Definice úkolů dle typu dne
     // Sdílené pomocné definice položek
+    // due = minuta dne, kdy má být úkol hotový (dle časů notifikací);
+    // po due + 60 min bez vyplnění se úkol zobrazí červeně
     const T = (id,title,when,qtype,icon,stroke,bg,tagCls,tag,req,urg) => ({id,title,when,qtype,action:'questionnaire',icon,stroke,bgClass:bg,tagClass:tagCls,tag,required:req,urgent:urg});
-    const PSD   = T('psd',    'Spánkový deník',      'Po probuzení (ráno)',       'psd',              ICON.bed,  '#2563eb','bg-blue-100',  'bg-blue-100 text-blue-700',  'Deník',    true,  true );
-    PSD.group = 'morning';
-    const KSSp  = T('kss_pre', 'KSS – Ospalost', 'Před nástupem směny',   'kss_pre',  ICON.moon, '#4f46e5','bg-indigo-100','bg-indigo-100 text-indigo-700','Dotazník',true,  true );
-    KSSp.group = 'pre_shift';
-    const KSSpo = T('kss_post','KSS – Ospalost', 'Ihned po skončení směny','kss_post', ICON.moon, '#4f46e5','bg-indigo-100','bg-indigo-100 text-indigo-700','Dotazník',true,  false);
-    KSSpo.group = 'post_shift';
-    const PVT   = {id:'pvt', title:'PVT – Reakční test', when:'Po skončení směny (~3 min)',
+    const PSD   = T('psd',    'Spánkový deník',      'Ráno po probuzení (~8:00)',       'psd',              ICON.bed,  '#2563eb','bg-blue-100',  'bg-blue-100 text-blue-700',  'Deník',    true,  true );
+    PSD.group = 'morning'; PSD.due = 8*60;
+    const KSSp  = T('kss_pre', 'KSS – Ospalost', 'Před nástupem směny (~18:15)',   'kss_pre',  ICON.moon, '#4f46e5','bg-indigo-100','bg-indigo-100 text-indigo-700','Dotazník',true,  true );
+    KSSp.group = 'pre_shift'; KSSp.due = 18*60+15;
+    const KSSpo = T('kss_post','KSS – Ospalost', 'Ihned po skončení směny (~05:30)','kss_post', ICON.moon, '#4f46e5','bg-indigo-100','bg-indigo-100 text-indigo-700','Dotazník',true,  false);
+    KSSpo.group = 'post_shift'; KSSpo.due = 5*60+30;
+    const PVT   = {id:'pvt', title:'PVT – Reakční test', when:'Po skončení směny (~05:30, trvá ~3 min)',
                    qtype:'pvt', action:'pvt', icon:'<polygon points="5 3 19 12 5 21 5 3"/>',
                    stroke:'#0891b2', bgClass:'bg-cyan-100', tagClass:'bg-cyan-100 text-cyan-700',
-                   tag:'Test', required:true, urgent:false, group:'post_shift'};
+                   tag:'Test', required:true, urgent:false, group:'post_shift', due:5*60+30};
 
     const STIM = {
-      id:'stim_volno', title:'tAVNS stimulace', when:'Udržovací stimulace · 15 minut',
-      action:'stim_confirm', qtype:'stim_done', group:'morning',
+      id:'stim_volno', title:'tAVNS stimulace', when:'Udržovací stimulace · 15 min (~8:00)',
+      action:'stim_confirm', qtype:'stim_done', group:'morning', due:8*60,
       icon:'<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>', stroke:'#7c3aed',
       bgClass:'bg-violet-100', tagClass:'bg-violet-100 text-violet-700', tag:'Stimulace',
       required:true, urgent:false,
     };
-    const STIM_PRE  = {...STIM, id:'stim_pre',  title:'tAVNS stimulace',       when:'Před zahájením směny · 15 min',          qtype:'stim_pre',  group:'pre_shift'};
-    const STIM_P1   = {...STIM, id:'stim_p1',   title:'tAVNS stimulace (pauza 1)', when:'Stimulace v pauze · 5 min (~21:00)',  qtype:'stim_p1',   group:'during_shift'};
-    const STIM_P2   = {...STIM, id:'stim_p2',   title:'tAVNS stimulace (pauza 2)', when:'Stimulace v pauze · 5 min (~00:00)',  qtype:'stim_p2',   group:'during_shift'};
-    const STIM_P3   = {...STIM, id:'stim_p3',   title:'tAVNS stimulace (pauza 3)', when:'Stimulace v pauze · 5 min (~03:00)',  qtype:'stim_p3',   group:'during_shift'};
-    const STIM_END  = {...STIM, id:'stim_end',  title:'tAVNS stimulace',           when:'Závěrečná stimulace · 15 min (~05:30)', qtype:'stim_end', group:'post_shift'};
+    const STIM_PRE  = {...STIM, id:'stim_pre',  title:'tAVNS stimulace',       when:'Před zahájením směny · 15 min (~18:15)', qtype:'stim_pre',  group:'pre_shift', due:18*60+15};
+    const STIM_P1   = {...STIM, id:'stim_p1',   title:'tAVNS stimulace (pauza 1)', when:'Stimulace v pauze · 5 min (~21:00)',  qtype:'stim_p1',   group:'during_shift', due:21*60};
+    const STIM_P2   = {...STIM, id:'stim_p2',   title:'tAVNS stimulace (pauza 2)', when:'Stimulace v pauze · 5 min (~00:00)',  qtype:'stim_p2',   group:'during_shift', due:0};
+    const STIM_P3   = {...STIM, id:'stim_p3',   title:'tAVNS stimulace (pauza 3)', when:'Stimulace v pauze · 5 min (~03:00)',  qtype:'stim_p3',   group:'during_shift', due:3*60};
+    const STIM_END  = {...STIM, id:'stim_end',  title:'tAVNS stimulace',           when:'Závěrečná stimulace · 15 min (~05:30)', qtype:'stim_end', group:'post_shift', due:5*60+30};
     const CORTIZOL = {
-      id:'cortizol', title:'Odběr kortizolu', when:'Kortizolový den · 3 vzorky slin',
-      action:'cortizol_confirm', qtype:'cortizol_done', group:'morning',
+      id:'cortizol', title:'Odběr kortizolu', when:'3 vzorky slin: ráno ~7:30, ~14:00, ~21:00',
+      action:'cortizol_confirm', qtype:'cortizol_done', group:'morning', due:21*60,
       icon:'<path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>', stroke:'#7c3aed',
       bgClass:'bg-purple-100', tagClass:'bg-purple-100 text-purple-700', tag:'Kortizol',
       required:true, urgent:true,
@@ -3387,20 +3393,22 @@ function app() { return {
       volno: [PSD, STIM],
     };
 
-    // Nastav done pro každý úkol
-    const plan = (PLANS[this.todayShiftType] || []).map(t => ({
-      ...t,
-      done: filledToday(t.qtype)
-    }));
+    // Nastav done + overdue (červeně po termínu + 60 min) pro každý úkol
+    const nowMin = now.getHours()*60 + now.getMinutes();
+    const withState = t => {
+      const done = filledToday(t.qtype);
+      return {...t, done, overdue: !done && t.due != null && nowMin > t.due + 60};
+    };
+    const plan = (PLANS[this.todayShiftType] || []).map(withState);
     // Ráno po včerejší noční směně: úkoly za noc, které se vyplňují dnes
     if (this.yesterdayShiftType === 'nocni') {
       const afterNight = (isWashout ? [KSSpo, PVT] : [STIM_P2, STIM_P3, STIM_END, KSSpo, PVT])
-        .map(t => ({...t, when: t.when + ' · za včerejší noční', done: filledToday(t.qtype)}));
+        .map(t => withState({...t, when: t.when + ' · za včerejší noční'}));
       plan.unshift(...afterNight);
     }
     // Kortizol jen v kortizolové dny
     if (this.cortisolData?.is_cortisol_day && this.currentUser?.phase !== 'preparation') {
-      plan.unshift({...CORTIZOL, done: filledToday('cortizol_done')});
+      plan.unshift(withState({...CORTIZOL, qtype:'cortizol_done'}));
     }
     this.dayTasks = plan;
   },
