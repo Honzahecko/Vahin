@@ -13,7 +13,9 @@ self.addEventListener('push', e => {
       body: data.body,
       icon: '/app/img/nurosym.png',
       badge: '/app/img/garmin.png',
-      tag: 'vahin-notif',
+      // tag podle cílové URL: různé upomínky se vedle sebe naskládají,
+      // opakovaná stejná upomínka nahradí tu předchozí
+      tag: 'vahin-' + (data.url || 'default'),
       renotify: true,
       vibrate: [200, 100, 200],
       data: { url: data.url },

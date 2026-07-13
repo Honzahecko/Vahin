@@ -2560,6 +2560,15 @@ function app() { return {
   async init() {
     if (this.token) { await this.loadMe(); await this.loadData(); }
     await this.checkGarminCallback();
+    // Deep link z push notifikace při zavřené aplikaci: /?q=kss_pre, /?tab=home
+    const dl = new URLSearchParams(window.location.search);
+    const dlQ = dl.get('q'), dlTab = dl.get('tab');
+    if ((dlQ || dlTab) && this.token && !this.isResearcher()) {
+      window.history.replaceState({}, '', '/');
+      if (dlQ === 'pvt') this.startPvt();
+      else if (dlQ) this.goQuestionnaire(dlQ);
+      else this.activeTab = dlTab || 'home';
+    }
     this.$watch('selectedQ', async q => {
       if (!q) return;
       this.qDef=null; this.qAnswers={};
@@ -2585,7 +2594,8 @@ function app() { return {
         if (e.data?.type !== 'navigate' || !e.data.url) return;
         const params = new URLSearchParams((e.data.url.split('?')[1]) || '');
         const q = params.get('q'), tab = params.get('tab');
-        if (q) this.goQuestionnaire(q);
+        if (q === 'pvt') this.startPvt();
+        else if (q) this.goQuestionnaire(q);
         else if (tab) this.activeTab = tab;
         else this.activeTab = 'home';
       });
