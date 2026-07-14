@@ -26,6 +26,8 @@ class ParticipantUpdate(BaseModel):
     consent_signed: Optional[bool] = None
     study_start_date: Optional[str] = None  # ISO date string "YYYY-MM-DD"
     notes: Optional[str] = None
+    participant_code: Optional[str] = None
+    full_name: Optional[str] = None
 
 def participant_to_dict(u: User) -> dict:
     # Vypočítej doporučenou fázi dle study_start_date
@@ -109,6 +111,14 @@ def update_participant(participant_id: int, data: ParticipantUpdate, db: Session
     if data.profession is not None: user.profession = data.profession
     if data.is_active is not None:  user.is_active = data.is_active
     if data.notes is not None:      user.notes = data.notes
+    if data.full_name is not None:  user.full_name = data.full_name
+    if data.participant_code is not None:
+        code = data.participant_code.strip()
+        clash = db.query(User).filter(User.participant_code == code,
+                                      User.id != participant_id).first()
+        if clash:
+            raise HTTPException(400, f"Kód {code} už používá jiný účastník (id {clash.id})")
+        user.participant_code = code
     if data.study_start_date is not None:
         from datetime import date
         user.study_start_date = datetime.fromisoformat(data.study_start_date)
