@@ -6,11 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional, List
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from database import get_db, User, CortisolLog, CortisolSampleType, CortisolTimepoint, StudyPhase
 from auth import get_current_user, require_researcher
-from tzutil import utc_iso, now_prague
+from tzutil import utc_iso, now_prague, PRAGUE
 import push_manager
 
 router = APIRouter(prefix="/api/cortisol", tags=["cortisol"])
@@ -130,22 +130,102 @@ def delete_cortisol_log(
 
 # ─── Endpointy – výzkumník ───────────────────────────────────────────────────
 
-class CortisolValueIn(BaseModel):
+class CortisolPatchIn(BaseModel):
     value_nmol_l: Optional[float] = None
     notes: Optional[str] = None
+    sample_time: Optional[str] = None   # ISO datetime
+    timepoint: Optional[str] = None     # t0/t15/t30
+
+
+def _parse_utc(iso: str) -> datetime:
+    """ISO datetime (s libovolnou zónou i bez) → naivní UTC."""
+    dt = datetime.fromisoformat(iso.replace("Z", "+00:00"))
+    if dt.tzinfo is not None:
+        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
+
 
 @router.patch("/{log_id}", dependencies=[Depends(require_researcher)])
-def set_cortisol_value(log_id: int, data: CortisolValueIn, db: Session = Depends(get_db)):
-    """Výzkumník: zapsat laboratorní hodnotu kortizolu (nmol/l) k odběru."""
+def edit_cortisol_log(log_id: int, data: CortisolPatchIn, db: Session = Depends(get_db)):
+    """Výzkumník: upravit záznam odběru (hodnota, čas, timepoint, poznámka).
+    Mění se jen pole poslaná v requestu."""
     log = db.query(CortisolLog).filter(CortisolLog.id == log_id).first()
     if not log:
         raise HTTPException(404, "Záznam nenalezen")
-    log.value_nmol_l = data.value_nmol_l
-    if data.notes is not None:
-        log.notes = data.notes
+    fields = data.model_dump(exclude_unset=True) if hasattr(data, "model_dump") else data.dict(exclude_unset=True)
+    if "value_nmol_l" in fields:
+        log.value_nmol_l = fields["value_nmol_l"]
+    if "notes" in fields:
+        log.notes = fields["notes"]
+    if fields.get("sample_time"):
+        try:
+            log.sample_time = _parse_utc(fields["sample_time"])
+        except ValueError:
+            raise HTTPException(400, "Neplatný sample_time")
+    if fields.get("timepoint"):
+        try:
+            log.timepoint = CortisolTimepoint(fields["timepoint"])
+        except ValueError:
+            raise HTTPException(400, "Neplatný timepoint")
     db.commit()
     db.refresh(log)
     return log_to_dict(log)
+
+
+class CortisolAdminAddIn(BaseModel):
+    sample_type: str            # day1/day7/day15/day21
+    timepoint: str              # t0/t15/t30
+    sample_time: Optional[str] = None   # ISO; když chybí, dopočítá se z data zahájení
+
+_DAY_OFFSET = {"day1": 0, "day7": 6, "day15": 14, "day21": 20}
+_TP_DEFAULT = {"t0": (7, 30), "t15": (14, 0), "t30": (21, 0)}   # výchozí české časy
+
+@router.post("/admin/{user_id}", dependencies=[Depends(require_researcher)])
+def admin_add_cortisol(user_id: int, data: CortisolAdminAddIn, db: Session = Depends(get_db)):
+    """Výzkumník: ručně založit záznam odběru (např. účastník zapomněl potvrdit)."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "Účastník nenalezen")
+    try:
+        st = CortisolSampleType(data.sample_type)
+        tp = CortisolTimepoint(data.timepoint)
+    except ValueError:
+        raise HTTPException(400, "Neplatný typ odběru nebo timepoint")
+
+    if data.sample_time:
+        try:
+            sample_time = _parse_utc(data.sample_time)
+        except ValueError:
+            raise HTTPException(400, "Neplatný sample_time")
+    else:
+        if not user.study_start_date:
+            raise HTTPException(400, "Účastník nemá datum zahájení studie – zadejte čas ručně")
+        day = user.study_start_date.date() + timedelta(days=_DAY_OFFSET[st.value])
+        h, m = _TP_DEFAULT[tp.value]
+        local = datetime(day.year, day.month, day.day, h, m, tzinfo=PRAGUE) if PRAGUE \
+                else datetime(day.year, day.month, day.day, h, m, tzinfo=timezone.utc)
+        sample_time = local.astimezone(timezone.utc).replace(tzinfo=None)
+
+    log = CortisolLog(
+        user_id=user_id, sample_type=st, timepoint=tp,
+        sample_time=sample_time, phase=user.phase,
+        notes="doplněno výzkumníkem",
+    )
+    db.add(log)
+    db.commit()
+    db.refresh(log)
+    return log_to_dict(log)
+
+
+@router.delete("/admin/log/{log_id}", dependencies=[Depends(require_researcher)])
+def admin_delete_cortisol(log_id: int, db: Session = Depends(get_db)):
+    """Výzkumník: smazat chybný záznam odběru."""
+    log = db.query(CortisolLog).filter(CortisolLog.id == log_id).first()
+    if not log:
+        raise HTTPException(404, "Záznam nenalezen")
+    db.delete(log)
+    db.commit()
+    return {"ok": True}
 
 @router.get("/participant/{user_id}", dependencies=[Depends(require_researcher)])
 def get_participant_cortisol(user_id: int, db: Session = Depends(get_db)):

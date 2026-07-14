@@ -355,10 +355,7 @@
       <!-- Kortizol záznamy -->
       <div class="mb-4">
         <div class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Kortizol odběry</div>
-        <template x-if="selectedPCortisol.length===0">
-          <div class="text-sm text-gray-400 text-center py-2">Zatím žádné odběry</div>
-        </template>
-        <template x-for="g in Object.entries(selectedPCortisol.reduce((a,l)=>{const k=l.sample_type;(a[k]=a[k]||[]).push(l);return a},{})).sort()" :key="g[0]">
+        <template x-for="g in ['day1','day7','day15','day21'].map(k=>[k, selectedPCortisol.filter(l=>l.sample_type===k)])" :key="g[0]">
           <div class="mb-2">
             <div class="text-xs font-semibold text-purple-700 mb-0.5" x-text="{day1:'Den 1',day7:'Den 7',day15:'Den 15',day21:'Den 21'}[g[0]]||g[0]"></div>
             <div class="space-y-1">
@@ -369,14 +366,25 @@
                         x-text="{t0:'Ráno',t15:'Odpoledne',t30:'Večer'}[tp]+(g[1].find(l=>l.timepoint===tp) ? ' ✓' : ' –')"></span>
                   <template x-if="g[1].find(l=>l.timepoint===tp)">
                     <div class="flex items-center gap-1">
-                      <span class="text-xs text-gray-400" x-text="formatTime(g[1].find(l=>l.timepoint===tp).sample_time)"></span>
+                      <input type="time"
+                             class="text-xs px-1 py-0.5 rounded border border-gray-200 focus:border-purple-400"
+                             style="width:5rem"
+                             :value="formatTime(g[1].find(l=>l.timepoint===tp).sample_time)"
+                             @change="saveCortisolTime(g[1].find(l=>l.timepoint===tp), $event.target.value)" />
                       <input type="number" step="0.1" min="0" placeholder="hodnota"
                              class="text-xs px-2 py-0.5 rounded border border-gray-200 focus:border-purple-400"
                              style="width:5.5rem"
                              :value="g[1].find(l=>l.timepoint===tp).value_nmol_l"
                              @change="saveCortisolValue(g[1].find(l=>l.timepoint===tp), $event.target.value)" />
                       <span class="text-xs text-gray-400">nmol/l</span>
+                      <button @click="deleteCortisolAdmin(g[1].find(l=>l.timepoint===tp))"
+                              title="Smazat záznam odběru"
+                              class="text-red-300 hover:text-red-600 text-xs font-bold px-1">✕</button>
                     </div>
+                  </template>
+                  <template x-if="!g[1].find(l=>l.timepoint===tp)">
+                    <button @click="addCortisolAdmin(g[0], tp)"
+                            class="text-xs text-indigo-600 hover:text-indigo-800 underline">+ Doplnit</button>
                   </template>
                 </div>
               </template>
@@ -4046,6 +4054,31 @@ function app() { return {
     const r = await this.apiFetch('/api/cortisol/'+log.id, {method:'PATCH', body: JSON.stringify({value_nmol_l: value})});
     if (r) log.value_nmol_l = r.value_nmol_l;
     else alert('Uložení hodnoty selhalo');
+  },
+
+  async saveCortisolTime(log, hhmm){
+    if(!hhmm) return;
+    // Zachovej den odběru (lokálně), změň jen čas
+    const dt = new Date(log.sample_time);
+    const [h, m] = hhmm.split(':').map(Number);
+    dt.setHours(h, m, 0, 0);
+    const r = await this.apiFetch('/api/cortisol/'+log.id, {method:'PATCH', body: JSON.stringify({sample_time: dt.toISOString()})});
+    if (r) log.sample_time = r.sample_time;
+    else alert('Uložení času selhalo');
+  },
+
+  async addCortisolAdmin(sampleType, tp){
+    const r = await this.apiFetch('/api/cortisol/admin/'+this.selectedP.id, {method:'POST',
+      body: JSON.stringify({sample_type: sampleType, timepoint: tp})});
+    if (r) this.selectedPCortisol.push(r);
+    else alert('Založení záznamu selhalo');
+  },
+
+  async deleteCortisolAdmin(log){
+    if(!confirm('Smazat tento záznam odběru' + (log.value_nmol_l != null ? ' včetně zapsané hodnoty' : '') + '?')) return;
+    const r = await this.apiFetch('/api/cortisol/admin/log/'+log.id, {method:'DELETE'});
+    if (r?.ok) this.selectedPCortisol = this.selectedPCortisol.filter(l => l.id !== log.id);
+    else alert('Smazání selhalo');
   },
 
   async openParticipant(p){
