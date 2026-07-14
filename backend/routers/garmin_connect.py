@@ -345,7 +345,9 @@ def _find_user_for_item(item: dict, db: Session) -> Optional[User]:
 
 
 def _upsert_garmin(user_id: int, date_val: datetime, updates: dict, db: Session):
-    """Insert or update a GarminData row for (user_id, date)."""
+    """Insert or update a GarminData row for (user_id, date).
+
+    Klíč 'meta' se slučuje s existujícím JSON (časy min/max hodnot)."""
     record = (
         db.query(GarminData)
         .filter(GarminData.user_id == user_id, GarminData.date == date_val)
@@ -361,10 +363,45 @@ def _upsert_garmin(user_id: int, date_val: datetime, updates: dict, db: Session)
     else:
         record.source = GarminDataSource.api
 
+    meta_updates = updates.pop("meta", None)
     for field, value in updates.items():
         if value is not None:
             setattr(record, field, value)
+    if meta_updates:
+        try:
+            meta = json.loads(record.meta) if record.meta else {}
+        except Exception:
+            meta = {}
+        meta.update({k: v for k, v in meta_updates.items() if v is not None})
+        record.meta = json.dumps(meta, ensure_ascii=False)
     db.commit()
+
+
+def _local_hhmm(unix_seconds):
+    """Unix čas → 'HH:MM' v českém čase (pro tooltip u min/max hodnot)."""
+    try:
+        from tzutil import PRAGUE
+        from datetime import timezone as _tz
+        return datetime.fromtimestamp(unix_seconds, PRAGUE or _tz.utc).strftime("%H:%M")
+    except Exception:
+        return None
+
+
+def _series_extremes(item: dict, key: str):
+    """Z časové řady {offsetSekundy: hodnota} vrať (min, minČas, max, maxČas).
+
+    Záporné hodnoty (senzor mimo zápěstí) se ignorují."""
+    series = item.get(key)
+    start = item.get("startTimeInSeconds")
+    if not isinstance(series, dict) or not series or start is None:
+        return None
+    points = [(int(off), v) for off, v in series.items()
+              if isinstance(v, (int, float)) and v >= 0]
+    if not points:
+        return None
+    min_off, min_v = min(points, key=lambda p: p[1])
+    max_off, max_v = max(points, key=lambda p: p[1])
+    return (min_v, _local_hhmm(start + min_off), max_v, _local_hhmm(start + max_off))
 
 
 def _parse_date(date_str: str) -> Optional[datetime]:
@@ -472,8 +509,15 @@ def _apply_daily(user: User, item: dict, db: Session) -> bool:
         "stress_avg":      item.get("averageStressLevel"),
         "calories_active": item.get("activeKilocalories"),
         # bodyBatteryCharged/DrainedValue = kolik se nabilo/vybilo, NE min/max
-        # → skutečné min/max posílá stress webhook (Highest/LowestValue)
+        # → skutečné min/max se počítají z časové řady ve stress webhoooku
     }
+    # Čas maxima TF z časové řady tepů (offset sekund → BPM)
+    hr = _series_extremes(item, "timeOffsetHeartRateSamples")
+    if hr:
+        _min_v, _min_t, max_v, max_t = hr
+        if updates["max_hr"] is None:
+            updates["max_hr"] = int(max_v)
+        updates["meta"] = {"max_hr_time": max_t}
     mod = item.get("moderateIntensityDurationInSeconds") or 0
     vig = item.get("vigorousIntensityDurationInSeconds") or 0
     if mod or vig:
@@ -526,6 +570,27 @@ def _apply_stress(user: User, item: dict, db: Session) -> bool:
         "body_battery_high": item.get("bodyBatteryHighestValue"),
         "body_battery_low":  item.get("bodyBatteryLowestValue"),
     }
+    meta = {}
+    # Body battery min/max + časy z časové řady (explicitní pole Garmin
+    # posílá jen někdy, řada bývá spolehlivější)
+    bb = _series_extremes(item, "timeOffsetBodyBatteryValues")
+    if bb:
+        low_v, low_t, high_v, high_t = bb
+        if updates["body_battery_low"] is None:
+            updates["body_battery_low"] = int(low_v)
+        if updates["body_battery_high"] is None:
+            updates["body_battery_high"] = int(high_v)
+        meta["bb_low_time"] = low_t
+        meta["bb_high_time"] = high_t
+    # Průměrný stres dopočítej z řady, když chybí explicitní pole
+    if updates["stress_avg"] is None:
+        series = item.get("timeOffsetStressLevelValues")
+        if isinstance(series, dict):
+            vals = [v for v in series.values() if isinstance(v, (int, float)) and v >= 0]
+            if vals:
+                updates["stress_avg"] = int(round(sum(vals) / len(vals)))
+    if meta:
+        updates["meta"] = meta
     _upsert_garmin(user.id, date_val, updates, db)
     return True
 

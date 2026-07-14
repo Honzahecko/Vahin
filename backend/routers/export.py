@@ -82,6 +82,12 @@ def _shift_records(db: Session) -> list:
         "notes": s.notes,
     } for s, u in rows]
 
+def _garmin_meta(r) -> dict:
+    try:
+        return json.loads(r.meta) if getattr(r, "meta", None) else {}
+    except Exception:
+        return {}
+
 def _garmin_records(db: Session) -> list:
     rows = db.query(GarminData, User)\
              .join(User, User.id == GarminData.user_id)\
@@ -101,10 +107,13 @@ def _garmin_records(db: Session) -> list:
         "steps": r.steps,
         "resting_hr": r.resting_hr,
         "max_hr": getattr(r, "max_hr", None),
+        "max_hr_time": _garmin_meta(r).get("max_hr_time"),
         "spo2_avg": getattr(r, "spo2_avg", None),
         "respiration_avg": getattr(r, "respiration_avg", None),
         "body_battery_low": r.body_battery_low,
+        "body_battery_low_time": _garmin_meta(r).get("bb_low_time"),
         "body_battery_high": getattr(r, "body_battery_high", None),
+        "body_battery_high_time": _garmin_meta(r).get("bb_high_time"),
         "active_minutes": getattr(r, "active_minutes", None),
         "calories_active": getattr(r, "calories_active", None),
         "source": r.source,

@@ -418,13 +418,13 @@
                 <template x-for="g in selectedPGarmin.slice(0,30)" :key="g.id">
                   <tr class="border-b border-gray-50 hover:bg-gray-50">
                     <td class="py-0.5 pr-2 font-mono" x-text="g.date"></td>
-                    <td class="pr-2 font-semibold" :class="g.hrv_rmssd&&g.hrv_rmssd<30?'text-red-500':g.hrv_rmssd&&g.hrv_rmssd>50?'text-green-600':''" x-text="g.hrv_rmssd??'—'"></td>
-                    <td class="pr-2" x-text="g.sleep_hours??'—'"></td>
-                    <td class="pr-2"><span x-show="g.sleep_score" :class="g.sleep_score>=80?'text-green-600':g.sleep_score>=60?'text-yellow-600':'text-red-500'" class="font-semibold" x-text="g.sleep_score"></span><span x-show="!g.sleep_score" class="text-gray-300">—</span></td>
-                    <td class="pr-2" x-text="g.stress_avg??'—'"></td>
-                    <td class="pr-2" x-text="g.steps?g.steps.toLocaleString('cs-CZ'):'—'"></td>
-                    <td class="pr-2" x-text="g.resting_hr??'—'"></td>
-                    <td x-text="(g.body_battery_low??'—')+'/'+(g.body_battery_high??'—')"></td>
+                    <td class="pr-2 font-semibold" title="Průměrné noční HRV (RMSSD)" :class="g.hrv_rmssd&&g.hrv_rmssd<30?'text-red-500':g.hrv_rmssd&&g.hrv_rmssd>50?'text-green-600':''" x-text="g.hrv_rmssd??'—'"></td>
+                    <td class="pr-2" title="Celkový spánek minulé noci" x-text="g.sleep_hours??'—'"></td>
+                    <td class="pr-2" title="Garmin skóre spánku (0–100)"><span x-show="g.sleep_score" :class="g.sleep_score>=80?'text-green-600':g.sleep_score>=60?'text-yellow-600':'text-red-500'" class="font-semibold" x-text="g.sleep_score"></span><span x-show="!g.sleep_score" class="text-gray-300">—</span></td>
+                    <td class="pr-2" title="Průměrný stres za 24 h" x-text="g.stress_avg??'—'"></td>
+                    <td class="pr-2" title="Kroky celkem za den" x-text="g.steps?g.steps.toLocaleString('cs-CZ'):'—'"></td>
+                    <td class="pr-2" title="Klidová tepová frekvence za den" x-text="g.resting_hr??'—'"></td>
+                    <td :title="'Body battery min/max' + (g.meta?.bb_low_time ? ' — min kolem ' + g.meta.bb_low_time : '') + (g.meta?.bb_high_time ? ', max kolem ' + g.meta.bb_high_time : '')" x-text="(g.body_battery_low??'—')+'/'+(g.body_battery_high??'—')"></td>
                   </tr>
                 </template>
               </tbody>
@@ -1006,18 +1006,18 @@
                   <tr>
                     <td><span class="font-mono text-xs font-semibold text-navy-900" x-text="participantCode(g.user_id)"></span></td>
                     <td class="text-xs" x-text="g.date"></td>
-                    <td class="font-semibold" :class="g.hrv_rmssd&&g.hrv_rmssd<30?'text-red-500':g.hrv_rmssd&&g.hrv_rmssd>50?'text-green-600':''" x-text="g.hrv_rmssd??'—'"></td>
-                    <td x-text="g.sleep_hours??'—'"></td>
-                    <td><span x-show="g.sleep_score" class="badge" :class="g.sleep_score>=80?'bg-green-100 text-green-700':g.sleep_score>=60?'bg-yellow-100 text-yellow-700':'bg-red-100 text-red-600'" x-text="g.sleep_score"></span><span x-show="!g.sleep_score" class="text-gray-300 text-xs">—</span></td>
-                    <td x-text="g.stress_avg??'—'"></td>
-                    <td x-text="g.steps?g.steps.toLocaleString('cs-CZ'):'—'"></td>
-                    <td x-text="g.resting_hr??'—'"></td>
-                    <td x-text="g.max_hr??'—'"></td>
-                    <td :class="g.spo2_avg&&g.spo2_avg<94?'text-red-600 font-semibold':''" x-text="g.spo2_avg??'—'"></td>
-                    <td x-text="g.respiration_avg??'—'"></td>
-                    <td x-text="g.body_battery_low??'—'"></td>
-                    <td x-text="g.body_battery_high??'—'"></td>
-                    <td x-text="g.active_minutes??'—'"></td>
+                    <td class="font-semibold" title="Průměrné noční HRV (RMSSD)" :class="g.hrv_rmssd&&g.hrv_rmssd<30?'text-red-500':g.hrv_rmssd&&g.hrv_rmssd>50?'text-green-600':''" x-text="g.hrv_rmssd??'—'"></td>
+                    <td title="Celkový spánek minulé noci" x-text="g.sleep_hours??'—'"></td>
+                    <td title="Garmin skóre spánku (0–100)"><span x-show="g.sleep_score" class="badge" :class="g.sleep_score>=80?'bg-green-100 text-green-700':g.sleep_score>=60?'bg-yellow-100 text-yellow-700':'bg-red-100 text-red-600'" x-text="g.sleep_score"></span><span x-show="!g.sleep_score" class="text-gray-300 text-xs">—</span></td>
+                    <td title="Průměrný stres za 24 h" x-text="g.stress_avg??'—'"></td>
+                    <td title="Kroky celkem za den" x-text="g.steps?g.steps.toLocaleString('cs-CZ'):'—'"></td>
+                    <td title="Klidová tepová frekvence za den" x-text="g.resting_hr??'—'"></td>
+                    <td :title="'Nejvyšší TF dne' + (g.meta?.max_hr_time ? ' — kolem ' + g.meta.max_hr_time : '')" x-text="g.max_hr??'—'"></td>
+                    <td title="Průměrné SpO₂ během spánku" :class="g.spo2_avg&&g.spo2_avg<94?'text-red-600 font-semibold':''" x-text="g.spo2_avg??'—'"></td>
+                    <td title="Průměrná dechová frekvence za 24 h" x-text="g.respiration_avg??'—'"></td>
+                    <td :title="'Nejnižší body battery' + (g.meta?.bb_low_time ? ' — kolem ' + g.meta.bb_low_time : '')" x-text="g.body_battery_low??'—'"></td>
+                    <td :title="'Nejvyšší body battery' + (g.meta?.bb_high_time ? ' — kolem ' + g.meta.bb_high_time : '')" x-text="g.body_battery_high??'—'"></td>
+                    <td title="Aktivní minuty za den (střední + vysoká zátěž)" x-text="g.active_minutes??'—'"></td>
                   </tr>
                 </template>
               </tbody>

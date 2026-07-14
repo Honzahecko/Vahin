@@ -377,5 +377,12 @@ def garmin_to_dict(r: GarminData) -> dict:
         "respiration_avg":  getattr(r, "respiration_avg", None),
         "active_minutes":   getattr(r, "active_minutes", None),
         "calories_active":  getattr(r, "calories_active", None),
+        "meta":             _parse_meta(r),
         "source":           r.source,
     }
+
+def _parse_meta(r) -> dict:
+    try:
+        return json.loads(r.meta) if getattr(r, "meta", None) else {}
+    except Exception:
+        return {}

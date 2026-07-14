@@ -133,6 +133,7 @@ class GarminData(Base):
     respiration_avg = Column(Float,   nullable=True)   # dechy/min
     active_minutes  = Column(Integer, nullable=True)   # moderate+vigorous
     calories_active = Column(Integer, nullable=True)
+    meta            = Column(Text, nullable=True)   # JSON: časy min/max hodnot (max_hr_time, bb_high_time…)
     source          = Column(SAEnum(GarminDataSource), default=GarminDataSource.manual_csv)
     uploaded_at     = Column(DateTime, default=datetime.utcnow)
 

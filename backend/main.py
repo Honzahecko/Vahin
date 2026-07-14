@@ -99,6 +99,7 @@ def _migrate_db():
     add_col("notification_schedules",  "study_days_mask",     "INTEGER DEFAULT 0")
     add_col("questionnaire_responses", "target_date",         "TEXT")
     add_col("cortisol_logs",           "value_nmol_l",        "REAL")
+    add_col("garmin_data",             "meta",                "TEXT")
 
     # Oprav neplatnou hodnotu 'prerandomizace' → 'preparation' (způsobená chybou v kódu)
     cur.execute("UPDATE users SET phase = 'preparation' WHERE phase = 'prerandomizace'")
