@@ -661,22 +661,19 @@ _PULL_TYPES = [
     ("stressDetails", "https://apis.garmin.com/wellness-api/rest/stressDetails", _apply_stress),
 ]
 
-@router.post("/admin/pull/{user_id}", dependencies=[Depends(require_researcher)])
-def garmin_admin_pull(user_id: int, days: int = 7, db: Session = Depends(get_db)):
-    """Admin: aktivně stáhni data z Garmin API za posledních N dní (max 30).
+def _request_backfill(user: User, db: Session, days: int = 7) -> dict:
+    """Vyžádej u Garminu backfill posledních N dní (data pak přijdou webhooky).
 
-    Nezávisí na webhoocích – Wellness API dovolí max 24h okno na dotaz,
-    proto se stahuje po dnech. Vrací i chyby, aby šla diagnóza z UI."""
+    Vrací {"ok", "token_valid", "backfill": {...}, "errors": [...]}."""
     import time as _time
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(404, "Účastník nenalezen")
     token = getattr(user, "garmin_access_token", None)
     if not token:
-        raise HTTPException(400, "Účastník nemá uložený Garmin token")
+        return {"ok": False, "token_valid": False, "backfill": {},
+                "errors": ["Účastník nemá uložený Garmin token"]}
 
     # Ověř platnost tokenu; při 401 zkus refresh
     token_valid = False
+    token_check = "?"
     try:
         r = _requests.get(GARMIN_USER_ID_URL, headers={"Authorization": f"Bearer {token}"}, timeout=15)
         if r.status_code == 401:
@@ -690,11 +687,11 @@ def garmin_admin_pull(user_id: int, days: int = 7, db: Session = Depends(get_db)
 
     if not token_valid:
         return {"ok": False, "token_valid": False, "token_check": token_check,
-                "imported": {}, "errors": ["Token je neplatný a refresh selhal – nutné nové párování"]}
+                "backfill": {}, "errors": ["Token je neplatný a refresh selhal – nutné nové párování"]}
 
     # Aplikace je u Garminu v "evented" režimu → přímý pull vrací
-    # InvalidPullTokenException. Místo toho použij Backfill API: Garmin data
-    # pošle asynchronně přes webhooky (ping/push), které už umíme zpracovat.
+    # InvalidPullTokenException. Místo toho Backfill API: Garmin data
+    # pošle asynchronně přes webhooky, které už umíme zpracovat.
     days = max(1, min(days, 30))
     now = int(_time.time())
     start = now - days * 86400
@@ -712,6 +709,8 @@ def garmin_admin_pull(user_id: int, days: int = 7, db: Session = Depends(get_db)
             continue
         if r.status_code in (200, 202):
             stats[key] = "vyžádáno"
+        elif r.status_code == 409:
+            stats[key] = "už vyžádáno dříve"   # duplicitní backfill okna Garmin odmítá, není to chyba
         else:
             stats[key] = f"HTTP {r.status_code}"
             if len(errors) < 8:
@@ -719,3 +718,45 @@ def garmin_admin_pull(user_id: int, days: int = 7, db: Session = Depends(get_db)
 
     errors = list(dict.fromkeys(errors))
     return {"ok": True, "token_valid": True, "days": days, "backfill": stats, "errors": errors}
+
+
+@router.post("/admin/pull/{user_id}", dependencies=[Depends(require_researcher)])
+def garmin_admin_pull(user_id: int, days: int = 7, db: Session = Depends(get_db)):
+    """Admin: vyžádej backfill dat z Garmin API za posledních N dní (max 30)."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "Účastník nenalezen")
+    if not getattr(user, "garmin_access_token", None):
+        raise HTTPException(400, "Účastník nemá uložený Garmin token")
+    return _request_backfill(user, db, days)
+
+
+def garmin_gap_backfill(db_session_factory):
+    """Automatická samoopravná kontrola (spouští APScheduler à la noční sync):
+    když u propojeného účastníka chybí data za poslední dny (výpadek webhooků,
+    restart serveru…), vyžádá si je backfillem sama. Výsledek se zapisuje do
+    webhook logu (admin → Webhook log)."""
+    from datetime import timedelta
+    from tzutil import now_prague
+    db = db_session_factory()
+    try:
+        users = db.query(User).filter(User.garmin_access_token.isnot(None)).all()
+        for user in users:
+            gaps = []
+            for d in range(1, 4):   # včerejšek až 3 dny zpět
+                day = now_prague().date() - timedelta(days=d)
+                day_dt = datetime(day.year, day.month, day.day)
+                rec = (db.query(GarminData)
+                       .filter(GarminData.user_id == user.id, GarminData.date == day_dt)
+                       .first())
+                if not rec or rec.sleep_hours is None or rec.hrv_rmssd is None or not rec.steps:
+                    gaps.append(day.strftime("%d.%m."))
+            if not gaps:
+                continue
+            res = _request_backfill(user, db, days=4)
+            _log_webhook("auto-backfill", {"účastník": user.participant_code, "chybějící dny": gaps},
+                         [f"backfill: {res.get('backfill')}", *res.get("errors", [])])
+    except Exception as exc:
+        print(f"[garmin_gap_backfill] ERROR: {exc}")
+    finally:
+        db.close()

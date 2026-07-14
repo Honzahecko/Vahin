@@ -67,11 +67,16 @@ def startup():
     push_manager.init_vapid()
     from apscheduler.schedulers.background import BackgroundScheduler
     from routers.push import check_and_send, sync_phase_notifications
+    from routers.garmin_connect import garmin_gap_backfill
     scheduler = BackgroundScheduler()
     # coalesce+grace: zpožděný tick se spustí dodatečně místo tichého vynechání
     scheduler.add_job(check_and_send, 'interval', minutes=1, args=[SessionLocal],
                       coalesce=True, misfire_grace_time=120)
     scheduler.add_job(sync_phase_notifications, 'cron', hour=0, minute=5, args=[SessionLocal],
+                      coalesce=True, misfire_grace_time=3600)
+    # Samoopravný Garmin backfill: každých 6 h zkontroluje díry v datech
+    # posledních 3 dnů a chybějící si vyžádá (výpadky webhooků, restarty…)
+    scheduler.add_job(garmin_gap_backfill, 'interval', hours=6, args=[SessionLocal],
                       coalesce=True, misfire_grace_time=3600)
     scheduler.start()
 
