@@ -238,19 +238,23 @@ QUESTIONNAIRE_DEFINITIONS = {
         ]
     },
     "mfi20": {
-        "title": "MFI – Dotazník únavy",
-        "description": "Vyplňte 1× týdně. U každého tvrzení označte, do jaké míry s ním souhlasíte (1 = zcela nesouhlasím, 5 = zcela souhlasím). Pět otázek pokrývá pět oblastí únavy.",
+        "title": "MFI-10 – Dotazník únavy",
+        "description": "Vyplňte 1× týdně. U každého tvrzení označte, do jaké míry s ním souhlasíte (1 = zcela nesouhlasím, 5 = zcela souhlasím).",
         "frequency": "weekly",
         "icon": "activity",
         "color": "orange",
         "questions": [
-            # Zkrácená verze: 1 položka z každé z 5 domén MFI-20 (bez reverzních,
-            # aby se otázky neduplikovaly). Skóre 5–25.
-            {"id": "gf1", "type": "scale5", "label": "Cítím se unavený/á.",              "options": ["1 – zcela nesouhlasím","2 – spíše nesouhlasím","3 – ani souhlas, ani nesouhlas","4 – spíše souhlasím","5 – zcela souhlasím"]},
-            {"id": "pf1", "type": "scale5", "label": "Fyzicky se cítím unavený/á.",       "options": ["1 – zcela nesouhlasím","2 – spíše nesouhlasím","3 – ani souhlas, ani nesouhlas","4 – spíše souhlasím","5 – zcela souhlasím"]},
-            {"id": "ra1", "type": "scale5", "label": "Mám málo zájmů.",                   "options": ["1 – zcela nesouhlasím","2 – spíše nesouhlasím","3 – ani souhlas, ani nesouhlas","4 – spíše souhlasím","5 – zcela souhlasím"]},
-            {"id": "rm1", "type": "scale5", "label": "Nejsem příliš motivovaný/á.",       "options": ["1 – zcela nesouhlasím","2 – spíše nesouhlasím","3 – ani souhlas, ani nesouhlas","4 – spíše souhlasím","5 – zcela souhlasím"]},
-            {"id": "mf1", "type": "scale5", "label": "Mám potíže se soustředěním.",       "options": ["1 – zcela nesouhlasím","2 – spíše nesouhlasím","3 – ani souhlas, ani nesouhlas","4 – spíše souhlasím","5 – zcela souhlasím"]},
+            # MFI-10: 2 přímé (nereverzní) položky z každé z 5 domén MFI-20. Skóre 10–50.
+            {"id": "gf1", "type": "scale5", "label": "Cítím se unavený/á.",                        "options": ["1 – zcela nesouhlasím","2 – spíše nesouhlasím","3 – ani souhlas, ani nesouhlas","4 – spíše souhlasím","5 – zcela souhlasím"]},
+            {"id": "gf2", "type": "scale5", "label": "Celkově se necítím příliš svěže.",           "options": ["1 – zcela nesouhlasím","2 – spíše nesouhlasím","3 – ani souhlas, ani nesouhlas","4 – spíše souhlasím","5 – zcela souhlasím"]},
+            {"id": "pf1", "type": "scale5", "label": "Fyzicky se cítím unavený/á.",                "options": ["1 – zcela nesouhlasím","2 – spíše nesouhlasím","3 – ani souhlas, ani nesouhlas","4 – spíše souhlasím","5 – zcela souhlasím"]},
+            {"id": "pf2", "type": "scale5", "label": "Fyzicky se cítím vyčerpaný/á.",              "options": ["1 – zcela nesouhlasím","2 – spíše nesouhlasím","3 – ani souhlas, ani nesouhlas","4 – spíše souhlasím","5 – zcela souhlasím"]},
+            {"id": "ra1", "type": "scale5", "label": "Mám málo zájmů.",                            "options": ["1 – zcela nesouhlasím","2 – spíše nesouhlasím","3 – ani souhlas, ani nesouhlas","4 – spíše souhlasím","5 – zcela souhlasím"]},
+            {"id": "ra2", "type": "scale5", "label": "Dělám jen málo věcí.",                       "options": ["1 – zcela nesouhlasím","2 – spíše nesouhlasím","3 – ani souhlas, ani nesouhlas","4 – spíše souhlasím","5 – zcela souhlasím"]},
+            {"id": "rm1", "type": "scale5", "label": "Nejsem příliš motivovaný/á.",                "options": ["1 – zcela nesouhlasím","2 – spíše nesouhlasím","3 – ani souhlas, ani nesouhlas","4 – spíše souhlasím","5 – zcela souhlasím"]},
+            {"id": "rm3", "type": "scale5", "label": "Musím se nutit k tomu, abych něco dělal/a.", "options": ["1 – zcela nesouhlasím","2 – spíše nesouhlasím","3 – ani souhlas, ani nesouhlas","4 – spíše souhlasím","5 – zcela souhlasím"]},
+            {"id": "mf1", "type": "scale5", "label": "Mám potíže se soustředěním.",               "options": ["1 – zcela nesouhlasím","2 – spíše nesouhlasím","3 – ani souhlas, ani nesouhlas","4 – spíše souhlasím","5 – zcela souhlasím"]},
+            {"id": "mf2", "type": "scale5", "label": "Je pro mě obtížné myslet jasně.",           "options": ["1 – zcela nesouhlasím","2 – spíše nesouhlasím","3 – ani souhlas, ani nesouhlas","4 – spíše souhlasím","5 – zcela souhlasím"]},
         ]
     },
     "tavns_adverse": {

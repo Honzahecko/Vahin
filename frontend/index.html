@@ -4266,17 +4266,18 @@ function app() { return {
       return {score: v, max:9, label:'KSS Ospalost', text, cls};
     }
     if (qtype === 'mfi20') {
-      // Zkrácená verze: 5 položek (1 na doménu), skóre 5–25, bez reverzních
-      const keys = ['gf1','pf1','ra1','rm1','mf1'];
+      // MFI-10: 10 přímých položek (2 na doménu), skóre 10–50, bez reverzních.
+      // Prahy per-item shodné s MFI-20 (≤2 nízká, ≤3 střední) → 20/30.
+      const keys = ['gf1','gf2','pf1','pf2','ra1','ra2','rm1','rm3','mf1','mf2'];
       let total = 0, cnt = 0;
       for (const k of keys) {
         const v = parseInt(answers[k]);
         if (v >= 1 && v <= 5) { total += v; cnt++; }
       }
-      if (cnt < 5) return null;
-      const text = total <= 11 ? 'Nízká únava' : total <= 18 ? 'Střední únava' : 'Vysoká únava';
-      const cls  = total <= 11 ? 'text-green-700' : total <= 18 ? 'text-amber-700' : 'text-red-700';
-      return {score: total, max:25, label:'MFI Únava', text, cls};
+      if (cnt < 10) return null;
+      const text = total <= 20 ? 'Nízká únava' : total <= 30 ? 'Střední únava' : 'Vysoká únava';
+      const cls  = total <= 20 ? 'text-green-700' : total <= 30 ? 'text-amber-700' : 'text-red-700';
+      return {score: total, max:50, label:'MFI-10 Únava', text, cls};
     }
     if (qtype === 'psqi') {
       const latMap = {a:0, b:1, c:2, d:3};
