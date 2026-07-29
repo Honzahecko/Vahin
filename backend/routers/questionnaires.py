@@ -201,13 +201,11 @@ QUESTIONNAIRE_DEFINITIONS = {
         "icon": "moon",
         "color": "indigo",
         "questions": [
-            {"id": "study_week", "type": "number", "label": "Týden studie č.", "min": 1, "max": 52},
             {"id": "bed_time", "type": "time", "label": "1. V kolik hodin obvykle chodíte spát?"},
             {"id": "sleep_latency_category", "type": "choice", "label": "2. Kolik minut obvykle trvá, než usnete?",
-             "options": [{"label": "Méně než 15 minut", "value": "a"}, {"label": "15–30 minut", "value": "b"}, {"label": "31–60 minut", "value": "c"}, {"label": "Více než 60 minut", "value": "d"}]},
+             "options": [{"label": "15 minut a méně", "value": "a"}, {"label": "16–30 minut", "value": "b"}, {"label": "31–60 minut", "value": "c"}, {"label": "Více než 60 minut", "value": "d"}]},
             {"id": "wake_time", "type": "time", "label": "3. V kolik hodin obvykle vstáváte ráno?"},
-            {"id": "actual_sleep_duration_category", "type": "choice", "label": "4. Kolik hodin skutečně spíte za noc?",
-             "options": [{"label": "Více než 7 hodin", "value": "a"}, {"label": "6–7 hodin", "value": "b"}, {"label": "5–6 hodin", "value": "c"}, {"label": "Méně než 5 hodin", "value": "d"}]},
+            {"id": "actual_sleep_hours", "type": "number", "label": "4. Kolik hodin skutečně spíte za noc? (přibližně, např. 6.5)", "min": 0, "max": 14},
             {"id": "cannot_sleep_30_min", "type": "choice", "label": "5. Nemůžete usnout do 30 minut",
              "options": [{"label": "0 – Vůbec ne", "value": 0}, {"label": "1 – Méně než 1× týdně", "value": 1}, {"label": "2 – 1–2× týdně", "value": 2}, {"label": "3 – 3× týdně nebo více", "value": 3}]},
             {"id": "wake_middle_or_early", "type": "choice", "label": "6. Budíte se uprostřed noci nebo brzy ráno",
@@ -233,8 +231,10 @@ QUESTIONNAIRE_DEFINITIONS = {
              "options": [{"label": "0 – Vůbec ne", "value": 0}, {"label": "1 – Méně než 1× týdně", "value": 1}, {"label": "2 – 1–2× týdně", "value": 2}, {"label": "3 – 3× týdně nebo více", "value": 3}]},
             {"id": "daytime_activity_attention_difficulty", "type": "choice", "label": "17. Těžko být aktivní a soustředěný přes den?",
              "options": [{"label": "0 – Vůbec ne", "value": 0}, {"label": "1 – Méně než 1× týdně", "value": 1}, {"label": "2 – 1–2× týdně", "value": 2}, {"label": "3 – 3× týdně nebo více", "value": 3}]},
-            {"id": "subjective_sleep_quality", "type": "choice", "label": "18. Jak hodnotíte celkovou kvalitu spánku?",
-             "options": [{"label": "0 – Velmi dobrá", "value": 0}, {"label": "1 – Celkem dobrá", "value": 1}, {"label": "2 – Celkem špatná", "value": 2}, {"label": "3 – Velmi špatná", "value": 3}]},
+            {"id": "subjective_sleep_quality", "type": "choice", "label": "18. Jak byste celkově hodnotili kvalitu svého spánku?",
+             "options": [{"label": "0 – Velmi dobrá", "value": 0}, {"label": "1 – Dobrá", "value": 1}, {"label": "2 – Špatná", "value": 2}, {"label": "3 – Velmi špatná", "value": 3}]},
+            {"id": "partner_observation", "type": "textarea", "optional": True,
+             "label": "19. Všiml si váš partner/spolubydlící něčeho? (volitelné, nezapočítává se do skóre) – např. hlasité chrápání, zástavy dechu, záškuby, neklidný spánek"},
         ]
     },
     "mfi20": {

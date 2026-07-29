@@ -4280,19 +4280,47 @@ function app() { return {
       return {score: total, max:50, label:'MFI-10 Únava', text, cls};
     }
     if (qtype === 'psqi') {
-      const latMap = {a:0, b:1, c:2, d:3};
-      const durMap = {a:0, b:1, c:2, d:3};
-      const lat = latMap[answers.sleep_latency_category] ?? 0;
-      const dur = durMap[answers.actual_sleep_duration_category] ?? 0;
-      const bKeys = ['cannot_sleep_30_min','wake_middle_or_early','need_bathroom','breathing_discomfort','cough_or_snore','feel_cold','feel_hot','bad_dreams','pain'];
-      const bSum = bKeys.reduce((s,k) => s + (parseInt(answers[k]) || 0), 0);
-      const bComp = bSum === 0 ? 0 : bSum <= 9 ? 1 : bSum <= 18 ? 2 : 3;
-      const med = parseInt(answers.sleep_medication) || 0;
-      const d1  = parseInt(answers.daytime_stay_awake_problems) || 0;
-      const d2  = parseInt(answers.daytime_activity_attention_difficulty) || 0;
-      const dayComp = Math.round((d1 + d2) / 2);
-      const qual = parseInt(answers.subjective_sleep_quality) || 0;
-      const total = lat + dur + bComp + med + dayComp + qual;
+      // Standardní PSQI: 7 komponent (C1–C7), každá 0–3, celkem 0–21.
+      const cat = {a:0, b:1, c:2, d:3};
+      const map3 = s => s===0 ? 0 : s<=2 ? 1 : s<=4 ? 2 : 3;   // součet dvou položek (0–6) → 0–3
+
+      // C1 – subjektivní kvalita (ot. 18)
+      const c1 = parseInt(answers.subjective_sleep_quality);
+      // C2 – latence usnutí (ot. 2 + ot. 5)
+      const q2 = cat[answers.sleep_latency_category];
+      const q5 = parseInt(answers.cannot_sleep_30_min);
+      const c2 = (q2!=null && !isNaN(q5)) ? map3(q2 + q5) : null;
+      // C3 – délka spánku (ot. 4, hodiny)
+      const hrs = parseFloat(answers.actual_sleep_hours);
+      let c3 = null;
+      if (!isNaN(hrs))                                c3 = hrs>7 ? 0 : hrs>=6 ? 1 : hrs>=5 ? 2 : 3;
+      else if (answers.actual_sleep_duration_category) c3 = cat[answers.actual_sleep_duration_category]; // stará data
+      // C4 – efektivita spánku (spánek / doba v posteli)
+      let c4 = null;
+      const tib = (() => {
+        const b = answers.bed_time, w = answers.wake_time;
+        if (!b || !w) return NaN;
+        const [bh,bm] = b.split(':').map(Number), [wh,wm] = w.split(':').map(Number);
+        let min = (wh*60+wm) - (bh*60+bm); if (min <= 0) min += 1440; return min/60;
+      })();
+      if (!isNaN(hrs) && tib > 0) {
+        const eff = (hrs / tib) * 100;
+        c4 = eff>=85 ? 0 : eff>=75 ? 1 : eff>=65 ? 2 : 3;
+      }
+      // C5 – poruchy spánku (ot. 5–13, součet 0–27)
+      const dKeys = ['cannot_sleep_30_min','wake_middle_or_early','need_bathroom','breathing_discomfort','cough_or_snore','feel_cold','feel_hot','bad_dreams','pain'];
+      const dSum = dKeys.reduce((s,k) => s + (parseInt(answers[k]) || 0), 0);
+      const c5 = dSum===0 ? 0 : dSum<=9 ? 1 : dSum<=18 ? 2 : 3;
+      // C6 – léky na spaní (ot. 15)
+      const c6 = parseInt(answers.sleep_medication);
+      // C7 – denní dysfunkce (ot. 16 + ot. 17)
+      const d1 = parseInt(answers.daytime_stay_awake_problems);
+      const d2 = parseInt(answers.daytime_activity_attention_difficulty);
+      const c7 = (!isNaN(d1) && !isNaN(d2)) ? map3(d1 + d2) : null;
+
+      const comps = [c1, c2, c3, c4, c5, c6, c7];
+      if (comps.some(c => c==null || isNaN(c))) return null;   // neúplné → skóre nezobrazuj
+      const total = comps.reduce((a,b) => a+b, 0);
       const text = total <= 4 ? 'Dobrá kvalita spánku' : total <= 10 ? 'Mírně zhoršená kvalita' : 'Výrazně špatná kvalita (klinicky)';
       const cls  = total <= 4 ? 'text-green-700' : total <= 10 ? 'text-amber-700' : 'text-red-700';
       return {score: total, max:21, label:'PSQI Spánek', text, cls};
