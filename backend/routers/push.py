@@ -13,7 +13,7 @@ try:
     _PRAGUE = ZoneInfo("Europe/Prague")
 except Exception:
     _PRAGUE = None
-from database import get_db, User, PushSubscription, NotificationSchedule, NotifType
+from database import get_db, User, UserRole, PushSubscription, NotificationSchedule, NotifType
 from auth import get_current_user, require_researcher
 from tzutil import utc_iso, now_prague
 import push_manager
@@ -246,6 +246,8 @@ NOTIF_TEXTS = {
     "cortisol_pm":       ("VAHIN – Kortizol odpoledne",   "Odběr slin – vzorek č.2 (odpoledne, cca 6 h po ranním vzorku).",   "/"),
     "cortisol_eve":      ("VAHIN – Kortizol večer",       "Odběr slin – vzorek č.3 (večer, před spánkem).",                   "/"),
     "weekly":            ("VAHIN – Týdenní dotazníky",    "Vyplňte týdenní dotazníky MFI-20 a PSQI.",                         "/?q=mfi20"),
+    "weekly_mfi":        ("VAHIN – Dotazník MFI-20",      "Vyplňte týdenní dotazník MFI-20 (únava).",                         "/?q=mfi20"),
+    "weekly_psqi":       ("VAHIN – Dotazník PSQI",        "Vyplňte týdenní dotazník PSQI (spánek).",                          "/?q=psqi"),
     "shift_entry":       ("VAHIN – Připomínka",             "Nezapomeňte zadat směnu nebo den volna do aplikace.",              "/?tab=home"),
     "psd_morning":       ("VAHIN – Spánkový deník",         "Vyplňte spánkový deník po probuzení.",                             "/?q=psd"),
     "pvt_post":          ("VAHIN – Reakční test PVT",       "Čas na PVT reakční test — po skončení noční směny (~1 minuta).", "/?q=pvt"),
@@ -371,36 +373,92 @@ _LAST_TICK_FILE = os.path.join(os.path.dirname(__file__), "..", "..", "data", "l
 _CATCHUP_MINUTES = 15   # maximální dohánění po výpadku
 
 
+def _due_protocol_notifs(user, moment) -> list:
+    """Vrátí seznam notif_type, které mají danému účastníkovi dorazit v tuto
+    minutu – počítáno ŽIVĚ z rozvrhu směn a fáze, stejnou logikou jako denní
+    úkoly v aplikaci. Nahrazuje předpočítané masky (ty se rozcházely s rozvrhem).
+
+    Úkoly po půlnoci noční směny patří kalendářně ke dni N+1 (jako v appce)."""
+    if not user.study_start_date:
+        return []
+    sch = (user.shift_schedule or 'V' * 21).ljust(21, 'V')
+    day = (moment.date() - user.study_start_date.date()).days + 1   # 1-indexováno
+    hm = (moment.hour, moment.minute)
+
+    def shift(d):
+        return sch[d - 1] if 1 <= d <= 21 else None
+
+    today = shift(day)
+    yday  = shift(day - 1)                                   # včerejší směna (pro ranní úkoly po noční)
+    w13      = (1 <= day <= 7) or (15 <= day <= 21)          # týdny se stimulací (fáze 1 a 3)
+    yday_w13 = (1 <= day - 1 <= 7) or (15 <= day - 1 <= 21)
+    is_cort  = day in (1, 7, 15, 21)
+    out = []
+
+    # Celodenní / pevné dny
+    if 1 <= day <= 21 and hm == (8, 0):
+        out.append('psd_morning')
+    if is_cort:
+        if hm == (7, 30):  out.append('cortisol_am')
+        if hm == (14, 0):  out.append('cortisol_pm')
+        if hm == (21, 0):  out.append('cortisol_eve')
+        if hm == (10, 0):  out += ['weekly_mfi', 'weekly_psqi']   # dvě samostatné notifikace
+
+    # Podle dnešní směny
+    if today == 'N':
+        if hm == (18, 15):            out.append('pre_shift')          # KSS před směnou
+        if w13 and hm == (18, 15):    out.append('stimulation_start')
+        if w13 and hm == (21, 0):     out.append('stimulation_p1')
+    elif today in ('D', 'V'):
+        if w13 and hm == (8, 0):      out.append('stimulation_volno')
+
+    # Ráno / noc PO včerejší noční směně (kalendářně den N+1)
+    if yday == 'N':
+        if yday_w13 and hm == (0, 0):   out.append('stimulation_p2')
+        if yday_w13 and hm == (3, 0):   out.append('stimulation_p3')
+        if yday_w13 and hm == (5, 30):  out.append('stimulation_end')
+        if hm == (5, 30):               out += ['post_shift', 'pvt_post']
+
+    return out
+
+
 def _send_for_minute(db, moment):
-    """Odešle notifikace naplánované na konkrétní minutu (hour:minute)."""
-    weekday_bit = 1 << moment.weekday()   # Po=1, Út=2 … Ne=64
-    schedules = db.query(NotificationSchedule).filter(
+    """Odešle notifikace na konkrétní minutu.
+    1) protokolní – živý výpočet z rozvrhu (shodné s úkoly v appce),
+    2) vlastní admin připomínky – uložené NotificationSchedule s custom_msg."""
+    # 1) Protokolní notifikace živě
+    participants = db.query(User).filter(
+        User.role == UserRole.participant,
+        User.is_active == True,
+        User.study_start_date.isnot(None),
+    ).all()
+    for u in participants:
+        due = _due_protocol_notifs(u, moment)
+        if not due:
+            continue
+        subs = db.query(PushSubscription).filter(PushSubscription.user_id == u.id).all()
+        if not subs:
+            continue
+        for nt in due:
+            title, body, url = NOTIF_TEXTS.get(nt, ("VAHIN", "Připomínka", "/"))
+            for sub in subs:
+                push_manager.send_push(sub.endpoint, sub.p256dh, sub.auth, title, body, url)
+
+    # 2) Vlastní admin připomínky (jen ty s custom_msg – protokol řeší bod 1)
+    weekday_bit = 1 << moment.weekday()
+    customs = db.query(NotificationSchedule).filter(
         NotificationSchedule.enabled == True,
         NotificationSchedule.hour   == moment.hour,
         NotificationSchedule.minute == moment.minute,
+        NotificationSchedule.custom_msg.isnot(None),
     ).all()
-
-    for sched in schedules:
-        sdm = sched.study_days_mask or 0
-        if sdm:
-            user = db.query(User).filter(User.id == sched.user_id).first()
-            if not user or not user.study_start_date:
-                continue
-            study_day = (moment.date() - user.study_start_date.date()).days + 1
-            if study_day < 1 or study_day > 21:
-                continue
-            if not (sdm & (1 << (study_day - 1))):
-                continue
-        else:
-            if not (sched.days_mask & weekday_bit):
-                continue
-        subs = db.query(PushSubscription).filter(
-            PushSubscription.user_id == sched.user_id).all()
-        title, body, url = NOTIF_TEXTS.get(sched.notif_type, ("VAHIN", "Připomínka", "/"))
-        if sched.custom_msg:
-            body = sched.custom_msg
+    for sched in customs:
+        if not (sched.days_mask & weekday_bit):
+            continue
+        subs = db.query(PushSubscription).filter(PushSubscription.user_id == sched.user_id).all()
+        title, _body, url = NOTIF_TEXTS.get(sched.notif_type, ("VAHIN", "Připomínka", "/"))
         for sub in subs:
-            push_manager.send_push(sub.endpoint, sub.p256dh, sub.auth, title, body, url)
+            push_manager.send_push(sub.endpoint, sub.p256dh, sub.auth, title, sched.custom_msg, url)
 
 
 def check_and_send(db_session_factory):

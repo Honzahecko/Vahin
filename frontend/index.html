@@ -67,6 +67,11 @@
 </head>
 <body x-data="app()" x-cloak>
 
+<!-- Toast (např. klik na notifikaci u již vyplněné věci) -->
+<div x-show="notifToast" x-transition
+     class="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-navy-900 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-lg"
+     style="max-width:90vw" x-text="notifToast"></div>
+
 <!-- ══════════════════════ DETAIL DRAWER ══════════════════════ -->
 <div class="drawer-overlay" :class="detailPanel?'open':''" @click="detailPanel=false"></div>
 <div class="drawer" :class="detailPanel?'open':''">
@@ -2088,16 +2093,16 @@
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             </div>
             <div class="text-xl font-bold text-navy-900 mb-2">PVT – Reakční test</div>
-            <div class="text-sm text-gray-500 mb-6 leading-relaxed">Na obrazovce se v náhodný okamžik rozsvítí zelené pole. <strong>Klepněte na něj co nejrychleji.</strong><br><br>Test trvá přibližně 1 minutu (5 pokusů). Klepejte až po rozsvícení, ne dříve.</div>
+            <div class="text-sm text-gray-500 mb-6 leading-relaxed">Na obrazovce se v náhodný okamžik rozsvítí zelené pole. <strong>Klepněte na něj co nejrychleji.</strong><br><br>Test trvá přibližně 1–2 minuty (<span x-text="pvtTotalTrials"></span> pokusů). Klepejte až po rozsvícení, ne dříve.</div>
             <button @click="pvtStart()" class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-700 transition-colors text-sm">Spustit test</button>
           </div>
 
           <!-- WAITING / STIMULUS -->
           <div x-show="pvtPhase==='running'" class="text-center">
-            <div class="text-sm text-gray-400 mb-4" x-text="'Pokus ' + Math.min(pvtTrials.length+1, 5) + ' / 5'"></div>
+            <div class="text-sm text-gray-400 mb-4" x-text="'Pokus ' + Math.min(pvtTrials.length+1, pvtTotalTrials) + ' / ' + pvtTotalTrials"></div>
             <!-- Progress dots -->
-            <div class="flex justify-center gap-2 mb-8">
-              <template x-for="i in 5" :key="i">
+            <div class="flex justify-center gap-2 mb-8 flex-wrap">
+              <template x-for="i in pvtTotalTrials" :key="i">
                 <div class="w-2.5 h-2.5 rounded-full transition-all"
                      :class="i<=pvtTrials.length ? 'bg-cyan-500' : i===pvtTrials.length+1 ? 'bg-gray-300' : 'bg-gray-200'"></div>
               </template>
@@ -2160,8 +2165,7 @@
             </div>
             <!-- Interpretace -->
             <div class="rounded-xl px-4 py-3 text-sm font-semibold mb-5"
-                 :class="pvtResult.mean_rt < 250 ? 'bg-green-50 text-green-700' : pvtResult.mean_rt < 350 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700'"
-                 x-text="pvtResult.mean_rt < 250 ? '✓ Výborná bdělost' : pvtResult.mean_rt < 350 ? '▲ Mírná únava' : '⚠ Výrazná únava – pozor při práci'"></div>
+                 :class="pvtVerdict().cls" x-text="pvtVerdict().text"></div>
             <!-- Auto-save indikátor -->
             <div x-show="pvtSaving" class="text-center text-sm text-gray-400 py-2">Ukládám výsledky…</div>
             <div x-show="!pvtSaving" class="text-center text-sm text-green-600 font-semibold py-2">Výsledky uloženy</div>
@@ -2618,7 +2622,8 @@ function app() { return {
   ],
   // PVT
   pvtPhase:'intro', pvtActive:false, pvtTrials:[], pvtLastRt:null,
-  pvtFalseStart:false, pvtStimulusAt:null, pvtTimer:null, pvtResult:{}, pvtSaving:false,
+  pvtFalseStart:false, pvtStimulusAt:null, pvtTimer:null, pvtResult:{}, pvtSaving:false, pvtTotalTrials:10,
+  notifToast:'',
   // Kortizol
   cortisolData: null,   // { study_day, is_cortisol_day, sample_type_today, logs[] }
   cortisolSaving: false,
@@ -2689,9 +2694,7 @@ function app() { return {
     const dlQ = dl.get('q'), dlTab = dl.get('tab');
     if ((dlQ || dlTab) && this.token && !this.isResearcher()) {
       window.history.replaceState({}, '', '/');
-      if (dlQ === 'pvt') this.startPvt();
-      else if (dlQ) this.goQuestionnaire(dlQ);
-      else this.activeTab = dlTab || 'home';
+      this.openFromNotif(dlQ, dlTab);
     }
   },
 
@@ -2706,10 +2709,7 @@ function app() { return {
         if (e.data?.type !== 'navigate' || !e.data.url) return;
         const params = new URLSearchParams((e.data.url.split('?')[1]) || '');
         const q = params.get('q'), tab = params.get('tab');
-        if (q === 'pvt') this.startPvt();
-        else if (q) this.goQuestionnaire(q);
-        else if (tab) this.activeTab = tab;
-        else this.activeTab = 'home';
+        this.openFromNotif(q, tab);
       });
     } catch(e) { console.warn('SW init:', e); }
   },
@@ -3179,7 +3179,7 @@ function app() { return {
     this.pvtActive = false;
     this.pvtLastRt = null;
     this.pvtFalseStart = false;
-    if(this.pvtTrials.length >= 5){ this._pvtFinish(); return; }
+    if(this.pvtTrials.length >= this.pvtTotalTrials){ this._pvtFinish(); return; }
     const delay = 2000 + Math.random() * 6000; // 2–8 s
     this.pvtTimer = setTimeout(() => {
       this.pvtActive = true;
@@ -3201,6 +3201,16 @@ function app() { return {
     this.pvtActive = false;
     this.pvtTrials.push({rt, false_start: false});
     setTimeout(() => this._pvtScheduleNext(), 1200);
+  },
+
+  // Hodnocení PVT kalibrované pro dotykový telefon (bdělá reakce ~300–450 ms,
+  // laps = reakce > 500 ms je standardní ukazatel únavy). Uložená surová data
+  // (mean_rt, lapsy, jednotlivé reakce) zůstávají beze změny pro analýzu.
+  pvtVerdict(){
+    const m = this.pvtResult.mean_rt ?? 999, l = this.pvtResult.lapses ?? 0;
+    if(l===0 && m < 400) return {cls:'bg-green-50 text-green-700', text:'✓ Dobrá bdělost'};
+    if(l<=1 && m < 550) return {cls:'bg-amber-50 text-amber-700', text:'▲ Mírná únava'};
+    return {cls:'bg-red-50 text-red-700', text:'⚠ Výrazná únava – pozor při práci'};
   },
 
   _pvtFinish(){
@@ -3970,6 +3980,24 @@ function app() { return {
   },
 
   goQuestionnaire(type){ this.qTargetDate=null; this.selectedQ=type; this.activeTab='questionnaire'; },
+
+  // Klik na notifikaci: když je daná věc už vyplněná, neotvírej ji znovu
+  // (přepsalo by to záznam) – jen přejdi na přehled a napiš, že je hotovo.
+  openFromNotif(q, tab){
+    if(!q){ this.activeTab = tab || 'home'; return; }
+    const today = this.localDay(new Date());
+    const weekly = ['mfi20','psqi'].includes(q);
+    const already = (this.myResponses||[]).some(r => r.q_type===q && (
+      weekly ? (Date.now()-new Date(r.filled_at) < 7*864e5) : this.responseDay(r)===today
+    ));
+    if(already){
+      this.activeTab = 'home';
+      this.notifToast = 'Tento úkol je už vyplněný ✓';
+      setTimeout(()=>{ this.notifToast=''; }, 4000);
+      return;
+    }
+    if(q==='pvt') this.startPvt(); else this.goQuestionnaire(q);
+  },
 
   // Zpětné doplnění zmeškaného úkolu z přehledu plnění: otevře příslušný
   // formulář a odpověď se připíše k danému dni (target_date), ne k dnešku.
