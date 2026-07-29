@@ -4266,17 +4266,17 @@ function app() { return {
       return {score: v, max:9, label:'KSS Ospalost', text, cls};
     }
     if (qtype === 'mfi20') {
-      const rev = new Set(['gf3','gf4','pf3','pf4','ra3','ra4','rm2','mf3']);
-      const keys = ['gf1','gf2','gf3','gf4','pf1','pf2','pf3','pf4','ra1','ra2','ra3','ra4','rm1','rm2','rm3','rm4','mf1','mf2','mf3','mf4'];
+      // Zkrácená verze: 5 položek (1 na doménu), skóre 5–25, bez reverzních
+      const keys = ['gf1','pf1','ra1','rm1','mf1'];
       let total = 0, cnt = 0;
       for (const k of keys) {
         const v = parseInt(answers[k]);
-        if (v >= 1 && v <= 5) { total += rev.has(k) ? (6 - v) : v; cnt++; }
+        if (v >= 1 && v <= 5) { total += v; cnt++; }
       }
-      if (cnt < 10) return null;
-      const text = total <= 40 ? 'Nízká únava' : total <= 60 ? 'Střední únava' : 'Vysoká únava';
-      const cls  = total <= 40 ? 'text-green-700' : total <= 60 ? 'text-amber-700' : 'text-red-700';
-      return {score: total, max:100, label:'MFI-20 Únava', text, cls};
+      if (cnt < 5) return null;
+      const text = total <= 11 ? 'Nízká únava' : total <= 18 ? 'Střední únava' : 'Vysoká únava';
+      const cls  = total <= 11 ? 'text-green-700' : total <= 18 ? 'text-amber-700' : 'text-red-700';
+      return {score: total, max:25, label:'MFI Únava', text, cls};
     }
     if (qtype === 'psqi') {
       const latMap = {a:0, b:1, c:2, d:3};
