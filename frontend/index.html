@@ -3313,9 +3313,8 @@ function app() { return {
 
   greetingText(){
     const h = new Date().getHours();
-    const name = this.currentUser?.full_name?.split(' ').slice(-1)[0] || '';
     const prefix = h < 10 ? 'Dobré ráno' : h < 18 ? 'Dobrý den' : 'Dobrý večer';
-    return `${prefix}, ${name}!`;
+    return `${prefix}!`;
   },
 
   setShiftType(type){
