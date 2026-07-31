@@ -389,19 +389,19 @@ QUESTIONNAIRE_DEFINITIONS = {
     },
     'stim_p1': {
         'title': 'tAVNS stimulace (pauza 1)',
-        'description': 'Stimulace v pauze ~21:00 (5 min)',
+        'description': 'Stimulace v pauze ~21:00 (15 min)',
         'questions': [],
         'frequency': 'daily',
     },
     'stim_p2': {
         'title': 'tAVNS stimulace (pauza 2)',
-        'description': 'Stimulace v pauze ~00:00 (5 min)',
+        'description': 'Stimulace v pauze ~00:00 (15 min)',
         'questions': [],
         'frequency': 'daily',
     },
     'stim_p3': {
         'title': 'tAVNS stimulace (pauza 3)',
-        'description': 'Stimulace v pauze ~03:00 (5 min)',
+        'description': 'Stimulace v pauze ~03:00 (15 min)',
         'questions': [],
         'frequency': 'daily',
     },

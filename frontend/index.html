@@ -552,7 +552,7 @@
               <div class="flex items-center gap-2">
                 <input type="checkbox" x-model="s.enabled" class="w-4 h-4 rounded accent-indigo-600" style="width:16px;flex-shrink:0" />
                 <div class="flex-1 min-w-0">
-                  <div class="text-xs font-semibold text-gray-700" x-text="({'pre_shift':'📋 KSS – před směnou','post_shift':'📋 KSS – po směně','psd_morning':'🌅 Spánkový deník (ráno)','pvt_post':'⚡ PVT – Reakční test','weekly':'📊 MFI-20 + PSQI (týdenní)','stimulation_start':'🎯 tAVNS – začátek směny · 15 min','stimulation_p1':'🎯 tAVNS – pauza 1 · 5 min (~21:00)','stimulation_p2':'🎯 tAVNS – pauza 2 · 5 min (~00:00)','stimulation_p3':'🎯 tAVNS – pauza 3 · 5 min (~03:00)','stimulation_end':'🎯 tAVNS – závěrečná · 15 min (~05:30)','stimulation_volno':'🎯 tAVNS – udržovací · 15 min','cortisol_am':'🧪 Kortizol ráno – vzorek č.1','cortisol_pm':'🧪 Kortizol odpoledne – vzorek č.2','cortisol_eve':'🧪 Kortizol večer – vzorek č.3','shift_entry':'📅 Připomínka – zadat směnu','reminder':'🔔 Obecná připomínka'})[s.notif_type] || s.notif_type"></div>
+                  <div class="text-xs font-semibold text-gray-700" x-text="({'pre_shift':'📋 KSS – před směnou','post_shift':'📋 KSS – po směně','psd_morning':'🌅 Spánkový deník (ráno)','pvt_post':'⚡ PVT – Reakční test','weekly':'📊 MFI-10 + PSQI (týdenní)','stimulation_start':'🎯 tAVNS – začátek směny · 15 min','stimulation_p1':'🎯 tAVNS – pauza 1 · 15 min (~21:00)','stimulation_p2':'🎯 tAVNS – pauza 2 · 15 min (~00:00)','stimulation_p3':'🎯 tAVNS – pauza 3 · 15 min (~03:00)','stimulation_end':'🎯 tAVNS – závěrečná · 15 min (~05:30)','stimulation_volno':'🎯 tAVNS – udržovací · 15 min','cortisol_am':'🧪 Kortizol ráno – vzorek č.1','cortisol_pm':'🧪 Kortizol odpoledne – vzorek č.2','cortisol_eve':'🧪 Kortizol večer – vzorek č.3','shift_entry':'📅 Připomínka – zadat směnu','reminder':'🔔 Obecná připomínka'})[s.notif_type] || s.notif_type"></div>
                   <input x-show="s.notif_type==='reminder'" x-model="s.custom_msg" type="text" placeholder="Text zprávy…" class="mt-1 w-full text-xs border border-gray-200 rounded px-2 py-1" style="font-size:11px" />
                   <!-- Kompaktní přehled aktivních dnů -->
                   <div class="mt-0.5 text-gray-400" style="font-size:10px"
@@ -2093,7 +2093,7 @@
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             </div>
             <div class="text-xl font-bold text-navy-900 mb-2">PVT – Reakční test</div>
-            <div class="text-sm text-gray-500 mb-6 leading-relaxed">Na obrazovce se v náhodný okamžik rozsvítí zelené pole. <strong>Klepněte na něj co nejrychleji.</strong><br><br>Test trvá přibližně 1–2 minuty (<span x-text="pvtTotalTrials"></span> pokusů). Klepejte až po rozsvícení, ne dříve.</div>
+            <div class="text-sm text-gray-500 mb-6 leading-relaxed">Na obrazovce se v náhodný okamžik rozsvítí zelené pole. <strong>Klepněte na něj co nejrychleji.</strong><br><br>Test trvá necelou minutu (<span x-text="pvtTotalTrials"></span> pokusů). Klepejte až po rozsvícení, ne dříve.</div>
             <button @click="pvtStart()" class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-700 transition-colors text-sm">Spustit test</button>
           </div>
 
@@ -2168,7 +2168,9 @@
                  :class="pvtVerdict().cls" x-text="pvtVerdict().text"></div>
             <!-- Auto-save indikátor -->
             <div x-show="pvtSaving" class="text-center text-sm text-gray-400 py-2">Ukládám výsledky…</div>
-            <div x-show="!pvtSaving" class="text-center text-sm text-green-600 font-semibold py-2">Výsledky uloženy</div>
+            <div x-show="!pvtSaving" class="text-center text-sm text-green-600 font-semibold py-2 mb-3">✓ Výsledky uloženy</div>
+            <button x-show="!pvtSaving" @click="activeTab='home'"
+                    class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-700 transition-colors text-sm">Hotovo — zpět na přehled</button>
           </div>
         </div>
       </div>
@@ -2314,7 +2316,7 @@
             <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3">
               <div class="text-xs font-bold text-blue-700 mb-2">📋 Dotazníky — DEN 1 a DEN 7</div>
               <div class="text-xs text-blue-600 space-y-1">
-                <div>· <strong>MFI-20</strong> — dotazník únavy (20 otázek)</div>
+                <div>· <strong>MFI-10</strong> — dotazník únavy (10 otázek)</div>
                 <div>· <strong>PSQI</strong> — kvalita spánku za poslední týden</div>
               </div>
             </div>
@@ -2386,7 +2388,7 @@
             <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3">
               <div class="text-xs font-bold text-blue-700 mb-2">📋 Dotazníky — DEN 15 a DEN 21</div>
               <div class="text-xs text-blue-600 space-y-1">
-                <div>· <strong>MFI-20</strong> + <strong>PSQI</strong> (stejné jako na začátku)</div>
+                <div>· <strong>MFI-10</strong> + <strong>PSQI</strong> (stejné jako na začátku)</div>
               </div>
             </div>
 
@@ -2415,7 +2417,7 @@
               </div>
               <div class="text-center">
                 <div class="text-2xl font-black text-white">2×</div>
-                <div class="text-xs text-blue-300 mt-0.5">MFI-20 + PSQI<br>(den 1/7 a 15/21)</div>
+                <div class="text-xs text-blue-300 mt-0.5">MFI-10 + PSQI<br>(den 1/7 a 15/21)</div>
               </div>
               <div class="text-center">
                 <div class="text-2xl font-black text-cyan-300">21</div>
@@ -2616,13 +2618,13 @@ function app() { return {
     { icon: '🎯', title: 'PVT – Reakční test',
       body: 'Po každé směně absolvujte krátký reakční test. Trvá asi 1 minutu (5 pokusů). Pomůže nám sledovat váš výkon v průběhu studie.' },
     { icon: '📊', title: 'Týdenní dotazníky',
-      body: 'Jednou týdně vyplňte PSQI (spánek), MFI-20 (únava) a hlášení nežádoucích účinků. Chipsy v dolní části vás upozorní, pokud čekají.' },
+      body: 'Jednou týdně vyplňte PSQI (spánek), MFI-10 (únava) a hlášení nežádoucích účinků. Chipsy v dolní části vás upozorní, pokud čekají.' },
     { icon: '🔔', title: 'Zapněte připomínky',
       body: 'Povolte push notifikace — aplikace vám bude posílat připomínky ve správný čas. Klepněte na tlačítko níže nebo to udělejte kdykoliv later na záložce Profil.', hasNotif: true },
   ],
   // PVT
   pvtPhase:'intro', pvtActive:false, pvtTrials:[], pvtLastRt:null,
-  pvtFalseStart:false, pvtStimulusAt:null, pvtTimer:null, pvtResult:{}, pvtSaving:false, pvtTotalTrials:10,
+  pvtFalseStart:false, pvtStimulusAt:null, pvtTimer:null, pvtResult:{}, pvtSaving:false, pvtTotalTrials:5,
   notifToast:'',
   // Kortizol
   cortisolData: null,   // { study_day, is_cortisol_day, sample_type_today, logs[] }
@@ -2665,9 +2667,9 @@ function app() { return {
 
   studySteps:[
     {phase:'preparation', label:'Před zahájením',    desc:'Podpis informovaného souhlasu a vyplnění dotazníku MEQ. Výzkumník vás zařadí do studie.', duration:'jednorázově'},
-    {phase:'phase1',      label:'Fáze 1 – dny 1–7',  desc:'Kortizol (3× denně: ráno, odpoledne, večer) den 1 a 7. Dotazníky MFI-20 + PSQI den 1 a 7 (1. a 2. vyplnění ze 4 celkem — stejné dny jako kortizol). Při každé noční směně: KSS před/po + tAVNS stimulace + PVT reakční test. Noste hodinky nepřetržitě.', duration:'7 dní'},
+    {phase:'phase1',      label:'Fáze 1 – dny 1–7',  desc:'Kortizol (3× denně: ráno, odpoledne, večer) den 1 a 7. Dotazníky MFI-10 + PSQI den 1 a 7 (1. a 2. vyplnění ze 4 celkem — stejné dny jako kortizol). Při každé noční směně: KSS před/po + tAVNS stimulace + PVT reakční test. Noste hodinky nepřetržitě.', duration:'7 dní'},
     {phase:'washout',     label:'Fáze 2 – dny 8–14', desc:'Spánkový deník každé ráno. Při noční směně: KSS před/po + stimulace + PVT. Noste hodinky pro záznam HRV a spánku.', duration:'7 dní'},
-    {phase:'phase2',      label:'Fáze 3 – dny 15–21',desc:'Kortizol (3× denně: ráno, odpoledne, večer) den 15 a 21. Dotazníky MFI-20 + PSQI den 15 a 21 (3. a 4. vyplnění ze 4 celkem). Při každé noční směně: KSS před/po + stimulace + PVT.', duration:'7 dní'},
+    {phase:'phase2',      label:'Fáze 3 – dny 15–21',desc:'Kortizol (3× denně: ráno, odpoledne, večer) den 15 a 21. Dotazníky MFI-10 + PSQI den 15 a 21 (3. a 4. vyplnění ze 4 celkem). Při každé noční směně: KSS před/po + stimulace + PVT.', duration:'7 dní'},
     {phase:'completed',   label:'Dokončeno',           desc:'Studie ukončena — děkujeme za účast!', duration:''},
   ],
 
@@ -3180,7 +3182,7 @@ function app() { return {
     this.pvtLastRt = null;
     this.pvtFalseStart = false;
     if(this.pvtTrials.length >= this.pvtTotalTrials){ this._pvtFinish(); return; }
-    const delay = 2000 + Math.random() * 6000; // 2–8 s
+    const delay = 1000 + Math.random() * 2000; // 1–3 s
     this.pvtTimer = setTimeout(() => {
       this.pvtActive = true;
       this.pvtStimulusAt = Date.now();
@@ -3208,8 +3210,8 @@ function app() { return {
   // (mean_rt, lapsy, jednotlivé reakce) zůstávají beze změny pro analýzu.
   pvtVerdict(){
     const m = this.pvtResult.mean_rt ?? 999, l = this.pvtResult.lapses ?? 0;
-    if(l===0 && m < 400) return {cls:'bg-green-50 text-green-700', text:'✓ Dobrá bdělost'};
-    if(l<=1 && m < 550) return {cls:'bg-amber-50 text-amber-700', text:'▲ Mírná únava'};
+    if(l===0 && m < 450) return {cls:'bg-green-50 text-green-700', text:'✓ Dobrá bdělost'};
+    if(l<=1 && m < 600) return {cls:'bg-amber-50 text-amber-700', text:'▲ Mírná únava'};
     return {cls:'bg-red-50 text-red-700', text:'⚠ Výrazná únava – pozor při práci'};
   },
 
@@ -3237,7 +3239,7 @@ function app() { return {
       await this.loadMyResponses();
     } catch(e){}
     this.pvtSaving = false;
-    setTimeout(() => { this.activeTab = 'home'; }, 2500);
+    // Výsledek zůstane na obrazovce, dokud ho účastník sám nezavře tlačítkem.
   },
 
   pvtAbort(){
@@ -3355,7 +3357,7 @@ function app() { return {
     // Týdenní — vždy viditelné bez ohledu na výběr směny
     const weekly = [
       {id:'psqi',     qtype:'psqi',             title:'PSQI spánek'},
-      {id:'mfi20',    qtype:'mfi20',            title:'MFI-20 únava'},
+      {id:'mfi20',    qtype:'mfi20',            title:'MFI-10 únava'},
     ];
     this.weeklyPending = weekly.filter(t => !filledWithin7d(t.qtype));
 
@@ -3395,9 +3397,9 @@ function app() { return {
       required:true, urgent:false,
     };
     const STIM_PRE  = {...STIM, id:'stim_pre',  title:'tAVNS stimulace',       when:'Před zahájením směny · 15 min (~18:15)', qtype:'stim_pre',  group:'pre_shift', due:18*60+15};
-    const STIM_P1   = {...STIM, id:'stim_p1',   title:'tAVNS stimulace (pauza 1)', when:'Stimulace v pauze · 5 min (~21:00)',  qtype:'stim_p1',   group:'during_shift', due:21*60};
-    const STIM_P2   = {...STIM, id:'stim_p2',   title:'tAVNS stimulace (pauza 2)', when:'Stimulace v pauze · 5 min (~00:00)',  qtype:'stim_p2',   group:'during_shift', due:0};
-    const STIM_P3   = {...STIM, id:'stim_p3',   title:'tAVNS stimulace (pauza 3)', when:'Stimulace v pauze · 5 min (~03:00)',  qtype:'stim_p3',   group:'during_shift', due:3*60};
+    const STIM_P1   = {...STIM, id:'stim_p1',   title:'tAVNS stimulace (pauza 1)', when:'Stimulace v pauze · 15 min (~21:00)',  qtype:'stim_p1',   group:'during_shift', due:21*60};
+    const STIM_P2   = {...STIM, id:'stim_p2',   title:'tAVNS stimulace (pauza 2)', when:'Stimulace v pauze · 15 min (~00:00)',  qtype:'stim_p2',   group:'during_shift', due:0};
+    const STIM_P3   = {...STIM, id:'stim_p3',   title:'tAVNS stimulace (pauza 3)', when:'Stimulace v pauze · 15 min (~03:00)',  qtype:'stim_p3',   group:'during_shift', due:3*60};
     const STIM_END  = {...STIM, id:'stim_end',  title:'tAVNS stimulace',           when:'Závěrečná stimulace · 15 min (~05:30)', qtype:'stim_end', group:'post_shift', due:5*60+30};
     const CORTIZOL = {
       id:'cortizol', title:'Odběr kortizolu', when:'3 vzorky slin: ráno ~7:30, ~14:00, ~21:00',
@@ -3464,7 +3466,7 @@ function app() { return {
       kss_pre:'KSS – před směnou', kss_post:'KSS – po směně', pvt:'PVT – Reakční test',
       pre_shift_fatigue:'Únava před směnou', post_shift_fatigue:'Únava po směně',
       tavns_diary:'Deník stimulace', psqi:'PSQI Spánek',
-      mfi20:'MFI-20 Únava', tavns_adverse:'Nežádoucí účinky',
+      mfi20:'MFI-10 Únava', tavns_adverse:'Nežádoucí účinky',
       weekly_wellbeing:'Týdenní pohoda', sleep_quality:'Kvalita spánku',
       meq:'MEQ Chronotyp', tavns_satisfaction:'Závěrečná spokojenost',
     };
@@ -3601,7 +3603,7 @@ function app() { return {
       done: filledWithin('psqi', ms7d),
     });
     tasks.push({
-      id:'mfi20', qtype:'mfi20', title:'MFI-20 – Únava (multidimenzionální)', when:'1× týdně',
+      id:'mfi20', qtype:'mfi20', title:'MFI-10 – Únava (multidimenzionální)', when:'1× týdně',
       iconPath: ICON_PATHS.activity, iconStroke: ICON_COLORS.orange, colorClass: COLOR_BG.orange,
       done: filledWithin('mfi20', ms7d),
     });
@@ -4204,7 +4206,7 @@ function app() { return {
     kss:'KSS – Karolinska',kss_pre:'KSS – před směnou',kss_post:'KSS – po směně',
     psd:'Spánkový deník',pvt:'PVT – Reakční test',
     tavns_diary:'Deník tAVNS',psqi:'PSQI – Pittsburgh',
-    mfi20:'MFI-20 – Únava',tavns_adverse:'Nežádoucí účinky',
+    mfi20:'MFI-10 – Únava',tavns_adverse:'Nežádoucí účinky',
     meq:'MEQ – Chronotyp',tavns_satisfaction:'Dotazník spokojenosti',
     stim_done:'tAVNS stimulace ✓',
     stim_pre:'tAVNS stimulace (před směnou) ✓',
@@ -4267,7 +4269,7 @@ function app() { return {
     }
     if (qtype === 'mfi20') {
       // MFI-10: 10 přímých položek (2 na doménu), skóre 10–50, bez reverzních.
-      // Prahy per-item shodné s MFI-20 (≤2 nízká, ≤3 střední) → 20/30.
+      // Prahy per-item jako u původního MFI-20 (≤2 nízká, ≤3 střední) → 20/30.
       const keys = ['gf1','gf2','pf1','pf2','ra1','ra2','rm1','rm3','mf1','mf2'];
       let total = 0, cnt = 0;
       for (const k of keys) {
@@ -4366,7 +4368,7 @@ function app() { return {
       const tasks = [{q:'psd', label:'Spánkový deník'}];
       if(d===1 || d===7 || d===15 || d===21){
         tasks.push({q:'cortizol_done', label:'Kortizol (potvrzení odběru)'});
-        tasks.push({q:'mfi20', label:'MFI-20'});
+        tasks.push({q:'mfi20', label:'MFI-10'});
         tasks.push({q:'psqi', label:'PSQI'});
       }
       if(prevType==='N'){                             // ráno po včerejší noční
