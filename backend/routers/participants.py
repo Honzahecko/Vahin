@@ -28,6 +28,8 @@ class ParticipantUpdate(BaseModel):
     notes: Optional[str] = None
     participant_code: Optional[str] = None
     full_name: Optional[str] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
 
 def participant_to_dict(u: User) -> dict:
     # Vypočítej doporučenou fázi dle study_start_date
@@ -112,6 +114,14 @@ def update_participant(participant_id: int, data: ParticipantUpdate, db: Session
     if data.is_active is not None:  user.is_active = data.is_active
     if data.notes is not None:      user.notes = data.notes
     if data.full_name is not None:  user.full_name = data.full_name
+    if data.email is not None:
+        em = data.email.strip()
+        clash = db.query(User).filter(User.email == em, User.id != participant_id).first()
+        if clash:
+            raise HTTPException(400, f"E-mail {em} už používá jiný uživatel (id {clash.id})")
+        user.email = em
+    if data.password:
+        user.hashed_password = hash_password(data.password)
     if data.participant_code is not None:
         code = data.participant_code.strip()
         clash = db.query(User).filter(User.participant_code == code,
